@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VUC — Weekly Priority Stack + Eisenhower</title>
+<title>VUC — Weekly Priority Stack</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
 .hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
 .hdr h1{color:#fff;font-size:18px;font-weight:700}
 .hdr p{color:#7aaccc;font-size:12px;margin-top:1px}
-.hdr-r{display:flex;align-items:center;gap:10px}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
-.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px}
+.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
 .nav button{background:none;border:none;border-bottom:3px solid transparent;padding:14px 18px;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap}
 .nav button:hover{color:#1A1A2E}
 .nav button.on{color:#1A1A2E;border-bottom-color:#2C5F8A}
@@ -21,10 +21,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:12px}
 .hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.5}
 .hint b{color:#1A1A2E}
+.import-box{background:#EFF6FF;border:1px solid #93C5FD;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.import-title{font-size:12px;font-weight:700;color:#1E40AF;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.import-desc{font-size:12px;color:#555;margin-bottom:10px}
+.import-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;background:#1E40AF;color:#fff;border:none;cursor:pointer}
+.import-btn:hover{background:#1e3a8a}
+.import-btn.s{background:#fff;color:#1E40AF;border:1px solid #93C5FD;margin-left:6px}
+.import-info{font-size:11px;color:#1E40AF;margin-top:6px;font-style:italic;display:none}
+.import-info.show{display:block}
+
+/* PREVIOUS WEEK REVIEW */
+.rev-panel{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:16px;margin-bottom:16px}
+.rev-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:4px}
+.rev-sub{font-size:11px;color:#999;margin-bottom:14px}
+.rev-person{border-bottom:1px solid #f0f0f0;padding:10px 0}
+.rev-person:last-child{border-bottom:none}
+.rev-person-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rev-task-line{display:flex;align-items:center;gap:10px;padding:4px 0 4px 28px;font-size:12px}
+.rev-task-text{flex:1;color:#333}
+.rev-task-proj{font-size:10px;font-weight:700;color:#999;margin-right:6px}
+.rev-status-btns{display:flex;gap:3px;flex-shrink:0}
+.rev-btn{font-size:10px;padding:3px 8px;border:1px solid #e0e0e0;border-radius:12px;background:#fff;cursor:pointer;color:#666;font-weight:600;transition:all .15s;font-family:inherit}
+.rev-btn:hover{border-color:#999}
+.rev-btn.done.sel{background:#dcfce7;color:#15803d;border-color:#86efac}
+.rev-btn.partial.sel{background:#fef9c3;color:#854D0E;border-color:#fde68a}
+.rev-btn.missed.sel{background:#fee2e2;color:#991B1B;border-color:#fca5a5}
+.rev-empty{font-size:12px;color:#ccc;font-style:italic;padding:8px 0}
+.rev-summary{background:#f9fafb;border-radius:6px;padding:10px 12px;margin-top:12px;font-size:12px;color:#555;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.rev-stat{display:flex;align-items:center;gap:4px}
+.rev-stat b{font-weight:700;font-size:14px}
+
+/* PROJECTS */
 .proj{background:#fff;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;overflow:hidden}
 .proj-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
 .proj-rank{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.proj-name-inp{border:none;font-size:14px;font-weight:700;color:#1A1A2E;background:transparent;outline:none;flex:1;font-family:inherit}
+.proj-name-inp{border:none;font-size:14px;font-weight:700;color:#1A1A2E;background:transparent;outline:none;flex:1;font-family:inherit;min-width:100px}
 .proj-score{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
 .proj-arrow{font-size:14px;color:#ccc;transition:transform .2s;flex-shrink:0}
 .proj-arrow.open{transform:rotate(90deg)}
@@ -39,19 +70,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .task-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .task-inp{border:none;border-bottom:1px solid #e8e8e8;font-size:12px;color:#333;background:transparent;outline:none;font-family:inherit;padding:3px 0;flex:1}
 .task-inp:focus{border-color:#2C5F8A}
+.task-inp.carryover{background:#FEF3C7;padding:3px 6px;border-radius:4px;border-bottom:1px solid #FDE68A}
 .task-del{width:16px;height:16px;border-radius:50%;border:1px solid #e8e8e8;background:#fff;color:#ccc;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;padding:0;line-height:1}
 .task-del:hover{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.carryover-badge{font-size:9px;font-weight:700;color:#78350F;background:#FEF3C7;padding:1px 6px;border-radius:10px;flex-shrink:0}
 .add-task{font-size:11px;color:#2C5F8A;cursor:pointer;margin-top:4px;display:inline-block}
 .add-task:hover{text-decoration:underline}
+
+/* EISENHOWER */
 .eis-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:10px;margin-bottom:16px}
-.eis-q{border-radius:10px;min-height:200px;padding:14px;border:2px dashed #e0e0e0;transition:border-color .2s,background .2s}
+.eis-q{border-radius:10px;min-height:200px;padding:14px;border:2px dashed #e0e0e0;transition:border-color .2s,background .2s;position:relative}
 .eis-q.drag-over{border-color:#2C5F8A;background:rgba(44,95,138,.04)}
-.eis-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.eis-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .eis-sub{font-size:10px;font-weight:400;color:#999;text-transform:none;letter-spacing:normal}
+.eis-count{background:#fff;border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700;margin-left:auto}
 .q1-l{color:#7F1D1D}.q1{background:#FEF2F2;border-color:#FCA5A5}
 .q2-l{color:#1E40AF}.q2{background:#EFF6FF;border-color:#93C5FD}
 .q3-l{color:#78350F}.q3{background:#FEF9C3;border-color:#FDE68A}
 .q4-l{color:#555}.q4{background:#F9FAFB;border-color:#D1D5DB}
+.q1.overload{background:#FEE2E2;border-color:#DC2626;border-style:solid;box-shadow:0 0 0 3px rgba(220,38,38,0.1)}
+.overload-alert{background:#DC2626;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:6px;display:none}
+.q1.overload .overload-alert{display:inline-block}
 .eis-tasks{min-height:60px}
 .task-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:5px 10px;margin:3px;font-size:12px;cursor:grab;transition:all .15s;max-width:100%;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .task-chip:active{cursor:grabbing;opacity:.7}
@@ -60,9 +99,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .chip-proj{font-size:9px;font-weight:700;color:#999;flex-shrink:0}
 .chip-owner{font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;color:#fff;flex-shrink:0}
 .chip-text{font-size:12px;color:#333}
+.chip-carry{font-size:9px;font-weight:700;color:#78350F;background:#FEF3C7;padding:1px 4px;border-radius:8px}
+
+/* Q4 reason modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:20px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.2)}
+.modal-title{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:4px}
+.modal-sub{font-size:12px;color:#666;margin-bottom:12px}
+.modal-task{background:#f5f5f5;border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:12px;color:#333}
+.modal-label{font-size:11px;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.modal-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.reason-chip{font-size:11px;padding:5px 10px;border:1px solid #e0e0e0;border-radius:20px;background:#fff;cursor:pointer;transition:all .15s;color:#555;font-family:inherit}
+.reason-chip:hover{border-color:#999}
+.reason-chip.sel{background:#1A1A2E;color:#fff;border-color:#1A1A2E}
+.modal-txt{width:100%;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;padding:8px 10px;outline:none;resize:vertical;min-height:50px;font-family:inherit;margin-bottom:12px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+
 .inbox{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px;margin-bottom:16px;min-height:60px}
 .inbox-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2C5F8A;margin-bottom:8px}
 .inbox-chips{display:flex;flex-wrap:wrap;gap:4px;min-height:30px}
+
+/* SUMMARY */
 .sum-section{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:16px;margin-bottom:12px}
 .sum-person{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .sum-name{font-size:14px;font-weight:700;color:#1A1A2E}
@@ -70,7 +128,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .sum-q-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
 .sum-task{font-size:12px;color:#333;padding:3px 0 3px 14px;position:relative}
 .sum-task::before{content:"\2022";position:absolute;left:2px}
+.sum-task-reason{font-size:10px;color:#999;font-style:italic;margin-left:4px}
 .sum-empty{font-size:11px;color:#ccc;font-style:italic}
+
 .btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
 .btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
 .btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
@@ -78,70 +138,139 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .footer{background:#1A1A2E;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:12px;color:#7aaccc;line-height:1.6}
 .footer b{color:#fff}
+
 @media(max-width:640px){.owners{grid-template-columns:1fr}.eis-grid{grid-template-columns:1fr}.hdr{padding:14px 16px}.main{padding:16px 12px}.nav{padding:0 12px}}
 </style>
 </head>
 <body>
+
 <div class="hdr">
   <div><h1>VUC &mdash; Weekly Priority Stack</h1><p>Top 5 from Decision Engine &rarr; Tasks &rarr; Eisenhower Matrix</p></div>
   <div class="hdr-r"><input class="dinp" type="date" id="wdate"></div>
 </div>
 <nav class="nav">
-  <button class="on" onclick="sw('tasks',this)">1. Projects &amp; Tasks</button>
+  <button class="on" onclick="sw('review',this)">0. Previous Week</button>
+  <button onclick="sw('tasks',this)">1. Projects &amp; Tasks</button>
   <button onclick="sw('eis',this)">2. Eisenhower Matrix</button>
   <button onclick="sw('sum',this)">3. Summary</button>
 </nav>
+
 <div class="main">
-<div class="tab on" id="tab-tasks">
+
+<!-- TAB 0: REVIEW -->
+<div class="tab on" id="tab-review">
+  <div class="sl">Before opening a new week &mdash; close the previous one</div>
+  <div class="hint"><b>Rule:</b> You cannot open this week without reviewing last week. Every task committed must be marked Done, Partial, or Missed.</div>
+
+  <div class="import-box">
+    <div class="import-title">Import last week's tasks</div>
+    <div class="import-desc">Paste the Summary JSON from last week's PDF (click "Export JSON" on the Summary tab to generate it), or start fresh if this is the first meeting.</div>
+    <textarea id="import-json" style="width:100%;border:1px solid #93C5FD;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;min-height:60px;display:none" placeholder="Paste JSON here..."></textarea>
+    <div style="margin-top:8px">
+      <button class="import-btn" onclick="togImport()">Paste JSON</button>
+      <button class="import-btn s" onclick="loadJSON()">Load</button>
+      <button class="import-btn s" onclick="startFresh()">Start fresh (first meeting)</button>
+    </div>
+    <div class="import-info" id="import-info"></div>
+  </div>
+
+  <div class="rev-panel" id="rev-panel" style="display:none">
+    <div class="rev-title">Last week's commitments &mdash; what happened?</div>
+    <div class="rev-sub">Click next to each task: Done, Partial, or Missed. Missed/Partial tasks can be carried over to this week.</div>
+    <div id="rev-body"></div>
+    <div class="rev-summary" id="rev-summary"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-g" onclick="confirmReview()">Continue to this week &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 1: PROJECTS & TASKS -->
+<div class="tab" id="tab-tasks">
   <div class="sl">Top 5 projects from Decision Engine &mdash; click to expand, edit names, write tasks</div>
-  <div class="hint"><b>Source:</b> Priority Allocation sheet in the Decision Engine. Update project names and scores in the Excel monthly. Edit names here if needed.</div>
+  <div class="hint"><b>Source:</b> Priority Allocation sheet in the Decision Engine. Update project names and scores in the Excel monthly. Edit names here if needed. Yellow tasks are carryovers from last week.</div>
   <div id="proj-list"></div>
   <div class="btn-row">
     <button class="btn btn-g" onclick="buildMatrix()">Continue to Eisenhower Matrix &rarr;</button>
     <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
   </div>
 </div>
+
+<!-- TAB 2: EISENHOWER -->
 <div class="tab" id="tab-eis">
   <div class="sl">Drag each task to the right quadrant</div>
-  <div class="hint"><b>Q1:</b> Do this week, no excuses. <b>Q2:</b> Schedule a specific time. <b>Q3:</b> Can someone else handle it? <b>Q4:</b> Remove from your week.</div>
+  <div class="hint"><b>Q1:</b> Do this week, no excuses. <b>Q2:</b> Schedule a specific time. <b>Q3:</b> Delegate. <b>Q4:</b> Remove (you'll be asked why). <b>Q1 limit:</b> 4 tasks per person — more turns red as a warning.</div>
+
   <div class="inbox" id="inbox">
     <div class="inbox-label">Unsorted tasks &mdash; drag to a quadrant below</div>
     <div class="inbox-chips" id="inbox-chips"></div>
   </div>
+
   <div class="eis-grid">
     <div class="eis-q q1" id="q1" ondragover="dO(event)" ondragleave="dL(event)" ondrop="dD(event,'q1')">
-      <div class="eis-label q1-l">Q1: Do first <span class="eis-sub">&mdash; urgent + important</span></div>
+      <div class="eis-label q1-l">Q1: Do first <span class="eis-sub">&mdash; urgent + important</span><span class="eis-count" id="q1c">0</span></div>
       <div class="eis-tasks" id="q1t"></div>
+      <span class="overload-alert">&#9888; Too many critical tasks &mdash; something must move or get dropped</span>
     </div>
     <div class="eis-q q2" id="q2" ondragover="dO(event)" ondragleave="dL(event)" ondrop="dD(event,'q2')">
-      <div class="eis-label q2-l">Q2: Schedule <span class="eis-sub">&mdash; important, not urgent</span></div>
+      <div class="eis-label q2-l">Q2: Schedule <span class="eis-sub">&mdash; important, not urgent</span><span class="eis-count" id="q2c">0</span></div>
       <div class="eis-tasks" id="q2t"></div>
     </div>
     <div class="eis-q q3" id="q3" ondragover="dO(event)" ondragleave="dL(event)" ondrop="dD(event,'q3')">
-      <div class="eis-label q3-l">Q3: Delegate <span class="eis-sub">&mdash; urgent, not important</span></div>
+      <div class="eis-label q3-l">Q3: Delegate <span class="eis-sub">&mdash; urgent, not important</span><span class="eis-count" id="q3c">0</span></div>
       <div class="eis-tasks" id="q3t"></div>
     </div>
     <div class="eis-q q4" id="q4" ondragover="dO(event)" ondragleave="dL(event)" ondrop="dD(event,'q4')">
-      <div class="eis-label q4-l">Q4: Don&rsquo;t do <span class="eis-sub">&mdash; neither urgent nor important</span></div>
+      <div class="eis-label q4-l">Q4: Don&rsquo;t do <span class="eis-sub">&mdash; ask: why not?</span><span class="eis-count" id="q4c">0</span></div>
       <div class="eis-tasks" id="q4t"></div>
     </div>
   </div>
-  <div style="text-align:center;margin:8px 0"><span style="font-size:11px;color:#999">Drag tasks between quadrants to re-prioritize</span></div>
+
   <div class="btn-row" style="justify-content:center">
-    <button class="btn btn-s" onclick="sw('tasks',document.querySelectorAll('.nav button')[0])">&larr; Back to projects</button>
-    <button class="btn btn-g" onclick="buildSummary();sw('sum',document.querySelectorAll('.nav button')[2])">Generate summary &rarr;</button>
+    <button class="btn btn-s" onclick="sw('tasks',document.querySelectorAll('.nav button')[1])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildSummary();sw('sum',document.querySelectorAll('.nav button')[3])">Generate summary &rarr;</button>
   </div>
 </div>
+
+<!-- TAB 3: SUMMARY -->
 <div class="tab" id="tab-sum">
   <div class="sl">Weekly commitments by person &mdash; share with the team</div>
   <div id="sum-content"></div>
-  <div class="footer"><b>After this meeting:</b> each person adds their Q1 and Q2 tasks to their personal Jira board with the project prefix in brackets (e.g. [SOL] Deliver budget). Q3 tasks get delegated. Q4 tasks don&rsquo;t enter Jira.</div>
+  <div class="footer"><b>After this meeting:</b> each person adds their Q1 and Q2 tasks to their personal Jira board with the project prefix in brackets (e.g. [SOL] Deliver budget). Q3 tasks get delegated. Q4 tasks don&rsquo;t enter Jira but the reasons are recorded here.</div>
   <div class="btn-row">
-    <button class="btn btn-s" onclick="sw('eis',document.querySelectorAll('.nav button')[1])">&larr; Back to matrix</button>
+    <button class="btn btn-s" onclick="sw('eis',document.querySelectorAll('.nav button')[2])">&larr; Back</button>
     <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-p" onclick="exportJSON()" style="background:#1E40AF">Export JSON (for next week)</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+</div>
+
+<!-- Q4 REASON MODAL -->
+<div class="modal-overlay" id="q4-modal">
+  <div class="modal">
+    <div class="modal-title">Why not this week?</div>
+    <div class="modal-sub">Q4 tasks need a reason &mdash; so next time we know what got cut and why.</div>
+    <div class="modal-task" id="modal-task-text"></div>
+    <div class="modal-label">Common reasons</div>
+    <div class="modal-reasons" id="modal-reasons">
+      <button class="reason-chip" onclick="pickReason(this,'No capacity')">No capacity</button>
+      <button class="reason-chip" onclick="pickReason(this,'Depends on external party')">Depends on external</button>
+      <button class="reason-chip" onclick="pickReason(this,'Not our scope')">Not our scope</button>
+      <button class="reason-chip" onclick="pickReason(this,'Better done next week')">Better next week</button>
+      <button class="reason-chip" onclick="pickReason(this,'Duplicate / already covered')">Duplicate</button>
+      <button class="reason-chip" onclick="pickReason(this,'Low impact')">Low impact</button>
+    </div>
+    <div class="modal-label">Or write your own</div>
+    <textarea class="modal-txt" id="modal-txt" placeholder="Custom reason..."></textarea>
+    <div class="modal-btns">
+      <button class="btn btn-s" onclick="cancelQ4()">Cancel</button>
+      <button class="btn btn-p" onclick="saveQ4()">Save to Q4</button>
+    </div>
   </div>
 </div>
-</div>
+
 <script>
 var P=[
   {id:'p1',name:'VUC Consulting SOL',score:'0.69',status:'EXECUTE NOW',color:'#1A237E'},
@@ -155,15 +284,137 @@ var PPL=[
   {key:'yasin',name:'Yasin',init:'Y',cls:'av-y'},
   {key:'lucas',name:'Lucas',init:'Lc',cls:'av-lc'}
 ];
-var tc=0,allT=[],Q={inbox:[],q1:[],q2:[],q3:[],q4:[]};
+var Q1_LIMIT = 4;
+var tc=0;
+var allT=[];
+var Q={inbox:[],q1:[],q2:[],q3:[],q4:[]};
+var carryover=[]; // tasks from last week that were partial/missed
+var previousWeek=null; // loaded data from last week
+var reviewConfirmed=false;
+var pendingQ4Tid=null;
 
 (function(){
   var d=new Date(),day=d.getDay(),diff=day===1?0:(8-day)%7||7;
   d.setDate(d.getDate()+diff);
   document.getElementById('wdate').valueAsDate=d;
-  renderP();
 })();
 
+// ===== IMPORT / REVIEW =====
+function togImport(){
+  var el=document.getElementById('import-json');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function loadJSON(){
+  var raw=document.getElementById('import-json').value.trim();
+  if(!raw){alert('Paste JSON first');return;}
+  try{
+    var data=JSON.parse(raw);
+    if(!data.tasks||!Array.isArray(data.tasks))throw new Error('Invalid format');
+    previousWeek=data;
+    showReview();
+    showInfo('&#10003; Loaded '+data.tasks.length+' tasks from '+(data.week||'last week'));
+  }catch(e){
+    alert('JSON invalid: '+e.message);
+  }
+}
+
+function startFresh(){
+  previousWeek={tasks:[],week:'No previous data'};
+  document.getElementById('rev-panel').style.display='none';
+  showInfo('&#10003; Starting fresh &mdash; no previous week to review');
+  reviewConfirmed=true;
+}
+
+function showInfo(msg){
+  var el=document.getElementById('import-info');
+  el.innerHTML=msg;
+  el.classList.add('show');
+}
+
+function showReview(){
+  var panel=document.getElementById('rev-panel');
+  var body=document.getElementById('rev-body');
+  panel.style.display='block';
+  var html='';
+  PPL.forEach(function(pe){
+    var pTasks=previousWeek.tasks.filter(function(t){return t.pk===pe.key && (t.q==='q1'||t.q==='q2');});
+    html+='<div class="rev-person"><div class="rev-person-hdr"><div class="ow-av '+pe.cls+'">'+pe.init+'</div><span class="ow-nm">'+pe.name+'</span></div>';
+    if(pTasks.length===0){
+      html+='<div class="rev-empty">No Q1 or Q2 tasks committed last week</div>';
+    } else {
+      pTasks.forEach(function(t,i){
+        var rid='rev-'+pe.key+'-'+i;
+        html+='<div class="rev-task-line" data-rid="'+rid+'" data-task="'+encodeURIComponent(JSON.stringify(t))+'">';
+        html+='<span class="rev-task-proj">['+(t.pn||'').substring(0,8).toUpperCase()+']</span>';
+        html+='<span class="rev-task-text">'+t.text+'</span>';
+        html+='<div class="rev-status-btns">';
+        html+='<button class="rev-btn done" onclick="setRevStatus(this,\'done\',\''+rid+'\')">Done</button>';
+        html+='<button class="rev-btn partial" onclick="setRevStatus(this,\'partial\',\''+rid+'\')">Partial</button>';
+        html+='<button class="rev-btn missed" onclick="setRevStatus(this,\'missed\',\''+rid+'\')">Missed</button>';
+        html+='</div></div>';
+      });
+    }
+    html+='</div>';
+  });
+  body.innerHTML=html;
+  updateRevSummary();
+}
+
+function setRevStatus(btn,status,rid){
+  var parent=btn.closest('.rev-status-btns');
+  parent.querySelectorAll('.rev-btn').forEach(function(b){b.classList.remove('sel');});
+  btn.classList.add('sel');
+  btn.closest('.rev-task-line').setAttribute('data-status',status);
+  updateRevSummary();
+}
+
+function updateRevSummary(){
+  var d=0,p=0,m=0,pending=0;
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    var s=line.getAttribute('data-status');
+    if(s==='done')d++;
+    else if(s==='partial')p++;
+    else if(s==='missed')m++;
+    else pending++;
+  });
+  document.getElementById('rev-summary').innerHTML=
+    '<div class="rev-stat"><b style="color:#15803d">'+d+'</b> Done</div>'+
+    '<div class="rev-stat"><b style="color:#854D0E">'+p+'</b> Partial</div>'+
+    '<div class="rev-stat"><b style="color:#991B1B">'+m+'</b> Missed</div>'+
+    (pending>0?'<div class="rev-stat" style="color:#999"><b>'+pending+'</b> Pending review</div>':'');
+}
+
+function confirmReview(){
+  if(!previousWeek){
+    alert('Please paste last week\'s JSON or click "Start fresh" to continue.');
+    return;
+  }
+  var pendingCount=0;
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    if(!line.getAttribute('data-status'))pendingCount++;
+  });
+  if(pendingCount>0 && document.getElementById('rev-panel').style.display!=='none'){
+    if(!confirm(pendingCount+' task(s) not yet reviewed. Continue anyway?'))return;
+  }
+
+  carryover=[];
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    var s=line.getAttribute('data-status');
+    if(s==='partial'||s==='missed'){
+      try{
+        var t=JSON.parse(decodeURIComponent(line.getAttribute('data-task')));
+        carryover.push({text:t.text,pi:t.pi,pk:t.pk,pn:t.pn,pc:t.pc,fromStatus:s});
+      }catch(e){}
+    }
+  });
+
+  reviewConfirmed=true;
+  renderP();
+  sw('tasks',document.querySelectorAll('.nav button')[1]);
+}
+
+// ===== PROJECTS & TASKS =====
 function renderP(){
   var h='';
   P.forEach(function(p,i){
@@ -178,17 +429,33 @@ function renderP(){
     PPL.forEach(function(pe){
       h+='<div class="ow"><div class="ow-hdr"><div class="ow-av '+pe.cls+'">'+pe.init+'</div><span class="ow-nm">'+pe.name+'</span></div>';
       h+='<div id="tl-'+p.id+'-'+pe.key+'">';
+      // Inject carryovers for this project/person
+      var carries=carryover.filter(function(c){return c.pi===p.id && c.pk===pe.key;});
+      carries.forEach(function(c){
+        h+=trCarryover(p.id,pe.key,c.text,c.fromStatus);
+      });
       h+=trHTML(p.id,pe.key)+trHTML(p.id,pe.key);
       h+='</div><span class="add-task" onclick="addT(\''+p.id+'\',\''+pe.key+'\')">+ add task</span></div>';
     });
     h+='</div></div></div>';
   });
   document.getElementById('proj-list').innerHTML=h;
+  // Auto-expand projects that have carryovers
+  P.forEach(function(p){
+    var hasCarry=carryover.some(function(c){return c.pi===p.id;});
+    if(hasCarry)togP(p.id);
+  });
 }
 
 function trHTML(pi,pk){
   var tid='t'+(++tc);
   return '<div class="task-row" id="r-'+tid+'" data-t="'+tid+'" data-p="'+pi+'" data-k="'+pk+'"><input class="task-inp" placeholder="Task..." id="i-'+tid+'"><button class="task-del" onclick="document.getElementById(\'r-'+tid+'\').remove()">&#x2715;</button></div>';
+}
+
+function trCarryover(pi,pk,text,fromStatus){
+  var tid='t'+(++tc);
+  var label=fromStatus==='partial'?'CARRY (partial)':'CARRY (missed)';
+  return '<div class="task-row" id="r-'+tid+'" data-t="'+tid+'" data-p="'+pi+'" data-k="'+pk+'" data-carry="1"><span class="carryover-badge">'+label+'</span><input class="task-inp carryover" value="'+text+'" id="i-'+tid+'"><button class="task-del" onclick="document.getElementById(\'r-'+tid+'\').remove()">&#x2715;</button></div>';
 }
 
 function addT(pi,pk){
@@ -216,17 +483,18 @@ function collectT(){
     var tid=r.getAttribute('data-t');
     var pi=r.getAttribute('data-p');
     var pk=r.getAttribute('data-k');
+    var isCarry=r.getAttribute('data-carry')==='1';
     var proj=P.find(function(x){return x.id===pi;});
     var per=PPL.find(function(x){return x.key===pk;});
-    allT.push({tid:tid,text:inp.value.trim(),pi:pi,pn:proj?proj.name:'',pc:proj?proj.color:'#999',pk:pk,pname:per?per.name:'',pcls:per?per.cls:'',pinit:per?per.init:'?',q:'inbox'});
+    allT.push({tid:tid,text:inp.value.trim(),pi:pi,pn:proj?proj.name:'',pc:proj?proj.color:'#999',pk:pk,pname:per?per.name:'',pinit:per?per.init:'?',q:'inbox',carry:isCarry,reason:null});
     Q.inbox.push(tid);
   });
 }
 
 function buildMatrix(){
   collectT();
-  rInbox();rQ();
-  sw('eis',document.querySelectorAll('.nav button')[1]);
+  rInbox();rQ();updateCounts();
+  sw('eis',document.querySelectorAll('.nav button')[2]);
 }
 
 function chipH(t){
@@ -235,13 +503,16 @@ function chipH(t){
     +'<span class="chip-dot" style="background:'+t.pc+'"></span>'
     +'<span class="chip-proj">['+t.pn.substring(0,6).toUpperCase()+']</span>'
     +'<span class="chip-owner" style="background:'+(oc[t.pk]||'#999')+'">'+t.pinit+'</span>'
-    +'<span class="chip-text">'+t.text+'</span></div>';
+    +'<span class="chip-text">'+t.text+'</span>'
+    +(t.carry?'<span class="chip-carry">CARRY</span>':'')
+    +'</div>';
 }
 
 function rInbox(){
   var h='';Q.inbox.forEach(function(tid){var t=allT.find(function(x){return x.tid===tid;});if(t)h+=chipH(t);});
   document.getElementById('inbox-chips').innerHTML=h;
 }
+
 function rQ(){
   ['q1','q2','q3','q4'].forEach(function(q){
     var h='';Q[q].forEach(function(tid){var t=allT.find(function(x){return x.tid===tid;});if(t)h+=chipH(t);});
@@ -249,47 +520,130 @@ function rQ(){
   });
 }
 
+function updateCounts(){
+  ['q1','q2','q3','q4'].forEach(function(q){
+    document.getElementById(q+'c').textContent=Q[q].length;
+  });
+  // Q1 overload check per person
+  var q1ByPerson={};
+  Q.q1.forEach(function(tid){
+    var t=allT.find(function(x){return x.tid===tid;});
+    if(t){q1ByPerson[t.pk]=(q1ByPerson[t.pk]||0)+1;}
+  });
+  var overload=false;
+  for(var k in q1ByPerson){if(q1ByPerson[k]>Q1_LIMIT){overload=true;break;}}
+  document.getElementById('q1').classList.toggle('overload',overload);
+}
+
 var dTid=null;
 function dS(e,tid){dTid=tid;e.dataTransfer.effectAllowed='move';setTimeout(function(){var el=document.getElementById('ch-'+tid);if(el)el.classList.add('dragging');},0);}
 function dE(e){if(dTid){var el=document.getElementById('ch-'+dTid);if(el)el.classList.remove('dragging');}dTid=null;document.querySelectorAll('.eis-q,.inbox').forEach(function(el){el.classList.remove('drag-over');});}
 function dO(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
 function dL(e){e.currentTarget.classList.remove('drag-over');}
+
 function dD(e,tq){
   e.preventDefault();e.currentTarget.classList.remove('drag-over');
   if(!dTid)return;
-  ['inbox','q1','q2','q3','q4'].forEach(function(q){var idx=Q[q].indexOf(dTid);if(idx>-1)Q[q].splice(idx,1);});
-  Q[tq].push(dTid);
-  var t=allT.find(function(x){return x.tid===dTid;});if(t)t.q=tq;
-  rInbox();rQ();
+
+  // Q4 requires reason modal
+  if(tq==='q4'){
+    pendingQ4Tid=dTid;
+    var t=allT.find(function(x){return x.tid===dTid;});
+    if(t){
+      document.getElementById('modal-task-text').innerHTML='<b>['+t.pn.substring(0,10)+']</b> '+t.text+' &mdash; <span style="color:#999">'+t.pname+'</span>';
+      document.getElementById('modal-txt').value=t.reason||'';
+      document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('sel');});
+      document.getElementById('q4-modal').classList.add('show');
+    }
+    return;
+  }
+
+  moveTo(dTid,tq);
 }
+
+function moveTo(tid,tq){
+  ['inbox','q1','q2','q3','q4'].forEach(function(q){var idx=Q[q].indexOf(tid);if(idx>-1)Q[q].splice(idx,1);});
+  Q[tq].push(tid);
+  var t=allT.find(function(x){return x.tid===tid;});
+  if(t){t.q=tq;if(tq!=='q4')t.reason=null;}
+  rInbox();rQ();updateCounts();
+}
+
+function pickReason(btn,txt){
+  document.querySelectorAll('.reason-chip').forEach(function(c){c.classList.remove('sel');});
+  btn.classList.add('sel');
+  document.getElementById('modal-txt').value=txt;
+}
+
+function saveQ4(){
+  var reason=document.getElementById('modal-txt').value.trim();
+  if(!reason){alert('Please give a reason');return;}
+  var t=allT.find(function(x){return x.tid===pendingQ4Tid;});
+  if(t)t.reason=reason;
+  moveTo(pendingQ4Tid,'q4');
+  document.getElementById('q4-modal').classList.remove('show');
+  pendingQ4Tid=null;
+}
+
+function cancelQ4(){
+  document.getElementById('q4-modal').classList.remove('show');
+  pendingQ4Tid=null;
+}
+
 document.getElementById('inbox').addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag-over');});
 document.getElementById('inbox').addEventListener('dragleave',function(e){this.classList.remove('drag-over');});
 document.getElementById('inbox').addEventListener('drop',function(e){
   e.preventDefault();this.classList.remove('drag-over');
   if(!dTid)return;
-  ['inbox','q1','q2','q3','q4'].forEach(function(q){var idx=Q[q].indexOf(dTid);if(idx>-1)Q[q].splice(idx,1);});
-  Q.inbox.push(dTid);
-  var t=allT.find(function(x){return x.tid===dTid;});if(t)t.q='inbox';
-  rInbox();rQ();
+  moveTo(dTid,'inbox');
 });
 
+// ===== SUMMARY =====
 function buildSummary(){
   var ql={q1:'Do first',q2:'Schedule',q3:'Delegate',q4:"Don't do"};
   var qc={q1:'#7F1D1D',q2:'#1E40AF',q3:'#78350F',q4:'#999'};
   var h='';
+
   PPL.forEach(function(pe){
     h+='<div class="sum-section"><div class="sum-person"><div class="ow-av '+pe.cls+'" style="width:28px;height:28px;font-size:12px">'+pe.init+'</div><div class="sum-name">'+pe.name+'</div></div>';
     ['q1','q2','q3','q4'].forEach(function(q){
       var tasks=allT.filter(function(t){return t.pk===pe.key&&t.q===q;});
-      h+='<div class="sum-q"><div class="sum-q-label" style="color:'+qc[q]+'">'+ql[q]+'</div>';
-      if(tasks.length){tasks.forEach(function(t){h+='<div class="sum-task"><span style="color:'+t.pc+';font-weight:600;font-size:11px">['+t.pn.substring(0,8)+']</span> '+t.text+'</div>';});}
-      else{h+='<div class="sum-empty">No tasks</div>';}
+      h+='<div class="sum-q"><div class="sum-q-label" style="color:'+qc[q]+'">'+ql[q]+(tasks.length?' ('+tasks.length+')':'')+'</div>';
+      if(tasks.length){
+        tasks.forEach(function(t){
+          h+='<div class="sum-task"><span style="color:'+t.pc+';font-weight:600;font-size:11px">['+t.pn.substring(0,8)+']</span> '+t.text;
+          if(t.carry)h+=' <span class="chip-carry" style="margin-left:4px">CARRY</span>';
+          if(t.q==='q4'&&t.reason)h+='<div class="sum-task-reason">Reason: '+t.reason+'</div>';
+          h+='</div>';
+        });
+      }else{h+='<div class="sum-empty">No tasks</div>';}
       h+='</div>';
     });
     h+='</div>';
   });
-  if(Q.inbox.length>0){h+='<div style="background:#FEF9C3;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#78350F"><b>Warning:</b> '+Q.inbox.length+' task(s) still unsorted. Go back to the matrix to classify them.</div>';}
+
+  if(Q.inbox.length>0){
+    h+='<div style="background:#FEF9C3;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#78350F;margin-bottom:12px"><b>Warning:</b> '+Q.inbox.length+' task(s) still unsorted. Go back to the matrix to classify them.</div>';
+  }
+
   document.getElementById('sum-content').innerHTML=h;
+}
+
+function exportJSON(){
+  var dateEl=document.getElementById('wdate');
+  var week=dateEl.value||new Date().toISOString().slice(0,10);
+  var exportData={
+    week:week,
+    exported:new Date().toISOString(),
+    tasks:allT.map(function(t){return {text:t.text,pi:t.pi,pn:t.pn,pc:t.pc,pk:t.pk,q:t.q,carry:t.carry,reason:t.reason};})
+  };
+  var json=JSON.stringify(exportData,null,2);
+  var out=document.getElementById('json-out');
+  out.value=json;
+  out.style.display='block';
+  out.select();
+  try{document.execCommand('copy');alert('JSON copied to clipboard. Save it with the PDF of this week so you can paste it next Monday.');}
+  catch(e){alert('JSON ready below. Select and copy it manually.');}
 }
 
 function sw(tab,btn){
