@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Incubation Meeting</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
+.hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hdr h1{color:#fff;font-size:18px;font-weight:700}
+.hdr p{color:#B794F6;font-size:12px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
+.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.nav button{background:none;border:none;border-bottom:3px solid transparent;padding:14px 16px;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav button:hover{color:#1A1A2E}
+.nav button.on{color:#1A1A2E;border-bottom-color:#7C3AED}
+.main{max-width:980px;margin:0 auto;padding:24px 20px}
+.tab{display:none}.tab.on{display:block}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:12px}
+.hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.5}
+.hint b{color:#1A1A2E}
+
+/* IMPORT */
+.import-box{background:#F5F3FF;border:1px solid #C4B5FD;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.import-title{font-size:12px;font-weight:700;color:#5B21B6;margin-bottom:8px}
+.import-desc{font-size:12px;color:#555;margin-bottom:10px}
+.import-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;background:#5B21B6;color:#fff;border:none;cursor:pointer}
+.import-btn:hover{background:#4C1D95}
+.import-btn.s{background:#fff;color:#5B21B6;border:1px solid #C4B5FD;margin-left:6px}
+.import-info{font-size:11px;color:#5B21B6;margin-top:6px;font-style:italic;display:none}
+.import-info.show{display:block}
+
+/* BACKLOG */
+.backlog-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.backlog-info{font-size:12px;color:#666}
+.backlog-info b{color:#1A1A2E}
+.backlog-list{background:#fff;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+.bl-row{display:grid;grid-template-columns:1fr 100px 110px 90px 24px;gap:10px;padding:10px 14px;align-items:center;border-bottom:1px solid #f0f0f0;transition:background .15s}
+.bl-row:last-child{border-bottom:none}
+.bl-row.stale{background:#FEF9C3}
+.bl-row.zombie{background:#FEE2E2}
+.bl-name{font-size:13px;font-weight:600;color:#1A1A2E;border:none;background:transparent;outline:none;font-family:inherit;width:100%;padding:2px 0;border-bottom:1px solid transparent}
+.bl-name:focus{border-color:#7C3AED}
+.bl-owner{font-size:11px;border:1px solid #e0e0e0;border-radius:20px;padding:3px 8px;background:#fff;outline:none;font-family:inherit}
+.bl-age{font-size:11px;color:#666;text-align:center}
+.bl-age b{font-weight:700}
+.bl-age.warn b{color:#854D0E}
+.bl-age.crit b{color:#991B1B}
+.bl-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;text-align:center;text-transform:uppercase;letter-spacing:.04em}
+.bs-new{background:#DCFCE7;color:#166534}
+.bs-mvp{background:#DBEAFE;color:#1E40AF}
+.bs-ready{background:#FEE2E2;color:#991B1B}
+.bl-del{width:20px;height:20px;border-radius:50%;border:1px solid #e0e0e0;background:#fff;color:#ccc;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;padding:0}
+.bl-del:hover{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.add-bl{padding:10px 14px;font-size:12px;color:#7C3AED;cursor:pointer;font-weight:500;background:#fff;border-top:1px solid #f0f0f0}
+.add-bl:hover{background:#F5F3FF}
+
+/* PRESENTATIONS */
+.pres-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.pres-hdr{padding:12px 14px;background:#1A1A2E;color:#fff;display:flex;align-items:center;gap:10px;cursor:pointer}
+.pres-num{width:26px;height:26px;border-radius:50%;background:#7C3AED;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.pres-name{font-size:14px;font-weight:700;flex:1}
+.pres-owner{font-size:11px;color:#B794F6}
+.pres-arr{font-size:14px;color:rgba(255,255,255,.65);transition:transform .2s}
+.pres-arr.open{transform:rotate(90deg)}
+.pres-body{display:none;padding:14px 16px}
+.pres-body.open{display:block}
+.pres-q{margin-bottom:12px}
+.pres-q:last-child{margin-bottom:0}
+.pres-q-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7C3AED;margin-bottom:4px}
+.pres-q-inp{width:100%;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;padding:7px 10px;outline:none;font-family:inherit;resize:vertical;min-height:36px}
+.pres-q-inp:focus{border-color:#7C3AED}
+
+/* DECISION MATRIX */
+.decision-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.dec-hdr{padding:12px 14px;background:#F5F3FF;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e8e8e8}
+.dec-num{width:26px;height:26px;border-radius:50%;background:#7C3AED;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.dec-name{font-size:14px;font-weight:700;color:#1A1A2E;flex:1}
+.dec-owner{font-size:11px;color:#7C3AED}
+.dec-body{padding:14px}
+.dec-scoring{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.dec-score-block{background:#FAFAFA;border-radius:8px;padding:12px}
+.dec-score-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555;margin-bottom:8px}
+.dec-stars{display:flex;gap:4px}
+.star{width:30px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;background:#fff;border:1px solid #e0e0e0;color:#ccc;font-weight:700;transition:all .15s;user-select:none}
+.star:hover{border-color:#7C3AED}
+.star.sel{background:#7C3AED;color:#fff;border-color:#7C3AED}
+.dec-matrix{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dec-option{padding:14px;border:2px solid transparent;border-radius:8px;cursor:pointer;transition:all .15s;text-align:center}
+.dec-option:hover{border-color:#999}
+.dec-option.sel{border-color:#1A1A2E;box-shadow:0 0 0 3px rgba(26,26,46,.12)}
+.do-approve{background:#DCFCE7}.do-approve.sel{border-color:#15803d}
+.do-continue{background:#DBEAFE}.do-continue.sel{border-color:#1E40AF}
+.do-park{background:#FEF9C3}.do-park.sel{border-color:#854D0E}
+.do-kill{background:#FEE2E2}.do-kill.sel{border-color:#991B1B}
+.do-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.do-approve .do-title{color:#15803d}
+.do-continue .do-title{color:#1E40AF}
+.do-park .do-title{color:#854D0E}
+.do-kill .do-title{color:#991B1B}
+.do-sub{font-size:11px;color:#666}
+.dec-reason{width:100%;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;padding:8px 10px;outline:none;font-family:inherit;resize:vertical;min-height:40px;margin-top:6px}
+.dec-reason:focus{border-color:#7C3AED}
+.dec-reason-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#666;margin-bottom:4px}
+
+/* HANDOFF */
+.handoff-box{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.handoff-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.handoff-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff}
+.handoff-list{font-size:12px;color:#333}
+.handoff-item{padding:8px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:10px;align-items:center}
+.handoff-item:last-child{border-bottom:none}
+.handoff-name{font-weight:600;color:#1A1A2E;flex:1}
+.handoff-score{font-size:11px;color:#7C3AED;font-weight:700}
+.handoff-reason{font-size:11px;color:#666;font-style:italic}
+.handoff-empty{font-size:12px;color:#ccc;font-style:italic;padding:6px 0}
+
+.btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
+.btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
+.btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
+.btn-g{background:#dcfce7;color:#15803d;border:1px solid #86efac}.btn-g:hover{background:#bbf7d0}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.footer{background:#1A1A2E;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:12px;color:#B794F6;line-height:1.6}
+.footer b{color:#fff}
+
+@media(max-width:640px){.bl-row{grid-template-columns:1fr 80px 24px;gap:6px}.bl-row .bl-owner,.bl-row .bl-age{display:none}.dec-scoring{grid-template-columns:1fr}.dec-matrix{grid-template-columns:1fr}.hdr{padding:14px 16px}.main{padding:16px 12px}.nav{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>Incubation Meeting</h1><p>Bi-weekly &middot; Tuesday &middot; 45 min &middot; Louis, Yasin, Lucas</p></div>
+  <div class="hdr-r"><input class="dinp" type="date" id="wdate"></div>
+</div>
+<nav class="nav">
+  <button class="on" onclick="sw('backlog',this)">1. Backlog (5 min)</button>
+  <button onclick="sw('pres',this)">2. Presentations (25 min)</button>
+  <button onclick="sw('dec',this)">3. Decision (10 min)</button>
+  <button onclick="sw('hand',this)">4. Handoff (5 min)</button>
+</nav>
+
+<div class="main">
+
+<!-- TAB 1: BACKLOG -->
+<div class="tab on" id="tab-backlog">
+  <div class="sl">Quick review of ideas in incubation</div>
+  <div class="hint"><b>Rule:</b> ideas older than 60 days without movement are auto-killed or parked. If an idea has an MVP but is not in the Decision Engine, it belongs here. This tab is the single bridge between informal incubation and formal evaluation.</div>
+
+  <div class="import-box">
+    <div class="import-title">Load last meeting's backlog</div>
+    <div class="import-desc">Paste JSON from last bi-weekly, or start fresh.</div>
+    <textarea id="import-json" style="width:100%;border:1px solid #C4B5FD;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;min-height:60px;display:none" placeholder="Paste JSON here..."></textarea>
+    <div style="margin-top:8px">
+      <button class="import-btn" onclick="togImport()">Paste JSON</button>
+      <button class="import-btn s" onclick="loadJSON()">Load</button>
+      <button class="import-btn s" onclick="startFresh()">Start fresh</button>
+    </div>
+    <div class="import-info" id="import-info"></div>
+  </div>
+
+  <div class="backlog-hdr">
+    <div class="backlog-info">Ideas currently in incubation: <b id="backlog-count">0</b></div>
+  </div>
+  <div class="backlog-list" id="backlog-list"></div>
+  <div class="add-bl" onclick="addBacklog()">+ Add idea to incubation</div>
+
+  <div class="btn-row">
+    <button class="btn btn-g" onclick="buildPresentations();sw('pres',document.querySelectorAll('.nav button')[1])">Continue to Presentations &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 2: PRESENTATIONS -->
+<div class="tab" id="tab-pres">
+  <div class="sl">5 minutes per idea &mdash; fixed 5-point template</div>
+  <div class="hint"><b>Template:</b> What is it &middot; Why now &middot; What we already did &middot; What we need to advance &middot; Main risk. Each field is a one-line answer, not an essay.</div>
+  <div id="pres-list"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('backlog',document.querySelectorAll('.nav button')[0])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildDecisions();sw('dec',document.querySelectorAll('.nav button')[2])">Continue to Decision &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 3: DECISION -->
+<div class="tab" id="tab-dec">
+  <div class="sl">Score each idea and decide go/no-go</div>
+  <div class="hint"><b>Strategic Fit:</b> does this align with where we're going? <b>Feasibility Now:</b> can we actually execute this in the next 90 days? Score 1&ndash;5. Then pick one of 4 decisions.</div>
+  <div id="dec-list"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('pres',document.querySelectorAll('.nav button')[1])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildHandoff();sw('hand',document.querySelectorAll('.nav button')[3])">Continue to Handoff &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 4: HANDOFF -->
+<div class="tab" id="tab-hand">
+  <div class="sl">Closure &mdash; where does each idea go next?</div>
+  <div class="hint">Approved ideas get added to the Decision Engine before the next monthly Strategic Review. Parked and killed ideas are documented with reasons in Jira.</div>
+
+  <div id="hand-content"></div>
+
+  <div class="footer"><b>After this meeting:</b> add approved ideas to the Decision Engine (Inputs &amp; Scoring sheet) with minimum fields filled. Update Jira ticket statuses. The JSON you export is the starting point for the next bi-weekly.</div>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('dec',document.querySelectorAll('.nav button')[2])">&larr; Back</button>
+    <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-p" onclick="exportJSON()" style="background:#5B21B6">Export JSON (for next bi-weekly)</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+
+</div>
+
+<script>
+var bc=0; // backlog counter
+var backlog=[]; // {id, name, owner, days, status, presentation, scoring, decision}
+var OWNERS=['Louis','Yasin','Lucas','Emmanuel'];
+var STATUS=[
+  {v:'new',label:'New',cls:'bs-new'},
+  {v:'mvp',label:'MVP Made',cls:'bs-mvp'},
+  {v:'ready',label:'Ready for Decision',cls:'bs-ready'}
+];
+
+(function(){
+  var d=new Date();document.getElementById('wdate').valueAsDate=d;
+  renderBacklog();
+})();
+
+// ===== IMPORT =====
+function togImport(){
+  var el=document.getElementById('import-json');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function loadJSON(){
+  var raw=document.getElementById('import-json').value.trim();
+  if(!raw){alert('Paste JSON first');return;}
+  try{
+    var data=JSON.parse(raw);
+    if(!data.backlog||!Array.isArray(data.backlog))throw new Error('Invalid format');
+    // Carry forward ideas that were CONTINUE_INCUBATION or still in progress
+    backlog=[];
+    data.backlog.forEach(function(b){
+      // Skip APPROVED and KILLED from last time; carry CONTINUE and PARKED
+      if(b.decision==='approve'||b.decision==='kill')return;
+      backlog.push({
+        id:'b'+(++bc),
+        name:b.name,
+        owner:b.owner,
+        daysAtStart:(b.days||0)+14, // +14 days for bi-weekly passing
+        status:b.status||'new',
+        presentation:b.presentation||{},
+        scoring:{fit:0,feasibility:0},
+        decision:null,
+        reason:''
+      });
+    });
+    showInfo('&#10003; Loaded '+backlog.length+' idea(s) carried over from last meeting');
+    renderBacklog();
+  }catch(e){
+    alert('JSON invalid: '+e.message);
+  }
+}
+
+function startFresh(){
+  backlog=[];
+  showInfo('&#10003; Starting fresh');
+  renderBacklog();
+}
+
+function showInfo(msg){
+  var el=document.getElementById('import-info');
+  el.innerHTML=msg;
+  el.classList.add('show');
+}
+
+// ===== BACKLOG =====
+function renderBacklog(){
+  var list=document.getElementById('backlog-list');
+  document.getElementById('backlog-count').textContent=backlog.length;
+  if(backlog.length===0){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:12px">No ideas in incubation. Click + to add one.</div>';
+    return;
+  }
+  var html='';
+  backlog.forEach(function(b,i){
+    var days=b.daysAtStart||0;
+    var ageClass=days>=60?'crit':(days>=30?'warn':'');
+    var rowClass=days>=60?'zombie':(days>=30?'stale':'');
+    html+='<div class="bl-row '+rowClass+'" data-bi="'+b.id+'">';
+    html+='<input class="bl-name" value="'+(b.name||'')+'" placeholder="Idea name..." oninput="updBL(\''+b.id+'\',\'name\',this.value)">';
+    html+='<select class="bl-owner" onchange="updBL(\''+b.id+'\',\'owner\',this.value)">';
+    OWNERS.forEach(function(o){html+='<option '+(o===b.owner?'selected':'')+'>'+o+'</option>';});
+    html+='</select>';
+    html+='<div class="bl-age '+ageClass+'"><b>'+days+'d</b> in incubation</div>';
+    html+='<select class="bl-status '+(STATUS.find(function(s){return s.v===b.status;})||STATUS[0]).cls+'" onchange="updBL(\''+b.id+'\',\'status\',this.value);renderBacklog()">';
+    STATUS.forEach(function(s){html+='<option value="'+s.v+'" '+(s.v===b.status?'selected':'')+'>'+s.label+'</option>';});
+    html+='</select>';
+    html+='<button class="bl-del" onclick="delBL(\''+b.id+'\')">&#x2715;</button>';
+    html+='</div>';
+  });
+  list.innerHTML=html;
+}
+
+function addBacklog(){
+  backlog.push({
+    id:'b'+(++bc),
+    name:'',
+    owner:'Lucas',
+    daysAtStart:0,
+    status:'new',
+    presentation:{},
+    scoring:{fit:0,feasibility:0},
+    decision:null,
+    reason:''
+  });
+  renderBacklog();
+}
+
+function updBL(bid,field,val){
+  var b=backlog.find(function(x){return x.id===bid;});
+  if(b)b[field]=val;
+}
+
+function delBL(bid){
+  if(!confirm('Remove this idea from the backlog?'))return;
+  backlog=backlog.filter(function(x){return x.id!==bid;});
+  renderBacklog();
+}
+
+// ===== PRESENTATIONS =====
+var PRES_Q=[
+  {k:'what',label:'1. What is it? (one sentence)'},
+  {k:'why',label:'2. Why now? (urgency or opportunity)'},
+  {k:'done',label:'3. What have we already done?'},
+  {k:'need',label:'4. What do we need to advance?'},
+  {k:'risk',label:'5. Main risk?'}
+];
+
+function buildPresentations(){
+  var list=document.getElementById('pres-list');
+  if(backlog.length===0){
+    list.innerHTML='<div style="padding:20px;text-align:center;color:#999;font-size:12px">No ideas to present. Go back to Backlog and add some.</div>';
+    return;
+  }
+  var html='';
+  backlog.forEach(function(b,i){
+    html+='<div class="pres-card">';
+    html+='<div class="pres-hdr" onclick="togPres(\''+b.id+'\')">';
+    html+='<div class="pres-num">'+(i+1)+'</div>';
+    html+='<div class="pres-name">'+(b.name||'Unnamed idea')+'</div>';
+    html+='<div class="pres-owner">'+b.owner+'</div>';
+    html+='<span class="pres-arr" id="pres-arr-'+b.id+'">&#9656;</span>';
+    html+='</div>';
+    html+='<div class="pres-body" id="pres-body-'+b.id+'">';
+    PRES_Q.forEach(function(q){
+      var val=(b.presentation&&b.presentation[q.k])||'';
+      html+='<div class="pres-q"><div class="pres-q-label">'+q.label+'</div><textarea class="pres-q-inp" rows="1" oninput="updPres(\''+b.id+'\',\''+q.k+'\',this.value)">'+val+'</textarea></div>';
+    });
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function togPres(bid){
+  var body=document.getElementById('pres-body-'+bid);
+  var arr=document.getElementById('pres-arr-'+bid);
+  var o=body.classList.contains('open');
+  body.classList.toggle('open',!o);
+  arr.classList.toggle('open',!o);
+}
+
+function updPres(bid,key,val){
+  var b=backlog.find(function(x){return x.id===bid;});
+  if(b){if(!b.presentation)b.presentation={};b.presentation[key]=val;}
+}
+
+// ===== DECISION =====
+var DECISIONS=[
+  {v:'approve',title:'APPROVE',sub:'Goes to Decision Engine',cls:'do-approve'},
+  {v:'continue',title:'CONTINUE INCUBATION',sub:'Stays, revisit in 2 weeks',cls:'do-continue'},
+  {v:'park',title:'PARK',sub:'Not now, revisit in 90 days',cls:'do-park'},
+  {v:'kill',title:'KILL',sub:'End here, document reason',cls:'do-kill'}
+];
+
+function buildDecisions(){
+  var list=document.getElementById('dec-list');
+  if(backlog.length===0){list.innerHTML='<div style="padding:20px;text-align:center;color:#999">No ideas to decide.</div>';return;}
+  var html='';
+  backlog.forEach(function(b,i){
+    html+='<div class="decision-card">';
+    html+='<div class="dec-hdr"><div class="dec-num">'+(i+1)+'</div><div class="dec-name">'+(b.name||'Unnamed')+'</div><div class="dec-owner">'+b.owner+'</div></div>';
+    html+='<div class="dec-body">';
+    html+='<div class="dec-scoring">';
+    html+='<div class="dec-score-block"><div class="dec-score-label">Strategic Fit (1&ndash;5)</div><div class="dec-stars" id="fit-'+b.id+'">';
+    for(var j=1;j<=5;j++){
+      var sel=b.scoring&&b.scoring.fit>=j?'sel':'';
+      html+='<div class="star '+sel+'" onclick="setScore(\''+b.id+'\',\'fit\','+j+')">'+j+'</div>';
+    }
+    html+='</div></div>';
+    html+='<div class="dec-score-block"><div class="dec-score-label">Feasibility Now (1&ndash;5)</div><div class="dec-stars" id="feas-'+b.id+'">';
+    for(var j=1;j<=5;j++){
+      var sel=b.scoring&&b.scoring.feasibility>=j?'sel':'';
+      html+='<div class="star '+sel+'" onclick="setScore(\''+b.id+'\',\'feasibility\','+j+')">'+j+'</div>';
+    }
+    html+='</div></div>';
+    html+='</div>';
+    html+='<div class="dec-matrix">';
+    DECISIONS.forEach(function(d){
+      var sel=b.decision===d.v?'sel':'';
+      html+='<div class="dec-option '+d.cls+' '+sel+'" onclick="setDecision(\''+b.id+'\',\''+d.v+'\')"><div class="do-title">'+d.title+'</div><div class="do-sub">'+d.sub+'</div></div>';
+    });
+    html+='</div>';
+    html+='<div class="dec-reason-label">Reason / notes</div>';
+    html+='<textarea class="dec-reason" placeholder="Why this decision? (especially important for KILL and PARK)" oninput="setReason(\''+b.id+'\',this.value)">'+(b.reason||'')+'</textarea>';
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function setScore(bid,key,v){
+  var b=backlog.find(function(x){return x.id===bid;});
+  if(!b)return;
+  if(!b.scoring)b.scoring={fit:0,feasibility:0};
+  b.scoring[key]=v;
+  var container=document.getElementById((key==='fit'?'fit-':'feas-')+bid);
+  container.querySelectorAll('.star').forEach(function(s,i){
+    if(i<v)s.classList.add('sel');else s.classList.remove('sel');
+  });
+}
+
+function setDecision(bid,dv){
+  var b=backlog.find(function(x){return x.id===bid;});
+  if(b)b.decision=dv;
+  // Update visual
+  var card=document.querySelectorAll('.decision-card')[backlog.indexOf(b)];
+  if(card){
+    card.querySelectorAll('.dec-option').forEach(function(o){o.classList.remove('sel');});
+    var idx=DECISIONS.findIndex(function(d){return d.v===dv;});
+    if(idx>=0)card.querySelectorAll('.dec-option')[idx].classList.add('sel');
+  }
+}
+
+function setReason(bid,v){
+  var b=backlog.find(function(x){return x.id===bid;});
+  if(b)b.reason=v;
+}
+
+// ===== HANDOFF =====
+function buildHandoff(){
+  var content=document.getElementById('hand-content');
+  var groups={approve:[],continue:[],park:[],kill:[],none:[]};
+  backlog.forEach(function(b){
+    var key=b.decision||'none';
+    groups[key].push(b);
+  });
+  var html='';
+
+  html+=renderHandoffBox('To Decision Engine','#15803d','APPROVED',groups.approve,
+    'These ideas are added to the Decision Engine before the next monthly Strategic Review. Scoring happens there.');
+  html+=renderHandoffBox('Continue Incubation','#1E40AF','CONTINUE',groups.continue,
+    'These ideas stay in incubation and come back in the next bi-weekly.');
+  html+=renderHandoffBox('Parked','#854D0E','PARK',groups.park,
+    'These ideas are archived for 90 days. Ticket in Jira stays "Parked" with documented reason.');
+  html+=renderHandoffBox('Killed','#991B1B','KILL',groups.kill,
+    'These ideas end here. Reason documented. Never deleted \u2014 kept in Jira for history.');
+
+  if(groups.none.length>0){
+    html+='<div class="handoff-box" style="border-color:#FCA5A5;background:#FEF2F2">';
+    html+='<div class="handoff-title" style="color:#991B1B"><span class="handoff-tag" style="background:#991B1B">\u26a0</span>Decisions pending</div>';
+    html+='<div style="font-size:11px;color:#991B1B;margin-bottom:8px">The following ideas have no decision recorded. Go back to Decision tab.</div>';
+    groups.none.forEach(function(b){html+='<div class="handoff-item"><div class="handoff-name">'+(b.name||'Unnamed')+'</div><div class="handoff-reason">'+b.owner+'</div></div>';});
+    html+='</div>';
+  }
+
+  content.innerHTML=html;
+}
+
+function renderHandoffBox(title,color,tag,items,desc){
+  var h='<div class="handoff-box">';
+  h+='<div class="handoff-title" style="color:'+color+'"><span class="handoff-tag" style="background:'+color+'">'+tag+'</span>'+title+' ('+items.length+')</div>';
+  h+='<div style="font-size:11px;color:#666;margin-bottom:8px">'+desc+'</div>';
+  if(items.length===0){
+    h+='<div class="handoff-empty">No ideas in this category</div>';
+  } else {
+    items.forEach(function(b){
+      var scoreTxt='';
+      if(b.scoring){
+        var total=(b.scoring.fit||0)+(b.scoring.feasibility||0);
+        scoreTxt=total?'Score '+b.scoring.fit+'/'+b.scoring.feasibility:'';
+      }
+      h+='<div class="handoff-item"><div class="handoff-name">'+(b.name||'Unnamed')+'</div><div class="handoff-score">'+scoreTxt+'</div><div class="handoff-reason">'+b.owner+(b.reason?' &mdash; '+b.reason:'')+'</div></div>';
+    });
+  }
+  h+='</div>';
+  return h;
+}
+
+function exportJSON(){
+  var data={
+    meeting:document.getElementById('wdate').value||new Date().toISOString().slice(0,10),
+    exported:new Date().toISOString(),
+    backlog:backlog.map(function(b){return {
+      name:b.name,
+      owner:b.owner,
+      days:b.daysAtStart||0,
+      status:b.status,
+      presentation:b.presentation,
+      scoring:b.scoring,
+      decision:b.decision,
+      reason:b.reason
+    };})
+  };
+  var json=JSON.stringify(data,null,2);
+  var out=document.getElementById('json-out');
+  out.value=json;
+  out.style.display='block';
+  out.select();
+  try{document.execCommand('copy');alert('JSON copied. Save it for the next bi-weekly.');}
+  catch(e){alert('JSON ready below. Copy it manually.');}
+}
+
+function sw(tab,btn){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-'+tab).classList.add('on');
+  btn.classList.add('on');window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
