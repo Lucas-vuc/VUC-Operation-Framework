@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC Operating Framework — Implementation Guide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:15px;line-height:1.7}
+.hdr{background:#1A1A2E;padding:32px 48px}
+.hdr-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#B794F6;margin-bottom:8px}
+.hdr h1{color:#fff;font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.hdr p{color:#7aaccc;font-size:14px}
+.hdr-meta{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.hdr-badge{background:rgba(255,255,255,.1);color:#aaa;font-size:11px;padding:4px 12px;border-radius:20px}
+.toc-wrap{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 48px;position:sticky;top:0;z-index:10;overflow-x:auto}
+.toc{display:flex;gap:0;white-space:nowrap}
+.toc a{display:block;padding:14px 14px;font-size:12px;font-weight:600;color:#999;text-decoration:none;border-bottom:3px solid transparent;transition:all .15s}
+.toc a:hover{color:#1A1A2E}.toc a.on{color:#1A1A2E;border-bottom-color:#1A1A2E}
+.main{max-width:900px;margin:0 auto;padding:40px 24px}
+.section{margin-bottom:56px;scroll-margin-top:56px}
+.s-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#2C5F8A;margin-bottom:6px}
+.s-title{font-size:22px;font-weight:700;color:#1A1A2E;margin-bottom:6px;line-height:1.3}
+.s-sub{font-size:14px;color:#666;margin-bottom:20px;line-height:1.6}
+.divider{height:2px;background:linear-gradient(90deg,#1A1A2E 0%,transparent 100%);margin-bottom:24px;border-radius:2px}
+.why{background:#1A1A2E;border-radius:10px;padding:18px 22px;margin-bottom:20px}
+.why-title{color:#7aaccc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.why-text{color:#e0e0e0;font-size:13px;line-height:1.7}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px}
+.card-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:4px}
+.card-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:6px;line-height:1.4}
+.card-desc{font-size:12px;color:#555;line-height:1.5}
+.card.accent{border-left:4px solid #1A1A2E}
+.pipe{display:flex;align-items:stretch;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;margin-bottom:20px;flex-wrap:wrap}
+.ps{flex:1;min-width:110px;padding:12px 10px;background:#f5f5f5;border-right:1px solid #e8e8e8;text-align:center}
+.ps:last-child{border-right:none}
+.ps.a{background:#FEF3C7}.ps.b{background:#EFF6FF}.ps.c{background:#F5F3FF}.ps.d{background:#DCFCE7}
+.ps-when{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#666;margin-bottom:3px}
+.ps-name{font-size:11px;font-weight:700;color:#1A1A2E;margin-bottom:3px;line-height:1.2}
+.ps-desc{font-size:10px;color:#666;line-height:1.3}
+.vtable{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;margin-bottom:20px}
+.vtable th{background:#1A1A2E;color:#fff;padding:10px 12px;font-size:11px;text-align:left;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.vtable td{padding:10px 12px;border-bottom:1px solid #f0f0f0;font-size:13px;vertical-align:top;line-height:1.5}
+.vtable tr:last-child td{border-bottom:none}
+.vtable tr:nth-child(even) td{background:#fafafa}
+.vtag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.vp{background:#DBEAFE;color:#1E40AF}.vs{background:#DCFCE7;color:#15803d}.vf{background:#EDE9FE;color:#5B21B6}.vn{background:#F3F4F6;color:#555}
+.mc{background:#fff;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;margin-bottom:10px}
+.mc-hdr{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f0f0f0}
+.mc-day{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.mc-title{font-size:14px;font-weight:700;color:#1A1A2E;flex:1}
+.mc-time{font-size:11px;color:#999}
+.mc-body{padding:14px 16px}
+.mc-row{display:grid;grid-template-columns:130px 1fr;gap:8px;margin-bottom:10px;font-size:13px}
+.mc-row:last-child{margin-bottom:0}
+.mc-lbl{font-weight:700;color:#555;font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.mc-val{color:#333;line-height:1.5}
+.mc-val ul{padding-left:18px}
+.mc-val li{margin-bottom:3px}
+.mc-out{background:#f0f7ff;border-left:3px solid #2C5F8A;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#1A1A2E;margin-top:10px}
+.jf-list{display:grid;gap:8px;margin-bottom:20px}
+.jf{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:12px 14px;display:flex;gap:12px}
+.jf-type{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#1A1A2E;color:#fff;flex-shrink:0;height:fit-content;margin-top:2px;white-space:nowrap}
+.jf-body{flex:1}
+.jf-stages{font-size:12px;color:#2C5F8A;font-weight:600;margin-bottom:3px}
+.jf-fields{font-size:12px;color:#555;line-height:1.5}
+.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.ch{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px}
+.ch-name{font-size:12px;font-weight:700;color:#2C5F8A;font-family:monospace;margin-bottom:3px}
+.ch-desc{font-size:12px;color:#555;line-height:1.4}
+.rl-list{display:grid;gap:8px;margin-bottom:20px}
+.rl{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:12px 14px;display:flex;gap:10px}
+.rl-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.rl-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:2px}
+.rl-desc{font-size:12px;color:#555;line-height:1.5}
+.steps{display:grid;gap:10px;margin-bottom:20px}
+.step{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:40px 1fr;gap:12px}
+.step-num{width:34px;height:34px;border-radius:50%;background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.step-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:4px}
+.step-desc{font-size:12px;color:#555;line-height:1.5}
+.step-note{font-size:11px;color:#2C5F8A;margin-top:6px;font-style:italic}
+.lk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.lk{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:12px 14px;text-decoration:none;display:block;transition:all .15s}
+.lk:hover{border-color:#2C5F8A;background:#f0f7ff}
+.lk-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:2px}
+.lk-url{font-size:10px;color:#2C5F8A;font-family:monospace;margin-bottom:3px}
+.lk-desc{font-size:11px;color:#999}
+@media(max-width:640px){.card-grid,.ch-grid,.lk-grid{grid-template-columns:1fr}.hdr{padding:24px 20px}.main{padding:24px 16px}.toc-wrap{padding:0 16px}.mc-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-label">VUC Operating Framework</div>
+  <h1>Implementation Guide</h1>
+  <p>How we run meetings, manage ideas, and make decisions at VUC and VWC</p>
+  <div class="hdr-meta">
+    <span class="hdr-badge">Version 1.0 &mdash; April 2026</span>
+    <span class="hdr-badge">Louis &middot; Yasin &middot; Lucas &middot; Emmanuel</span>
+    <span class="hdr-badge">Confidential</span>
+  </div>
+</div>
+<div class="toc-wrap">
+  <nav class="toc">
+    <a href="#why" class="on">Why</a>
+    <a href="#principles">Principles</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#verticals">Verticals</a>
+    <a href="#meetings">Meetings</a>
+    <a href="#jira">Jira</a>
+    <a href="#teams">Teams</a>
+    <a href="#rules">Rules</a>
+    <a href="#start">Getting started</a>
+    <a href="#links">Links</a>
+  </nav>
+</div>
+<div class="main">
+
+<div class="section" id="why">
+  <div class="s-label">01 &mdash; Context</div>
+  <div class="s-title">Why we built this system</div>
+  <div class="s-sub">VUC operates across multiple verticals simultaneously. The problem was not a lack of ideas — it was that ideas were getting lost, projects lacked clear ownership, and founders were being pulled into operational details instead of strategic decisions.</div>
+  <div class="divider"></div>
+  <div class="why">
+    <div class="why-title">The core problem we were solving</div>
+    <div class="why-text">High idea generation, low conversion to execution. No structured tracking. Implicit project ownership. No meeting cadence that closed the loop from ideation to execution. Founders as the bottleneck on operational decisions. No separation between ideas, validated opportunities, and active execution.</div>
+  </div>
+  <div class="card-grid" style="grid-template-columns:1fr">
+    <div class="card accent">
+      <div class="card-num">The design answer</div>
+      <div class="card-title">Execution is protected from the noise of ideation.</div>
+      <div class="card-desc">Ideas have their moment (Friday) and their place (Jira). Active projects have their moment (Monday) and their owner. VWC has its own lane (Tuesday morning). Mixing any of these three destroys team focus.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="principles">
+  <div class="s-label">02 &mdash; Foundation</div>
+  <div class="s-title">Core principles</div>
+  <div class="s-sub">Every rule in this system traces back to one of these principles. When in doubt, come back here.</div>
+  <div class="divider"></div>
+  <div class="card-grid">
+    <div class="card"><div class="card-num">Principle 1</div><div class="card-title">If it is not in Jira, it does not exist.</div><div class="card-desc">Ideas discussed verbally and not captured are lost. Urgency stated verbally does not move tickets. Non-negotiable.</div></div>
+    <div class="card"><div class="card-num">Principle 2</div><div class="card-title">Every idea and project has one named owner.</div><div class="card-desc">Ownership by committee means no one is actually responsible. One owner per ticket, always.</div></div>
+    <div class="card"><div class="card-num">Principle 3</div><div class="card-title">Execution is protected from ideation.</div><div class="card-desc">Monday never discusses new ideas. Friday never makes decisions. Each meeting has a single purpose.</div></div>
+    <div class="card"><div class="card-num">Principle 4</div><div class="card-title">Urgency must be written, not stated.</div><div class="card-desc">If urgency is not written in the Jira ticket, it does not move. Urgency lives in the ticket, not in the room.</div></div>
+    <div class="card"><div class="card-num">Principle 5</div><div class="card-title">Decisions happen in designated meetings.</div><div class="card-desc">Strategic decisions belong in Pipeline Review, Incubation, or Strategic Review. Teams chat is for communication, not decisions.</div></div>
+    <div class="card"><div class="card-num">Principle 6</div><div class="card-title">VWC is a separate lane.</div><div class="card-desc">VWC has its own meeting, Jira board, four-pillar structure, and KPI reporting. Mining never enters VUC pipeline discussions.</div></div>
+  </div>
+</div>
+
+<div class="section" id="pipeline">
+  <div class="s-label">03 &mdash; Core system</div>
+  <div class="s-title">The idea-to-execution pipeline</div>
+  <div class="s-sub">Every idea follows the same path. One exception: if an MVP already exists, the idea skips Idea Pool and enters Incubation directly.</div>
+  <div class="divider"></div>
+  <div class="pipe">
+    <div class="ps a"><div class="ps-when">Friday</div><div class="ps-name">Idea Pool</div><div class="ps-desc">Captured with owner + urgency. Not evaluated yet.</div></div>
+    <div class="ps"><div class="ps-when">Tuesday PM</div><div class="ps-name">Under Review</div><div class="ps-desc">4 requirements checked. Owner confirmed. Urgency written.</div></div>
+    <div class="ps b"><div class="ps-when">Bi-weekly</div><div class="ps-name">Incubation</div><div class="ps-desc">5-min case. Scored on Fit &times; Feasibility.</div></div>
+    <div class="ps c"><div class="ps-when">Monthly</div><div class="ps-name">Decision Engine</div><div class="ps-desc">Formally scored. Enters Priority Allocation.</div></div>
+    <div class="ps d"><div class="ps-when">Monday</div><div class="ps-name">Active Execution</div><div class="ps-desc">In the Top 5. Weekly commitments and Eisenhower.</div></div>
+  </div>
+  <div class="why">
+    <div class="why-title">Why this many stages?</div>
+    <div class="why-text">Each stage has a specific job. The filter gets progressively tighter — by the time we dedicate team capacity to something, it has already survived four rounds of evaluation. Idea Pool captures without judging. Under Review checks minimum viability. Incubation validates strategic fit before investing scoring time. The Decision Engine applies rigorous weighted scoring. Active Execution is protected — only scored and approved ideas reach Monday.</div>
+  </div>
+  <div class="rl-list">
+    <div class="rl"><span class="rl-icon">📌</span><div><div class="rl-title">MVP fast-track</div><div class="rl-desc">If a project already has a working MVP, it skips Idea Pool and enters Incubation directly. It still needs a Jira ticket and a named owner on day one.</div></div></div>
+    <div class="rl"><span class="rl-icon">🚫</span><div><div class="rl-title">Killed and Parked ideas are never deleted</div><div class="rl-desc">Killed ideas stay in Jira with a documented reason. Parked ideas are reviewed every 90 days in Strategic Review. A killed idea from 6 months ago may be valid today.</div></div></div>
+    <div class="rl"><span class="rl-icon">⏱</span><div><div class="rl-title">60-day rule for Incubation</div><div class="rl-desc">An idea in Incubation for 60+ days without movement is flagged for kill or park in the next Incubation Meeting. Stagnation is a decision.</div></div></div>
+  </div>
+</div>
+
+<div class="section" id="verticals">
+  <div class="s-label">04 &mdash; Classification</div>
+  <div class="s-title">How we classify projects</div>
+  <div class="s-sub">Every idea, project, and Jira ticket is classified into one of four verticals when first captured on Friday. This classification flows through the entire pipeline.</div>
+  <div class="divider"></div>
+  <table class="vtable">
+    <thead><tr><th>Vertical</th><th>What it includes</th><th>Examples</th><th>Decision Engine priority</th></tr></thead>
+    <tbody>
+      <tr><td><span class="vtag vp">Products</span></td><td>Mining operations — assets that produce physical output</td><td>VWC Ghana, Australia Gold</td><td>Profitability (18%) and Risk (16%) weighted highest</td></tr>
+      <tr><td><span class="vtag vs">Services</span></td><td>Consulting and VC matchmaking — expertise-driven revenue</td><td>SOL, SAMI, Xperience Space, Golden Camel</td><td>Expertise (18%) and Strategic Alignment (18%) highest</td></tr>
+      <tr><td><span class="vtag vf">Future</span></td><td>New ventures: Agriculture, Construction, Software, Mining Expansion</td><td>Avocados, Residential Kumasi, CronosAI, VWC Congo</td><td>Innovation (18%) and Scalability (16%) highest</td></tr>
+      <tr><td><span class="vtag vn">New</span></td><td>Ideas outside existing verticals — classified before formal scoring</td><td>Anything emerging outside current categories</td><td>Balanced weights — reclassified before scoring</td></tr>
+    </tbody>
+  </table>
+  <div class="why">
+    <div class="why-title">Why different weights per vertical?</div>
+    <div class="why-text">A gold processing operation and a software product are not evaluated on the same criteria. A mining asset lives on profitability and risk management. A consulting business lives on expertise and strategic relationships. A new venture lives on innovation and scalability. Applying the same weights to everything produces meaningless scores. The Decision Engine uses vertical-specific weights so that a high score means something appropriate for each type of business.</div>
+  </div>
+</div>
+
+<div class="section" id="meetings">
+  <div class="s-label">05 &mdash; Cadence</div>
+  <div class="s-title">The weekly meeting cadence</div>
+  <div class="s-sub">Seven meeting types, each with a single clear purpose. No meeting discusses topics that belong to another meeting.</div>
+  <div class="divider"></div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#1A1A2E">Monday</span><div class="mc-title">VUC Weekly Execution Meeting</div><div class="mc-time">45 min &middot; Louis, Yasin, Lucas</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Strategic prioritization and weekly commitment setting for the Top 5 active projects</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Review previous week's commitments (Done / Partial / Missed)</li><li>Set this week's tasks per person per project</li><li>Eisenhower Matrix — Do First / Schedule / Delegate / Don't Do</li><li>R&amp;O section if any ticket status changed this week</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">The Top 5 comes from the monthly Decision Engine — priorities are not re-debated every Monday. The Eisenhower Matrix forces each person to distinguish truly urgent+important from what only feels urgent.</div></div>
+      <div class="mc-out">Output: Each person loads their Q1 and Q2 tasks to their personal Jira board with the project prefix [SOL], [GC], etc.</div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#B45309">Tuesday AM</span><div class="mc-title">VWC Weekly Objectives Meeting</div><div class="mc-time">30 min &middot; Louis, Yasin, Lucas, Emmanuel</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Review Ghana operations KPIs and set pillar objectives across three time horizons</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Previous week: committed vs delivered per pillar</li><li>Ghana Pulse: Emmanuel reports 8 KPIs live (Kg Mined, Processed, Gold Produced, g/t, Operating Days, Avg Hours, Weekly Cost, Main Issue)</li><li>Four Pillars: this week / this month / 90-day sprint</li><li>Cross-pillar actions and blockers</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">VWC is operationally separate from VUC. The KPI panel is a forcing function — "Pending" stays visible in the PDF and JSON, making reporting gaps impossible to ignore. Three time horizons prevent the meeting from becoming only tactical.</div></div>
+      <div class="mc-out">Output: Pillar objectives in VWC Jira board with owners and deadlines. KPIs logged. Cross-pillar dependencies made explicit.</div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#2C5F8A">Tuesday PM</span><div class="mc-title">Pipeline Review</div><div class="mc-time">45 min &middot; Louis, Yasin, Lucas</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Evaluate ideas in Idea Pool and Under Review. Move, park, or kill. No presentations — fast decisions.</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Idea Pool: check 4 requirements (owner, written urgency, one-line description, strategic fit reason)</li><li>All 4 met → Under Review. Missing any → return to owner.</li><li>Under Review: decide → Incubation / Park / Kill (reason required for last two)</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">Ideas without the 4 minimum requirements are sent back before they waste group discussion time. The written reason for Park and Kill creates accountability and historical record.</div></div>
+      <div class="mc-out">Output: Jira statuses updated. Ideas moving to Incubation added to next bi-weekly backlog. Summary posted to Teams #pipeline-updates.</div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#555">Wednesday</span><div class="mc-title">No meetings — deep work day</div><div class="mc-time">Intentional buffer</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">Monday and Tuesday are meeting-heavy. Without a protected day, the team has no uninterrupted time to execute what was just committed. Wednesday is the day you actually do the work planned on Monday.</div></div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#555">Thursday</span><div class="mc-title">Async Status Update</div><div class="mc-time">No meeting &middot; each owner posts by noon</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Format</div><div class="mc-val">Three parts: Progress / Blocker / Next step. Link to Jira ticket required. Posted in Teams #active-execution.</div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">A 30-minute status meeting every Thursday consumes 26 hours of team time per year and produces nothing that a 3-line written update cannot produce better.</div></div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#B91C1C">Friday</span><div class="mc-title">Ideas Session</div><div class="mc-time">30 min &middot; Louis, Yasin, Lucas</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Protected space to capture ideas without evaluation pressure. No decisions — only capture.</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Any idea can be proposed — totally open, any vertical</li><li>Owner presents, others ask questions only (no killing ideas in this session)</li><li>Every idea gets a Jira ticket before the session closes: name, owner, urgency, vertical</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">Mixing ideation with evaluation kills creativity. When people know their idea will be immediately judged, they self-censor. The two roles — capture and evaluate — must be in different rooms on different days.</div></div>
+      <div class="mc-out">Output: All ideas in Jira. JSON exported and loaded into Tuesday's Pipeline Review. Ideas with MVP go directly to Incubation.</div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#5B21B6">Bi-weekly</span><div class="mc-title">Incubation Meeting</div><div class="mc-time">45 min &middot; Louis, Yasin, Lucas &middot; Alternating Tuesdays</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Evaluate ideas in Incubation using a structured presentation and scoring framework.</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Backlog review: what is in incubation, how long, any 60-day zombies</li><li>5-minute presentation: What / Why now / What we did / What we need / Main risk</li><li>Score: Strategic Fit (1-5) &times; Feasibility Now (1-5)</li><li>Decision: Approve / Continue / Park / Kill (reason required)</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">The Incubation Meeting is the bridge between informal ideas and formal evaluation. Before this system, ideas with working MVPs floated without ever entering the Decision Engine. The scoring matrix gives founders a shared language to evaluate fit and feasibility without extended debate.</div></div>
+      <div class="mc-out">Output: Approved ideas added to Decision Engine before next Strategic Review. Park/Kill reasons in Jira. JSON exported for next bi-weekly.</div>
+    </div>
+  </div>
+
+  <div class="mc">
+    <div class="mc-hdr"><span class="mc-day" style="background:#7C3AED">Monthly</span><div class="mc-title">Monthly Strategic Review</div><div class="mc-time">60 min &middot; Louis, Yasin, Lucas &middot; Last Monday of the month</div></div>
+    <div class="mc-body">
+      <div class="mc-row"><div class="mc-lbl">Purpose</div><div class="mc-val">Update the Decision Engine, review the full portfolio, set the new Top 5, review all R&amp;O tickets.</div></div>
+      <div class="mc-row"><div class="mc-lbl">Flow</div><div class="mc-val"><ul><li>Portfolio: executing / completed / killed this month</li><li>Quick Kill Filter: eliminate non-viable projects before scoring</li><li>Decision Engine: new scores, new projects, updated names</li><li>New Top 5: Louis proposes, the three validate</li><li>R&amp;O full review: all open tickets regardless of status change</li></ul></div></div>
+      <div class="mc-row"><div class="mc-lbl">Why this way</div><div class="mc-val">Scores updated once a month only — not ad hoc. This prevents individual founders from changing priorities between meetings without group validation. Louis proposes the Top 5 because he holds the strategic vision. The other two validate because execution requires buy-in from everyone delivering it.</div></div>
+      <div class="mc-out">Output: New Top 5 loaded into Monday's Priority Stack. R&amp;O statuses updated in Jira. Summary to Teams #decisions.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="jira">
+  <div class="s-label">06 &mdash; Tools</div>
+  <div class="s-title">Jira setup and ticket types</div>
+  <div class="s-sub">Jira is the source of truth. Two boards: VUC (shared) and VWC (shared, pillar structure). Each founder also keeps a personal board for individual task management.</div>
+  <div class="divider"></div>
+  <div class="jf-list">
+    <div class="jf"><div class="jf-type">IDEA</div><div class="jf-body"><div class="jf-stages">Idea Pool → Under Review → Incubation</div><div class="jf-fields">Required: Name, Owner, Vertical (Products / Services / Future / New), Urgency written in ticket, MVP Y/N. An idea without all five fields cannot pass Under Review.</div></div></div>
+    <div class="jf"><div class="jf-type">PROJECT</div><div class="jf-body"><div class="jf-stages">Approved → Active Execution → Completed / Parked / Killed</div><div class="jf-fields">Required: Vertical tag, subtasks with owners and deadlines before activation. Prefix convention: [SOL], [GC], [VWC], [XS] so each founder can filter their personal board by project.</div></div></div>
+    <div class="jf"><div class="jf-type">R&amp;O</div><div class="jf-body"><div class="jf-stages">Open → Monitoring → Escalated → Actioned → Closed</div><div class="jf-fields">Required: Type (Risk/Opportunity), Probability, Impact, Owner, Mitigation plan. Only enters weekly agenda if status changed. Full review monthly.</div></div></div>
+    <div class="jf"><div class="jf-type">VWC OBJ</div><div class="jf-body"><div class="jf-stages">Open → In Progress → Closed</div><div class="jf-fields">Required: Pillar (P1/P2/P3/P4), Owner, Deadline. Lives in the shared VWC board, not in personal boards.</div></div></div>
+    <div class="jf"><div class="jf-type">BLOCKER</div><div class="jf-body"><div class="jf-stages">Open → Resolved</div><div class="jf-fields">Linked to parent ticket. Founder tagged. Resolved within 48 hours. Urgent blockers go to Teams #blockers immediately.</div></div></div>
+  </div>
+</div>
+
+<div class="section" id="teams">
+  <div class="s-label">07 &mdash; Communication</div>
+  <div class="s-title">Microsoft Teams channels</div>
+  <div class="s-sub">Teams communicates — Jira manages. Decisions are never made in Teams chat; they are communicated after being made in a designated meeting.</div>
+  <div class="divider"></div>
+  <div class="ch-grid">
+    <div class="ch"><div class="ch-name">#ideas-vuc</div><div class="ch-desc">Links to new Jira idea tickets posted every Friday after the Ideas Session.</div></div>
+    <div class="ch"><div class="ch-name">#active-execution</div><div class="ch-desc">Thursday async: Progress / Blocker / Next step. Posted by noon with Jira link.</div></div>
+    <div class="ch"><div class="ch-name">#pipeline-updates</div><div class="ch-desc">Posted after Tuesday Pipeline Review: what moved, what was killed, and why.</div></div>
+    <div class="ch"><div class="ch-name">#vwc-updates</div><div class="ch-desc">VWC pillar objectives posted after Tuesday morning meeting. Emmanuel reads this from Ghana.</div></div>
+    <div class="ch"><div class="ch-name">#decisions</div><div class="ch-desc">All strategic decisions: Incubation outputs, Strategic Review outputs, new Top 5.</div></div>
+    <div class="ch"><div class="ch-name">#blockers</div><div class="ch-desc">Critical blockers that cannot wait until Monday. Founders respond within 24 hours.</div></div>
+  </div>
+</div>
+
+<div class="section" id="rules">
+  <div class="s-label">08 &mdash; Operating rules</div>
+  <div class="s-title">The rules that keep the system working</div>
+  <div class="s-sub">These are not preferences. Each one exists because its absence caused a real problem before this system was built.</div>
+  <div class="divider"></div>
+  <div class="rl-list">
+    <div class="rl"><span class="rl-icon">📋</span><div><div class="rl-title">No agenda = no meeting</div><div class="rl-desc">Every meeting requires an agenda posted in Teams 24 hours before. No agenda means cancelled or rescheduled.</div></div></div>
+    <div class="rl"><span class="rl-icon">🛡️</span><div><div class="rl-title">Monday is for active execution only</div><div class="rl-desc">Zero new ideas. Zero VWC topics. Zero pipeline discussion. This separation is what makes execution possible.</div></div></div>
+    <div class="rl"><span class="rl-icon">🌍</span><div><div class="rl-title">VWC has its own lane</div><div class="rl-desc">VWC objectives discussed Tuesday morning only. Mining operations never enter VUC pipeline discussions.</div></div></div>
+    <div class="rl"><span class="rl-icon">🔇</span><div><div class="rl-title">R&amp;O: no status change = no discussion</div><div class="rl-desc">R&amp;O only enters the Monday agenda if a Jira ticket status changed that week. If nothing changed, the section is skipped entirely.</div></div></div>
+    <div class="rl"><span class="rl-icon">📊</span><div><div class="rl-title">Decision Engine updated monthly only</div><div class="rl-desc">Scores are set in Strategic Review — not ad hoc. This prevents individual founders from changing priorities without group validation.</div></div></div>
+    <div class="rl"><span class="rl-icon">⚡</span><div><div class="rl-title">Founder approvals get Jira tickets</div><div class="rl-desc">If a task requires founder approval, it gets a Jira ticket with a deadline. Not chased over Teams chat.</div></div></div>
+    <div class="rl"><span class="rl-icon">✍️</span><div><div class="rl-title">Urgency must be written</div><div class="rl-desc">Urgency stated verbally does not move a ticket. It must be written in Jira. Unwritten urgency is not urgency.</div></div></div>
+  </div>
+</div>
+
+<div class="section" id="start">
+  <div class="s-label">09 &mdash; Implementation</div>
+  <div class="s-title">Getting started — first two weeks</div>
+  <div class="s-sub">Run a catch-up session before the first official Monday to bring the project registry to its real current state.</div>
+  <div class="divider"></div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div><div class="step-title">Catch-up session (before first Monday)</div><div class="step-desc">90-minute session with Louis, Yasin, and Lucas. Map every current project to its real pipeline stage. Add them to Jira with vertical tags and named owners. This is the baseline — without it, the Monday tool has nothing to pull from.</div><div class="step-note">Use the Monthly Strategic Review tool to score existing projects and generate the first Top 5.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div><div class="step-title">Set up Microsoft Teams channels</div><div class="step-desc">Create the 6 channels: #ideas-vuc, #active-execution, #pipeline-updates, #vwc-updates, #decisions, #blockers. Pin the GitHub links to each relevant channel.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div><div class="step-title">Set up the VWC Jira board</div><div class="step-desc">Create a shared VWC board with four swimlanes (P1/P2/P3/P4). Add Emmanuel as a board member. Each pillar owner manages their own lane. VUC founders keep their personal boards unchanged.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div><div class="step-title">First Monday — open the Priority Stack</div><div class="step-desc">Open VUC_Weekly_Priority_Stack.html. Click "Start fresh" in Tab 0 (first week only). Load the Top 5 from the catch-up session. Each person writes their commitments. Run the Eisenhower Matrix. Export JSON and PDF.</div></div></div>
+    <div class="step"><div class="step-num">5</div><div><div class="step-title">First Friday — open the Ideas Session</div><div class="step-desc">Open VUC_Ideas_Session.html. Any idea proposed gets captured with name, owner, urgency, and vertical before the session closes. Export JSON for Tuesday's Pipeline Review.</div><div class="step-note">Remind the team: no idea is killed in this session. Judgment happens on Tuesday.</div></div></div>
+    <div class="step"><div class="step-num">6</div><div><div class="step-title">Second Monday — close the loop</div><div class="step-desc">Open Priority Stack. In Tab 0, paste last week's JSON. Review what each person committed vs delivered: Done / Partial / Missed. Partial and Missed carry forward automatically. This is where the system proves its value — nothing gets forgotten.</div></div></div>
+  </div>
+</div>
+
+<div class="section" id="links">
+  <div class="s-label">10 &mdash; Resources</div>
+  <div class="s-title">All tools and links</div>
+  <div class="s-sub">All tools are hosted on GitHub Pages. No login required — open in any browser, share by link.</div>
+  <div class="divider"></div>
+  <div class="lk-grid">
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Weekly_Priority_Stack.html" target="_blank"><div class="lk-title">Monday — VUC Weekly Priority Stack</div><div class="lk-url">VUC_Weekly_Priority_Stack.html</div><div class="lk-desc">Top 5 projects, task entry, Eisenhower Matrix, previous week review</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VWC_Weekly_Meeting.html" target="_blank"><div class="lk-title">Tuesday AM — VWC Weekly Meeting</div><div class="lk-url">VWC_Weekly_Meeting.html</div><div class="lk-desc">Ghana Pulse, Four Pillars, cross-pillar actions</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Pipeline_Review.html" target="_blank"><div class="lk-title">Tuesday PM — Pipeline Review</div><div class="lk-url">VUC_Pipeline_Review.html</div><div class="lk-desc">Idea Pool and Under Review evaluation</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Incubation_Meeting.html" target="_blank"><div class="lk-title">Bi-weekly — Incubation Meeting</div><div class="lk-url">VUC_Incubation_Meeting.html</div><div class="lk-desc">Backlog, presentations, scoring, decisions</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Ideas_Session.html" target="_blank"><div class="lk-title">Friday — Ideas Session</div><div class="lk-url">VUC_Ideas_Session.html</div><div class="lk-desc">Open capture, pipeline readiness, JSON export</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Monthly_Strategic_Review.html" target="_blank"><div class="lk-title">Monthly — Strategic Review</div><div class="lk-url">VUC_Monthly_Strategic_Review.html</div><div class="lk-desc">Quick Kill Filter, Decision Engine, Top 5, R&amp;O full review</div></a>
+    <a class="lk" href="https://lucas-vuc.github.io/weekly-sistem-meetings/VUC_Meeting_System.html" target="_blank"><div class="lk-title">System Overview</div><div class="lk-url">VUC_Meeting_System.html</div><div class="lk-desc">Full reference: calendar, pipeline, Jira, Teams, operating rules</div></a>
+  </div>
+  <div class="why">
+    <div class="why-title">How to update the tools</div>
+    <div class="why-text">Changes made during a meeting (writing tasks, dragging to Eisenhower quadrants) are session-only — they live in your browser while the tab is open. To preserve a meeting's output, use "Print / PDF" and "Export JSON" at the end of each session. The JSON is pasted into the following week's tool to carry forward commitments. Structural changes to the tools (updating the Top 5, renaming projects) require editing the HTML file and uploading the new version to GitHub. This happens once a month after Strategic Review.</div>
+  </div>
+</div>
+
+</div>
+<script>
+var sections=document.querySelectorAll('.section');
+var navLinks=document.querySelectorAll('.toc a');
+window.addEventListener('scroll',function(){
+  var cur='';
+  sections.forEach(function(s){if(window.scrollY>=s.offsetTop-80)cur=s.id;});
+  navLinks.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+cur);});
+},{passive:true});
+navLinks.forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    var t=document.querySelector(this.getAttribute('href'));
+    if(t)window.scrollTo({top:t.offsetTop-60,behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>

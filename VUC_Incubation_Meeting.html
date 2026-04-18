@@ -295,6 +295,10 @@ function renderBacklog(){
     html+='<select class="bl-owner" onchange="updBL(\''+b.id+'\',\'owner\',this.value)">';
     OWNERS.forEach(function(o){html+='<option '+(o===b.owner?'selected':'')+'>'+o+'</option>';});
     html+='</select>';
+    var IVERTS=['Products — Mining','Services — Consulting','Services — VC Matchmaking','Future — Agriculture','Future — Construction','Future — Software','Future — Mining Expansion','New — Outside categories'];
+    html+='<select style="font-size:10px;border:1px solid #e0e0e0;border-radius:20px;padding:2px 5px;outline:none;background:#fff;font-family:inherit" onchange="updBL(\''+b.id+'\',\'vertical\',this.value)">';
+    IVERTS.forEach(function(v){html+='<option '+(v===(b.vertical||'')?'selected':'')+'>'+v+'</option>';});
+    html+='</select>';
     html+='<div class="bl-age '+ageClass+'"><b>'+days+'d</b> in incubation</div>';
     html+='<select class="bl-status '+(STATUS.find(function(s){return s.v===b.status;})||STATUS[0]).cls+'" onchange="updBL(\''+b.id+'\',\'status\',this.value);renderBacklog()">';
     STATUS.forEach(function(s){html+='<option value="'+s.v+'" '+(s.v===b.status?'selected':'')+'>'+s.label+'</option>';});

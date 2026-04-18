@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Pipeline Review</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
+.hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hdr h1{color:#fff;font-size:18px;font-weight:700}
+.hdr p{color:#93C5FD;font-size:12px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
+.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.nav button{background:none;border:none;border-bottom:3px solid transparent;padding:14px 16px;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav button:hover{color:#1A1A2E}
+.nav button.on{color:#1A1A2E;border-bottom-color:#2C5F8A}
+.main{max-width:980px;margin:0 auto;padding:24px 20px}
+.tab{display:none}.tab.on{display:block}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:12px}
+.hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.5}
+.hint b{color:#1A1A2E}
+
+/* IMPORT */
+.import-box{background:#EFF6FF;border:1px solid #93C5FD;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.import-title{font-size:12px;font-weight:700;color:#1E40AF;margin-bottom:6px}
+.import-desc{font-size:12px;color:#555;margin-bottom:10px}
+.import-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;background:#1E40AF;color:#fff;border:none;cursor:pointer}
+.import-btn:hover{background:#1e3a8a}
+.import-btn.s{background:#fff;color:#1E40AF;border:1px solid #93C5FD;margin-left:6px}
+.import-info{font-size:11px;color:#1E40AF;margin-top:6px;font-style:italic;display:none}
+.import-info.show{display:block}
+
+/* PIPELINE STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;text-align:center}
+.stat-n{font-size:24px;font-weight:700;color:#1A1A2E}
+.stat-l{font-size:11px;color:#999;margin-top:2px}
+.stat.warn .stat-n{color:#854D0E}
+.stat.good .stat-n{color:#15803d}
+
+/* IDEA CARDS */
+.stage-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:8px 0;margin-top:8px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.stage-line{flex:1;height:1px;background:#e0e0e0}
+.idea-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:8px;overflow:hidden;transition:border-color .2s}
+.idea-card.decided-incubation{border-color:#22C55E}
+.idea-card.decided-under-review{border-color:#93C5FD}
+.idea-card.decided-park{border-color:#FCD34D}
+.idea-card.decided-kill{border-color:#FCA5A5}
+.idea-card.decided-return{border-color:#FDA4AF}
+.ic-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+.ic-num{width:24px;height:24px;border-radius:50%;background:#e8e8e8;color:#555;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ic-name-inp{border:none;font-size:14px;font-weight:700;color:#1A1A2E;background:transparent;outline:none;flex:1;font-family:inherit;min-width:0}
+.ic-stage-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.st-pool{background:#FEF3C7;color:#92400E}
+.st-review{background:#DBEAFE;color:#1E40AF}
+.ic-owner{font-size:11px;color:#999;flex-shrink:0}
+.ic-days{font-size:10px;color:#ccc;flex-shrink:0}
+.ic-arr{font-size:13px;color:#ccc;transition:transform .2s;flex-shrink:0}
+.ic-arr.open{transform:rotate(90deg)}
+.ic-body{display:none;border-top:1px solid #f0f0f0}
+.ic-body.open{display:block}
+
+/* QUICK CHECK (for Idea Pool) */
+.quick-check{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;background:#FAFAFA;border-bottom:1px solid #f0f0f0}
+.qc-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#555}
+.qc-box{width:18px;height:18px;border:2px solid #e0e0e0;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:10px;color:transparent}
+.qc-box.checked{background:#1A1A2E;border-color:#1A1A2E;color:#fff}
+.qc-label{flex:1}
+
+/* DISCUSSION NOTES */
+.disc-area{padding:12px 14px;border-bottom:1px solid #f0f0f0}
+.disc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666;margin-bottom:6px}
+.disc-inp{width:100%;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;padding:7px 10px;outline:none;font-family:inherit;resize:vertical;min-height:40px}
+.disc-inp:focus{border-color:#2C5F8A}
+
+/* DECISION BUTTONS */
+.dec-row{padding:12px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666;margin-right:4px;flex-shrink:0}
+.dec-btn{font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;border:2px solid transparent;cursor:pointer;transition:all .15s;font-family:inherit;background:#fff}
+.db-incubation{border-color:#22C55E;color:#15803d}.db-incubation:hover,.db-incubation.sel{background:#22C55E;color:#fff}
+.db-under-review{border-color:#3B82F6;color:#1E40AF}.db-under-review:hover,.db-under-review.sel{background:#3B82F6;color:#fff}
+.db-park{border-color:#F59E0B;color:#854D0E}.db-park:hover,.db-park.sel{background:#F59E0B;color:#fff}
+.db-kill{border-color:#EF4444;color:#991B1B}.db-kill:hover,.db-kill.sel{background:#EF4444;color:#fff}
+.db-return{border-color:#F43F5E;color:#9F1239}.db-return:hover,.db-return.sel{background:#F43F5E;color:#fff}
+.dec-reason{width:100%;border:none;border-bottom:1px dashed #e0e0e0;font-size:12px;color:#555;background:transparent;outline:none;font-family:inherit;padding:4px 0;margin-top:6px;display:none}
+.dec-reason.show{display:block}
+.dec-reason::placeholder{color:#bbb}
+.dec-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:auto;flex-shrink:0}
+
+/* SUMMARY */
+.sum-group{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.sum-group-title{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sum-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff}
+.sum-item{padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;display:flex;gap:10px}
+.sum-item:last-child{border-bottom:none}
+.sum-name{font-weight:600;color:#1A1A2E;flex:1}
+.sum-owner{color:#999;flex-shrink:0;font-size:11px}
+.sum-note{font-size:11px;color:#666;font-style:italic}
+.sum-empty{font-size:11px;color:#ccc;font-style:italic}
+.undecided-warn{background:#FEF9C3;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:12px;color:#78350F;margin-bottom:10px}
+
+.btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
+.btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
+.btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
+.btn-g{background:#dcfce7;color:#15803d;border:1px solid #86efac}.btn-g:hover{background:#bbf7d0}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.footer{background:#1A1A2E;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:12px;color:#93C5FD;line-height:1.6}
+.footer b{color:#fff}
+
+.add-idea{background:#fff;border:1px dashed #d1d5db;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.add-idea:hover{border-color:#2C5F8A;background:#f0f7ff}
+.add-idea-inp{border:none;font-size:14px;font-weight:600;color:#1A1A2E;background:transparent;outline:none;flex:1;font-family:inherit}
+.add-idea-inp::placeholder{color:#bbb;font-weight:400}
+
+@media(max-width:640px){.stats-row{grid-template-columns:1fr 1fr}.quick-check{grid-template-columns:1fr}.hdr{padding:14px 16px}.main{padding:16px 12px}.nav{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>Pipeline Review</h1><p>Tuesday PM &middot; 45 min &middot; Louis, Yasin, Lucas</p></div>
+  <div class="hdr-r"><input class="dinp" type="date" id="wdate"></div>
+</div>
+<nav class="nav">
+  <button class="on" onclick="sw('review',this)">1. Pipeline Review</button>
+  <button onclick="sw('sum',this)">2. Summary &amp; Decisions</button>
+</nav>
+
+<div class="main">
+
+<!-- TAB 1: REVIEW -->
+<div class="tab on" id="tab-review">
+  <div class="sl">Ideas in Idea Pool and Under Review &mdash; decide what moves</div>
+  <div class="hint">
+    <b>Idea Pool:</b> check if the 4 minimum requirements are met. If not, return to owner. If yes, move to Under Review.<br>
+    <b>Under Review:</b> evaluate strategic fit and feasibility. Move to Incubation, Park, or Kill. Time per idea depends on complexity &mdash; there is no fixed timer.
+  </div>
+
+  <div class="import-box">
+    <div class="import-title">Load last week's pipeline</div>
+    <div class="import-desc">Paste last week's JSON to see ideas that were Under Review and didn't move yet. Or start fresh.</div>
+    <textarea id="import-json" style="width:100%;border:1px solid #93C5FD;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;min-height:50px;display:none" placeholder="Paste JSON here..."></textarea>
+    <div style="margin-top:8px">
+      <button class="import-btn" onclick="togImport()">Paste JSON</button>
+      <button class="import-btn s" onclick="loadJSON()">Load</button>
+      <button class="import-btn s" onclick="startFresh()">Start fresh</button>
+    </div>
+    <div class="import-info" id="import-info"></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" id="stat-pool">0</div><div class="stat-l">Idea Pool</div></div>
+    <div class="stat"><div class="stat-n" id="stat-review">0</div><div class="stat-l">Under Review</div></div>
+    <div class="stat warn"><div class="stat-n" id="stat-undecided">0</div><div class="stat-l">No decision yet</div></div>
+    <div class="stat good"><div class="stat-n" id="stat-decided">0</div><div class="stat-l">Decided today</div></div>
+  </div>
+
+  <!-- IDEA POOL -->
+  <div class="stage-label">
+    <span style="font-weight:700;color:#92400E">IDEA POOL</span>
+    <div class="stage-line"></div>
+    <span style="font-size:11px;color:#999">Check 4 requirements &rarr; pass to Under Review or return to owner</span>
+  </div>
+  <div id="pool-list"></div>
+  <div class="add-idea" onclick="document.getElementById('new-pool-inp').focus()">
+    <span style="font-size:18px;color:#bbb">+</span>
+    <input class="add-idea-inp" id="new-pool-inp" placeholder="Add idea from this week's Ideas Session..." onkeydown="handleNewIdea(event,'pool')">
+  </div>
+
+  <!-- UNDER REVIEW -->
+  <div class="stage-label">
+    <span style="font-weight:700;color:#1E40AF">UNDER REVIEW</span>
+    <div class="stage-line"></div>
+    <span style="font-size:11px;color:#999">Evaluate &rarr; Incubation / Park / Kill</span>
+  </div>
+  <div id="review-list"></div>
+  <div class="add-idea" onclick="document.getElementById('new-review-inp').focus()">
+    <span style="font-size:18px;color:#bbb">+</span>
+    <input class="add-idea-inp" id="new-review-inp" placeholder="Add idea already in Under Review..." onkeydown="handleNewIdea(event,'under-review')">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-g" onclick="buildSummary();sw('sum',document.querySelectorAll('.nav button')[1])">View decisions &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 2: SUMMARY -->
+<div class="tab" id="tab-sum">
+  <div class="sl">Decisions from this Pipeline Review</div>
+  <div id="sum-content"></div>
+  <div class="footer">
+    <b>After this meeting:</b> update each Jira ticket status to match the decision. Ideas moving to Incubation get added to the next bi-weekly Incubation Meeting backlog. Park and Kill get documented reasons in Jira. Post summary to Teams #pipeline-updates.
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('review',document.querySelectorAll('.nav button')[0])">&larr; Back</button>
+    <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-p" onclick="exportJSON()" style="background:#2C5F8A">Export JSON (for next week)</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+
+</div>
+
+<script>
+var ic=0;
+var ideas=[];
+var OWNERS=['Louis','Yasin','Lucas'];
+
+// DECISIONS per stage
+var POOL_DECISIONS=[
+  {v:'under-review',label:'Move to Under Review',cls:'db-under-review'},
+  {v:'return',label:'Return to owner',cls:'db-return'},
+  {v:'kill',label:'Kill',cls:'db-kill'},
+];
+var REVIEW_DECISIONS=[
+  {v:'incubation',label:'Move to Incubation',cls:'db-incubation'},
+  {v:'park',label:'Park (90 days)',cls:'db-park'},
+  {v:'kill',label:'Kill',cls:'db-kill'},
+];
+
+// 4 requirements for Idea Pool
+var REQUIREMENTS=[
+  'Has a named owner',
+  'Has written urgency in Jira (not verbal)',
+  'Has a clear one-line description',
+  'Has a strategic fit reason'
+];
+
+(function(){
+  var d=new Date();
+  document.getElementById('wdate').valueAsDate=d;
+  renderAll();
+})();
+
+function togImport(){
+  var el=document.getElementById('import-json');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function loadJSON(){
+  var raw=document.getElementById('import-json').value.trim();
+  if(!raw){alert('Paste JSON first');return;}
+  try{
+    var data=JSON.parse(raw);
+    if(!data.ideas)throw new Error('Invalid format');
+    ideas=[];
+    // Carry forward only ideas that are still in pipeline (not killed/parked)
+    (data.ideas||[]).forEach(function(idea){
+      if(idea.decision==='kill'||idea.decision==='park'||idea.decision==='incubation')return;
+      ideas.push({
+        id:'i'+(++ic),
+        name:idea.name,
+        owner:idea.owner||'Louis',
+        stage:idea.decision==='under-review'?'under-review':(idea.decision==='return'?'pool':idea.stage||'pool'),
+        days:(idea.days||0)+7,
+        checks:idea.checks||[false,false,false,false],
+        notes:idea.notes||'',
+        decision:null,
+        reason:''
+      });
+    });
+    showInfo('&#10003; Loaded '+ideas.length+' idea(s) carried from last week');
+    renderAll();
+  }catch(e){alert('JSON invalid: '+e.message);}
+}
+
+function startFresh(){
+  ideas=[];
+  showInfo('&#10003; Starting fresh');
+  renderAll();
+}
+
+function showInfo(msg){
+  var el=document.getElementById('import-info');
+  el.innerHTML=msg;
+  el.classList.add('show');
+}
+
+function renderAll(){
+  renderStage('pool');
+  renderStage('under-review');
+  updateStats();
+}
+
+function renderStage(stage){
+  var listId=stage==='pool'?'pool-list':'review-list';
+  var list=document.getElementById(listId);
+  var items=ideas.filter(function(i){return i.stage===stage;});
+  if(items.length===0){
+    list.innerHTML='<div style="text-align:center;color:#ccc;font-size:12px;padding:16px">No ideas in this stage</div>';
+    return;
+  }
+  var html='';
+  items.forEach(function(idea,idx){
+    var decClass=idea.decision?'decided-'+idea.decision:'';
+    var daysWarn=idea.days>=21?'style="color:#991B1B;font-weight:700"':'style="color:#ccc"';
+    html+='<div class="idea-card '+decClass+'" id="card-'+idea.id+'">';
+    // Header
+    html+='<div class="ic-hdr" onclick="togCard(\''+idea.id+'\')">';
+    html+='<div class="ic-num">'+(idx+1)+'</div>';
+    html+='<input class="ic-name-inp" value="'+(idea.name||'')+'" onclick="event.stopPropagation()" oninput="updIdea(\''+idea.id+'\',\'name\',this.value)" placeholder="Idea name...">';
+    html+='<span class="ic-stage-tag '+(stage==='pool'?'st-pool':'st-review')+'">'+(stage==='pool'?'IDEA POOL':'UNDER REVIEW')+'</span>';
+    html+='<select style="font-size:11px;border:none;background:transparent;color:#999;outline:none;cursor:pointer" onclick="event.stopPropagation()" onchange="updIdea(\''+idea.id+'\',\'owner\',this.value)">';
+    OWNERS.forEach(function(o){html+='<option '+(o===idea.owner?'selected':'')+'>'+o+'</option>';});
+    html+='</select>';
+    var VERTS=['Products — Mining','Services — Consulting','Services — VC Matchmaking','Future — Agriculture','Future — Construction','Future — Software','Future — Mining Expansion','New — Outside categories'];
+    html+='<select style="font-size:10px;border:1px solid #e0e0e0;border-radius:20px;padding:2px 5px;outline:none;background:#fff;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation()" onchange="updIdea(\''+idea.id+'\',\'vertical\',this.value)">';
+    VERTS.forEach(function(v){html+='<option '+(v===(idea.vertical||'')?'selected':'')+'>'+v+'</option>';});
+    html+='</select>';
+    html+='<span '+daysWarn+' style="font-size:10px;flex-shrink:0">'+idea.days+'d</span>';
+    html+='<span class="ic-arr" id="arr-'+idea.id+'">&#9656;</span>';
+    html+='</div>';
+    // Body
+    html+='<div class="ic-body" id="body-'+idea.id+'">';
+    if(stage==='pool'){
+      // Quick check for 4 requirements
+      html+='<div class="quick-check">';
+      REQUIREMENTS.forEach(function(req,ri){
+        var chk=idea.checks&&idea.checks[ri];
+        html+='<div class="qc-item"><div class="qc-box '+(chk?'checked':'')+'" onclick="toggleCheck(\''+idea.id+'\','+ri+')">&#10003;</div><span class="qc-label">'+req+'</span></div>';
+      });
+      html+='</div>';
+    }
+    // Notes
+    html+='<div class="disc-area"><div class="disc-label">Discussion notes</div><textarea class="disc-inp" placeholder="Key points, concerns, context..." oninput="updIdea(\''+idea.id+'\',\'notes\',this.value)">'+(idea.notes||'')+'</textarea></div>';
+    // Decision
+    html+='<div class="dec-row"><span class="dec-label">Decision:</span>';
+    var decs=stage==='pool'?POOL_DECISIONS:REVIEW_DECISIONS;
+    decs.forEach(function(d){
+      var sel=idea.decision===d.v?'sel':'';
+      html+='<button class="dec-btn '+d.cls+' '+sel+'" onclick="setDec(\''+idea.id+'\',\''+d.v+'\')">'+d.label+'</button>';
+    });
+    if(idea.decision){
+      html+='<span class="dec-badge" style="background:'+(idea.decision==='incubation'||idea.decision==='under-review'?'#22C55E':idea.decision==='park'?'#F59E0B':'#EF4444')+';color:#fff">'+idea.decision.toUpperCase()+'</span>';
+    }
+    html+='</div>';
+    if(idea.decision==='park'||idea.decision==='kill'||idea.decision==='return'){
+      html+='<div style="padding:0 14px 10px"><input class="dec-reason show" placeholder="Reason (required for Park / Kill / Return)..." value="'+(idea.reason||'')+'" oninput="updIdea(\''+idea.id+'\',\'reason\',this.value)"></div>';
+    }
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function togCard(id){
+  var body=document.getElementById('body-'+id);
+  var arr=document.getElementById('arr-'+id);
+  var o=body.classList.contains('open');
+  body.classList.toggle('open',!o);
+  arr.classList.toggle('open',!o);
+}
+
+function updIdea(id,field,val){
+  var idea=ideas.find(function(x){return x.id===id;});
+  if(idea)idea[field]=val;
+}
+
+function toggleCheck(id,ri){
+  var idea=ideas.find(function(x){return x.id===id;});
+  if(!idea)return;
+  if(!idea.checks)idea.checks=[false,false,false,false];
+  idea.checks[ri]=!idea.checks[ri];
+  var boxes=document.querySelector('#card-'+id+' .quick-check').querySelectorAll('.qc-box');
+  boxes[ri].classList.toggle('checked',idea.checks[ri]);
+}
+
+function setDec(id,dv){
+  var idea=ideas.find(function(x){return x.id===id;});
+  if(!idea)return;
+  idea.decision=dv;
+  renderStage(idea.stage);
+  updateStats();
+}
+
+function updateStats(){
+  var pool=ideas.filter(function(i){return i.stage==='pool';}).length;
+  var rev=ideas.filter(function(i){return i.stage==='under-review';}).length;
+  var undecided=ideas.filter(function(i){return !i.decision;}).length;
+  var decided=ideas.filter(function(i){return !!i.decision;}).length;
+  document.getElementById('stat-pool').textContent=pool;
+  document.getElementById('stat-review').textContent=rev;
+  document.getElementById('stat-undecided').textContent=undecided;
+  document.getElementById('stat-decided').textContent=decided;
+}
+
+function handleNewIdea(e,stage){
+  if(e.key!=='Enter')return;
+  var val=e.target.value.trim();
+  if(!val)return;
+  ideas.push({
+    id:'i'+(++ic),
+    name:val,
+    owner:'Lucas',
+    vertical:'Services — Consulting',
+    stage:stage,
+    days:0,
+    checks:[false,false,false,false],
+    notes:'',
+    decision:null,
+    reason:''
+  });
+  e.target.value='';
+  renderAll();
+}
+
+// ===== SUMMARY =====
+function buildSummary(){
+  var DECS=[
+    {v:'incubation',label:'Moves to Incubation',tag:'INCUBATION',color:'#15803d'},
+    {v:'under-review',label:'Moves to Under Review',tag:'UNDER REVIEW',color:'#1E40AF'},
+    {v:'park',label:'Parked (90 days)',tag:'PARK',color:'#854D0E'},
+    {v:'kill',label:'Killed',tag:'KILL',color:'#991B1B'},
+    {v:'return',label:'Returned to owner',tag:'RETURN',color:'#9F1239'},
+  ];
+  var undecided=ideas.filter(function(i){return !i.decision;});
+  var html='';
+
+  if(undecided.length>0){
+    html+='<div class="undecided-warn"><b>&#9888; '+undecided.length+' idea(s) still without a decision.</b> Go back and decide before closing the meeting.</div>';
+  }
+
+  DECS.forEach(function(d){
+    var group=ideas.filter(function(i){return i.decision===d.v;});
+    html+='<div class="sum-group">';
+    html+='<div class="sum-group-title"><span class="sum-tag" style="background:'+d.color+'">'+d.tag+'</span>'+d.label+' ('+group.length+')</div>';
+    if(group.length===0){
+      html+='<div class="sum-empty">No ideas in this category</div>';
+    } else {
+      group.forEach(function(idea){
+        html+='<div class="sum-item"><div class="sum-name">'+(idea.name||'Unnamed')+'</div><div class="sum-owner">'+idea.owner+'</div></div>';
+        if(idea.reason){html+='<div style="font-size:11px;color:#666;font-style:italic;padding:0 0 6px 0">Reason: '+idea.reason+'</div>';}
+        if(idea.notes){html+='<div style="font-size:11px;color:#999;padding:0 0 6px 0">Notes: '+idea.notes+'</div>';}
+      });
+    }
+    html+='</div>';
+  });
+
+  document.getElementById('sum-content').innerHTML=html;
+}
+
+function exportJSON(){
+  var data={
+    week:document.getElementById('wdate').value||new Date().toISOString().slice(0,10),
+    exported:new Date().toISOString(),
+    ideas:ideas.map(function(i){return {
+      name:i.name,owner:i.owner,stage:i.stage,days:i.days,
+      checks:i.checks,notes:i.notes,decision:i.decision,reason:i.reason
+    };})
+  };
+  var json=JSON.stringify(data,null,2);
+  var out=document.getElementById('json-out');
+  out.value=json;out.style.display='block';out.select();
+  try{document.execCommand('copy');alert('JSON copied. Save it for next week\'s Pipeline Review.');}
+  catch(e){alert('JSON ready below. Copy manually.');}
+}
+
+function sw(tab,btn){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-'+tab).classList.add('on');
+  btn.classList.add('on');window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

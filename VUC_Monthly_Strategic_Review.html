@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Monthly Strategic Review</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
+.hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hdr h1{color:#fff;font-size:18px;font-weight:700}
+.hdr p{color:#D8B4FE;font-size:12px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
+.timer{background:rgba(255,255,255,.12);border-radius:6px;color:#fff;font-size:13px;font-weight:700;padding:4px 12px;font-family:monospace;min-width:60px;text-align:center}
+.timer-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer}
+.timer-btn:hover{background:rgba(255,255,255,.1)}
+.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.nav button{background:none;border:none;border-bottom:3px solid transparent;padding:12px 14px;font-size:12px;font-weight:600;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav button:hover{color:#1A1A2E}
+.nav button.on{color:#1A1A2E;border-bottom-color:#7C3AED}
+.nav-time{font-size:10px;color:#bbb;display:block;margin-top:1px;font-weight:400}
+.main{max-width:1000px;margin:0 auto;padding:24px 20px}
+.tab{display:none}.tab.on{display:block}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:12px}
+.hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.5}
+.hint b{color:#1A1A2E}
+
+/* PORTFOLIO */
+.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.pg{background:#fff;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+.pg-hdr{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#fff}
+.pg-body{padding:10px 14px;min-height:70px}
+.port-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.port-item:last-child{border-bottom:none}
+.port-inp{flex:1;border:none;font-size:12px;color:#1A1A2E;background:transparent;outline:none;font-family:inherit;font-weight:500;min-width:0}
+.port-inp::placeholder{color:#ccc;font-weight:400}
+.mini-sel{font-size:10px;border:1px solid #e0e0e0;border-radius:20px;padding:2px 5px;outline:none;background:#fff;font-family:inherit;flex-shrink:0}
+.port-del{width:15px;height:15px;border-radius:50%;border:none;background:transparent;color:#e0e0e0;font-size:11px;cursor:pointer;flex-shrink:0;padding:0;line-height:1}
+.port-del:hover{color:#EF4444}
+.add-port{font-size:11px;color:#7C3AED;cursor:pointer;padding:6px 14px;display:block;border-top:1px solid #f5f5f5}
+.add-port:hover{background:#F5F3FF}
+
+/* QUICK KILL FILTER */
+.qk-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;margin-bottom:16px}
+.qk-table th{background:#7F1D1D;color:#fff;font-size:10px;padding:8px 10px;text-align:center;font-weight:600;white-space:nowrap}
+.qk-table th:first-child{text-align:left}
+.qk-table td{font-size:12px;padding:7px 10px;border-bottom:1px solid #f0f0f0;text-align:center;vertical-align:middle}
+.qk-table tr:last-child td{border-bottom:none}
+.qk-table td:first-child{text-align:left;font-weight:600;color:#1A1A2E}
+.qk-btn{width:28px;height:28px;border-radius:6px;border:2px solid #e0e0e0;background:#fff;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;color:transparent}
+.qk-btn.y{background:#DCFCE7;border-color:#86EFAC;color:#15803d}
+.qk-btn.n{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B}
+.qk-result{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.qkr-proceed{background:#DCFCE7;color:#15803d}
+.qkr-review{background:#FEF9C3;color:#854D0E}
+.qkr-kill{background:#FEE2E2;color:#991B1B}
+.qk-add{padding:8px 14px;background:#fff8f8;border-top:1px solid #f0f0f0;cursor:pointer;font-size:12px;color:#7F1D1D;font-weight:500}
+.qk-add:hover{background:#FEF2F2}
+
+/* DECISION ENGINE */
+.de-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;margin-bottom:4px}
+.de-table th{background:#1A1A2E;color:#fff;font-size:10px;padding:8px 8px;text-align:center;font-weight:600;white-space:nowrap}
+.de-table th:first-child,.de-table th:nth-child(2),.de-table th:nth-child(3){text-align:left}
+.de-table td{font-size:12px;padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle;text-align:center}
+.de-table td:first-child{text-align:left}
+.de-table tr:last-child td{border-bottom:none}
+.de-table tr:hover td{background:#fafafa}
+.de-inp{border:none;font-size:12px;color:#1A1A2E;background:transparent;outline:none;font-family:inherit;width:100%;font-weight:600;min-width:120px}
+.de-score{width:34px;border:none;font-size:12px;color:#1A1A2E;background:transparent;outline:none;font-family:inherit;text-align:center;padding:2px}
+.de-score:focus{background:#EFF6FF;border-radius:4px}
+.de-sel{font-size:10px;border:1px solid #e0e0e0;border-radius:20px;padding:2px 5px;outline:none;background:#fff;font-family:inherit;cursor:pointer}
+.vp{background:#DBEAFE;color:#1E40AF;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.vs{background:#DCFCE7;color:#15803d;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.vf{background:#EDE9FE;color:#5B21B6;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.vn{background:#F3F4F6;color:#555;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.de-final{font-size:12px;font-weight:700}
+.de-decision{font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;white-space:nowrap}
+.dd-p{background:#DCFCE7;color:#15803d}
+.dd-k{background:#FEF9C3;color:#854D0E}
+.dd-d{background:#FEE2E2;color:#991B1B}
+.de-add-row{padding:8px 14px;background:#f9fafb;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 10px 10px;cursor:pointer;font-size:12px;color:#7C3AED;font-weight:500;margin-bottom:16px}
+.de-add-row:hover{background:#F5F3FF}
+.score-legend{font-size:11px;color:#999;margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap}
+.score-legend b{color:#1A1A2E}
+
+/* TOP 5 */
+.top5-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.t5-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;transition:all .2s}
+.t5-card.confirmed{border-color:#22C55E;background:#F0FDF4}
+.t5-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.r1{background:#1A1A2E}.r2{background:#2C5F8A}.r3{background:#4a8fc0}.r4{background:#888}.r5{background:#aaa}
+.t5-name{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:2px}
+.t5-meta{font-size:11px;color:#999;display:flex;gap:8px;flex-wrap:wrap}
+.t5-score{font-size:12px;font-weight:700;color:#7C3AED}
+.t5-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.t5s-en{background:#DCFCE7;color:#15803d}
+.t5s-q{background:#DBEAFE;color:#1E40AF}
+.t5-confirm{font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;border:2px solid #22C55E;color:#15803d;background:#fff;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.t5-confirm:hover,.t5-confirm.sel{background:#22C55E;color:#fff}
+.top5-note{background:#F5F3FF;border:1px solid #C4B5FD;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#5B21B6}
+
+/* R&O */
+.ro-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;margin-bottom:4px}
+.ro-table th{background:#1A1A2E;color:#fff;font-size:10px;padding:8px 10px;text-align:left;font-weight:600}
+.ro-table td{font-size:12px;padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.ro-table tr:last-child td{border-bottom:none}
+.ro-type-sel{font-size:10px;font-weight:700;border:1px solid #e0e0e0;border-radius:4px;padding:2px 4px;outline:none;background:#fff;font-family:inherit}
+.ro-inp{border:none;font-size:12px;color:#333;background:transparent;outline:none;font-family:inherit;width:100%}
+.prob-sel{font-size:11px;border:1px solid #e0e0e0;border-radius:20px;padding:2px 5px;outline:none;background:#fff;font-family:inherit}
+.status-sel{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:none;outline:none;cursor:pointer;font-family:inherit}
+.ss-o{background:#DBEAFE;color:#1E40AF}
+.ss-m{background:#F3F4F6;color:#555}
+.ss-e{background:#FEE2E2;color:#7F1D1D}
+.ss-c{background:#DCFCE7;color:#166534}
+.ro-add{padding:8px 14px;background:#f9fafb;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 10px 10px;cursor:pointer;font-size:12px;color:#7C3AED;font-weight:500;margin-bottom:16px}
+.ro-add:hover{background:#F5F3FF}
+
+/* SUMMARY */
+.sum-block{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.sum-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px}
+.sum-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff}
+.sum-item{padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px;display:flex;gap:10px;align-items:baseline}
+.sum-item:last-child{border-bottom:none}
+.sum-name{font-weight:600;color:#1A1A2E;flex:1}
+.sum-meta{font-size:11px;color:#999;flex-shrink:0}
+.sum-empty{font-size:11px;color:#ccc;font-style:italic}
+
+.btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
+.btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
+.btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
+.btn-g{background:#dcfce7;color:#15803d;border:1px solid #86efac}.btn-g:hover{background:#bbf7d0}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.footer{background:#1A1A2E;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:12px;color:#D8B4FE;line-height:1.6}
+.footer b{color:#fff}
+@media(max-width:640px){.portfolio-grid{grid-template-columns:1fr}.hdr{padding:14px 16px}.main{padding:16px 12px}.nav{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>Monthly Strategic Review</h1><p>Last Monday of the month &middot; 60 min &middot; Louis, Yasin, Lucas</p></div>
+  <div class="hdr-r">
+    <input class="dinp" type="month" id="wmonth">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="timer" id="timer">60:00</div>
+      <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">&#9654; Start</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="on" onclick="sw('portfolio',this)">1. Portfolio<span class="nav-time">0–10 min</span></button>
+  <button onclick="sw('kill',this)">2. Quick Kill<span class="nav-time">10–20 min</span></button>
+  <button onclick="sw('engine',this)">3. Decision Engine<span class="nav-time">20–40 min</span></button>
+  <button onclick="sw('top5',this)">4. New Top 5<span class="nav-time">40–50 min</span></button>
+  <button onclick="sw('ro',this)">5. R&amp;O Review<span class="nav-time">50–60 min</span></button>
+  <button onclick="sw('sum',this)">6. Summary</button>
+</nav>
+
+<div class="main">
+
+<!-- TAB 1: PORTFOLIO -->
+<div class="tab on" id="tab-portfolio">
+  <div class="sl">State of the world — 10 minutes, no discussion</div>
+  <div class="hint"><b>One line per project. Three columns: what is executing, what completed this month, what was killed or parked.</b> This is not a review — just the baseline before we update scores.</div>
+  <div class="portfolio-grid">
+    <div class="pg">
+      <div class="pg-hdr" style="background:#15803d">Executing</div>
+      <div class="pg-body" id="port-exec">
+        <div class="port-item"><input class="port-inp" value="VUC Consulting SOL"><select class="mini-sel"><option>Louis</option><option>Yasin</option><option selected>Lucas</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
+        <div class="port-item"><input class="port-inp" value="VWC Ghana"><select class="mini-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option selected>Emmanuel</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
+        <div class="port-item"><input class="port-inp" value="Australia Gold"><select class="mini-sel"><option selected>Louis</option><option>Yasin</option><option>Lucas</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
+      </div>
+      <div class="add-port" onclick="addPort('port-exec')">+ Add</div>
+    </div>
+    <div class="pg">
+      <div class="pg-hdr" style="background:#1E40AF">Completed this month</div>
+      <div class="pg-body" id="port-done"></div>
+      <div class="add-port" onclick="addPort('port-done')">+ Add</div>
+    </div>
+    <div class="pg">
+      <div class="pg-hdr" style="background:#7F1D1D">Killed / Parked</div>
+      <div class="pg-body" id="port-dead"></div>
+      <div class="add-port" onclick="addPort('port-dead')">+ Add</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-g" onclick="sw('kill',document.querySelectorAll('.nav button')[1])">Continue to Quick Kill Filter &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 2: QUICK KILL FILTER -->
+<div class="tab" id="tab-kill">
+  <div class="sl">Eliminate non-viable projects before scoring &mdash; be honest</div>
+  <div class="hint"><b>Any N = project does not go to the Decision Engine.</b> Mark Y or N for each criterion. The result auto-calculates: PROCEED / REVIEW / KILL. Only PROCEED projects are scored in Tab 3.</div>
+  <div style="overflow-x:auto">
+  <table class="qk-table">
+    <thead>
+      <tr>
+        <th style="text-align:left;min-width:160px">Project</th>
+        <th>Capital<br>available?</th>
+        <th>Payback<br>≤ 48 mo?</th>
+        <th>IRR<br>≥ 15%?</th>
+        <th>No fatal<br>risk?</th>
+        <th>Team<br>capacity?</th>
+        <th>Strategic<br>fit?</th>
+        <th>Result</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="qk-body"></tbody>
+  </table>
+  </div>
+  <div class="qk-add" onclick="addQKRow()">+ Add project to filter</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('portfolio',document.querySelectorAll('.nav button')[0])">&larr; Back</button>
+    <button class="btn btn-g" onclick="syncQKtoDE();sw('engine',document.querySelectorAll('.nav button')[2])">Continue to Decision Engine &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 3: DECISION ENGINE -->
+<div class="tab" id="tab-engine">
+  <div class="sl">Score projects that passed the Quick Kill Filter</div>
+  <div class="hint"><b>Scores 1–10. Final score auto-calculates.</b> Update names if projects mutated. Add new projects from Incubation. Scores are set once a month — not ad hoc.</div>
+  <div class="score-legend">
+    <span><b>Exp</b> Expertise</span>
+    <span><b>Prof</b> Profitability</span>
+    <span><b>Scale</b> Scalability</span>
+    <span><b>Mkt</b> Market Growth</span>
+    <span><b>Innov</b> Innovation</span>
+    <span><b>Strat</b> Strategic Alignment</span>
+    <span><b>Risk</b> Risk (inverted: 10=low risk)</span>
+    <span><b>ESG</b> ESG</span>
+    <span><b>Cap</b> Exec Capacity</span>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="de-table">
+    <thead>
+      <tr>
+        <th style="min-width:150px">Project</th>
+        <th>Vertical</th>
+        <th>Owner</th>
+        <th>Exp</th><th>Prof</th><th>Scale</th><th>Mkt</th><th>Innov</th><th>Strat</th><th>Risk</th><th>ESG</th><th>Cap</th>
+        <th>Score</th>
+        <th>Decision</th>
+      </tr>
+    </thead>
+    <tbody id="de-body"></tbody>
+  </table>
+  </div>
+  <div class="de-add-row" onclick="addDERow()">+ Add project</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('kill',document.querySelectorAll('.nav button')[1])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildTop5();sw('top5',document.querySelectorAll('.nav button')[3])">Continue to Top 5 &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 4: TOP 5 -->
+<div class="tab" id="tab-top5">
+  <div class="sl">Louis proposes &mdash; the three validate</div>
+  <div class="top5-note"><b>Source:</b> Decision Engine scores from Tab 3, ranked highest to lowest. Louis reviews and confirms. The confirmed Top 5 feeds next Monday's Priority Stack — update it there after this meeting.</div>
+  <div class="top5-grid" id="top5-grid"></div>
+  <div class="hint" style="margin-top:8px"><b>Override:</b> if Louis wants to reorder based on strategic context, go back to Tab 3 and adjust the Exec Capacity score — that reflects real-world priority beyond the raw score.</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('engine',document.querySelectorAll('.nav button')[2])">&larr; Back</button>
+    <button class="btn btn-g" onclick="sw('ro',document.querySelectorAll('.nav button')[4])">Continue to R&amp;O Review &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 5: R&O REVIEW -->
+<div class="tab" id="tab-ro">
+  <div class="sl">All open R&O tickets &mdash; reviewed in full regardless of status change</div>
+  <div class="hint"><b>This is the only meeting where ALL R&O tickets are reviewed.</b> Update probability, impact and status. Close what is resolved. Escalate what is growing.</div>
+  <div style="overflow-x:auto">
+  <table class="ro-table">
+    <thead><tr><th>Type</th><th style="min-width:200px">Description</th><th>Prob.</th><th>Impact</th><th>Owner</th><th>Status</th><th style="min-width:150px">Action / Notes</th></tr></thead>
+    <tbody id="ro-body">
+      <tr><td><select class="ro-type-sel"><option>RISK</option><option>OPP</option></select></td><td><input class="ro-inp" value="Government JV — regulatory delay risk"></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select></td><td><select class="status-sel ss-m"><option>Open</option><option selected>Monitoring</option><option>Escalated</option><option>Closed</option></select></td><td><input class="ro-inp" placeholder="Action..."></td></tr>
+      <tr><td><select class="ro-type-sel"><option>RISK</option><option>OPP</option></select></td><td><input class="ro-inp" value="Equipment downtime — gravity circuit"></td><td><select class="prob-sel"><option>High</option><option selected>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option selected>Emmanuel</option></select></td><td><select class="status-sel ss-m"><option>Open</option><option selected>Monitoring</option><option>Escalated</option><option>Closed</option></select></td><td><input class="ro-inp" placeholder="Action..."></td></tr>
+      <tr><td><select class="ro-type-sel"><option>RISK</option><option>OPP</option></select></td><td><input class="ro-inp" value="MLNR MoU — Responsible Mining Hub"></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option selected>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select></td><td><select class="status-sel ss-o"><option selected>Open</option><option>Monitoring</option><option>Escalated</option><option>Closed</option></select></td><td><input class="ro-inp" placeholder="Action..."></td></tr>
+      <tr><td><select class="ro-type-sel"><option>RISK</option><option>OPP</option></select></td><td><input class="ro-inp" value="Golden Camel VC — first close potential"></td><td><select class="prob-sel"><option>High</option><option selected>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>High</option><option>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option selected>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select></td><td><select class="status-sel ss-o"><option selected>Open</option><option>Monitoring</option><option>Escalated</option><option>Closed</option></select></td><td><input class="ro-inp" placeholder="Action..."></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="ro-add" onclick="addRORow()">+ Add R&amp;O ticket</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('top5',document.querySelectorAll('.nav button')[3])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildSummary();sw('sum',document.querySelectorAll('.nav button')[5])">Generate summary &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 6: SUMMARY -->
+<div class="tab" id="tab-sum">
+  <div class="sl">Monthly summary &mdash; decisions and outputs</div>
+  <div id="sum-content"></div>
+  <div class="footer"><b>After this meeting:</b> update the Top 5 in Monday's Priority Stack HTML. Update Jira ticket statuses for all R&amp;O items. Post summary to Teams #decisions.</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('ro',document.querySelectorAll('.nav button')[4])">&larr; Back</button>
+    <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-p" onclick="exportJSON()" style="background:#5B21B6">Export JSON</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+</div>
+
+<script>
+// ===== ALL DATA DEFINED FIRST =====
+var deProjects = [
+  {name:'VUC Consulting SOL',vertical:'s',owner:'Louis',scores:[9,9,4,8,7,6,4,9,8],cap:8,qk:[true,true,true,true,true,true]},
+  {name:'VWC Ghana',vertical:'p',owner:'Emmanuel',scores:[6,7,8,9,6,10,7,8,8],cap:6,qk:[true,true,true,true,true,true]},
+  {name:'Australia Gold',vertical:'p',owner:'Louis',scores:[6,9,4,8,7,10,2,8,8],cap:5,qk:[true,true,true,true,true,true]},
+  {name:'Xperience Space',vertical:'s',owner:'Lucas',scores:[4,8,10,9,9,8,2,8,10],cap:6,qk:[true,true,true,true,true,true]},
+  {name:'IT / Dashboard',vertical:'s',owner:'Yasin',scores:[7,7,9,7,7,9,3,6,7],cap:7,qk:[true,true,true,true,true,true]},
+  {name:'Golden Camel',vertical:'s',owner:'Louis',scores:[7,6,7,7,8,9,5,6,7],cap:6,qk:[true,true,true,true,true,true]},
+  {name:'VUC Consulting SAMI',vertical:'s',owner:'Yasin',scores:[8,9,8,8,5,8,5,4,8],cap:7,qk:[true,true,true,true,false,true]},
+];
+var top5Confirmed = [];
+var timerSec = 3600, timerRunning = false, timerInterval = null;
+var WEIGHTS_P = [.10,.18,.12,.12,.06,.15,.16,.06,.05];
+var WEIGHTS_S = [.18,.15,.08,.08,.08,.18,.10,.05,.10];
+var WEIGHTS_F = [.08,.12,.16,.15,.18,.12,.10,.05,.04];
+var WEIGHTS_N = [.12,.14,.12,.12,.12,.14,.12,.06,.06];
+var QK_LABELS = ['Capital available?','Payback ≤ 48mo?','IRR ≥ 15%?','No fatal risk?','Team capacity?','Strategic fit?'];
+var OWNERS = ['Louis','Yasin','Lucas','Emmanuel'];
+var VERTICALS = [{v:'p',l:'Products'},{v:'s',l:'Services'},{v:'f',l:'Future'},{v:'n',l:'New'}];
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', function() {
+  var d = new Date();
+  document.getElementById('wmonth').value = d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1);
+  renderQK();
+  renderDE();
+});
+
+// ===== TIMER =====
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval); timerRunning = false;
+    document.getElementById('timer-btn').innerHTML = '&#9654; Resume';
+  } else {
+    timerRunning = true;
+    document.getElementById('timer-btn').innerHTML = '&#9646;&#9646; Pause';
+    timerInterval = setInterval(function() {
+      if (timerSec > 0) { timerSec--; updTimer(); }
+      else { clearInterval(timerInterval); document.getElementById('timer').style.color = '#EF4444'; }
+    }, 1000);
+  }
+}
+function updTimer() {
+  var m = Math.floor(timerSec / 60), s = timerSec % 60;
+  document.getElementById('timer').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  if (timerSec <= 300) document.getElementById('timer').style.color = '#F59E0B';
+  if (timerSec <= 120) document.getElementById('timer').style.color = '#EF4444';
+}
+
+// ===== PORTFOLIO =====
+function addPort(id) {
+  var c = document.getElementById(id);
+  var d = document.createElement('div');
+  d.className = 'port-item';
+  d.innerHTML = '<input class="port-inp" placeholder="Project name..."><select class="mini-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select><button class="port-del" onclick="this.closest(\'.port-item\').remove()">&#x2715;</button>';
+  c.appendChild(d);
+}
+
+// ===== QUICK KILL =====
+function renderQK() {
+  var body = document.getElementById('qk-body');
+  var html = '';
+  deProjects.forEach(function(p, pi) {
+    var result = getQKResult(p.qk);
+    html += '<tr id="qkr-' + pi + '">';
+    html += '<td><input style="border:none;font-size:12px;font-weight:600;outline:none;background:transparent;font-family:inherit;width:130px" value="' + p.name + '" oninput="deProjects[' + pi + '].name=this.value"></td>';
+    p.qk.forEach(function(v, qi) {
+      html += '<td><button class="qk-btn ' + (v ? 'y' : 'n') + '" onclick="toggleQK(' + pi + ',' + qi + ')">' + (v ? 'Y' : 'N') + '</button></td>';
+    });
+    html += '<td><span class="qk-result ' + result.cls + '">' + result.label + '</span></td>';
+    html += '<td><button style="border:none;background:transparent;cursor:pointer;color:#ccc;font-size:12px" onclick="deProjects.splice(' + pi + ',1);renderQK();renderDE()">&#x2715;</button></td>';
+    html += '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function toggleQK(pi, qi) {
+  deProjects[pi].qk[qi] = !deProjects[pi].qk[qi];
+  renderQK();
+}
+
+function getQKResult(qk) {
+  var yCount = qk.filter(Boolean).length;
+  if (yCount === 6) return {label: '✅ PROCEED', cls: 'qkr-proceed'};
+  if (yCount >= 4) return {label: '🟡 REVIEW', cls: 'qkr-review'};
+  return {label: '❌ KILL', cls: 'qkr-kill'};
+}
+
+function addQKRow() {
+  deProjects.push({name: 'New project', vertical: 's', owner: 'Lucas', scores: [5,5,5,5,5,5,5,5,5], cap: 5, qk: [true,true,true,true,true,true]});
+  renderQK();
+  renderDE();
+}
+
+function syncQKtoDE() {
+  renderDE(); // DE already reads from deProjects which QK updates
+}
+
+// ===== DECISION ENGINE =====
+function calcScore(p) {
+  var w = p.vertical === 'p' ? WEIGHTS_P : p.vertical === 's' ? WEIGHTS_S : p.vertical === 'f' ? WEIGHTS_F : WEIGHTS_N;
+  var raw = p.scores.reduce(function(sum, s, i) { return sum + (s / 10) * w[i]; }, 0);
+  return Math.min(raw * 1.05, 1);
+}
+
+function renderDE() {
+  var body = document.getElementById('de-body');
+  var html = '';
+  // Only show projects that passed QK (PROCEED or REVIEW)
+  deProjects.forEach(function(p, pi) {
+    var qkRes = getQKResult(p.qk);
+    if (qkRes.cls === 'qkr-kill') return; // skip killed
+    var score = calcScore(p);
+    var decision = score >= 0.55 ? 'PURSUE' : score >= 0.40 ? 'PARK' : 'DISREGARD';
+    var dCls = score >= 0.55 ? 'dd-p' : score >= 0.40 ? 'dd-k' : 'dd-d';
+    var scoreColor = score >= 0.70 ? '#15803d' : score >= 0.55 ? '#1E40AF' : '#854D0E';
+    var vCls = {p:'vp',s:'vs',f:'vf',n:'vn'}[p.vertical] || 'vn';
+    var vLabel = VERTICALS.find(function(v){return v.v===p.vertical;});
+    html += '<tr>';
+    html += '<td><input class="de-inp" value="' + p.name + '" oninput="deProjects[' + pi + '].name=this.value"></td>';
+    html += '<td><select class="de-sel" onchange="deProjects[' + pi + '].vertical=this.value;renderDE()">';
+    VERTICALS.forEach(function(v) {
+      html += '<option value="' + v.v + '"' + (v.v === p.vertical ? ' selected' : '') + '>' + v.l + '</option>';
+    });
+    html += '</select></td>';
+    html += '<td><select class="de-sel" onchange="deProjects[' + pi + '].owner=this.value">';
+    OWNERS.forEach(function(o) { html += '<option' + (o === p.owner ? ' selected' : '') + '>' + o + '</option>'; });
+    html += '</select></td>';
+    p.scores.forEach(function(s, si) {
+      html += '<td><input class="de-score" type="number" min="1" max="10" value="' + s + '" oninput="deProjects[' + pi + '].scores[' + si + ']=parseInt(this.value)||1;renderDE()"></td>';
+    });
+    html += '<td><input class="de-score" type="number" min="1" max="10" value="' + p.cap + '" oninput="deProjects[' + pi + '].cap=parseInt(this.value)||1;renderDE()" style="background:#f0f0f0;border-radius:4px"></td>';
+    html += '<td class="de-final" style="color:' + scoreColor + '">' + score.toFixed(2) + '</td>';
+    html += '<td><span class="de-decision ' + dCls + '">' + decision + '</span></td>';
+    html += '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function addDERow() {
+  deProjects.push({name: '', vertical: 's', owner: 'Lucas', scores: [5,5,5,5,5,5,5,5,5], cap: 5, qk: [true,true,true,true,true,true]});
+  renderQK();
+  renderDE();
+}
+
+// ===== TOP 5 =====
+function buildTop5() {
+  var scored = deProjects
+    .map(function(p, i) { return {idx: i, name: p.name, owner: p.owner, vertical: p.vertical, score: calcScore(p), qk: getQKResult(p.qk).cls}; })
+    .filter(function(p) { return p.qk !== 'qkr-kill'; })
+    .sort(function(a, b) { return b.score - a.score; });
+  var top5 = scored.slice(0, 5);
+  var rankCls = ['r1','r2','r3','r4','r5'];
+  var vLabels = {p:'Products',s:'Services',f:'Future',n:'New'};
+  var html = '';
+  top5.forEach(function(p, i) {
+    var confirmed = top5Confirmed.indexOf(p.idx) > -1;
+    var status = p.score >= 0.70 ? 'EXECUTE NOW' : 'QUEUE';
+    var statusCls = p.score >= 0.70 ? 't5s-en' : 't5s-q';
+    html += '<div class="t5-card ' + (confirmed ? 'confirmed' : '') + '" id="t5c-' + i + '">';
+    html += '<div class="t5-rank ' + rankCls[i] + '">' + (i + 1) + '</div>';
+    html += '<div>';
+    html += '<div class="t5-name">' + (p.name || 'Unnamed') + '</div>';
+    html += '<div class="t5-meta"><span>' + p.owner + '</span><span>' + (vLabels[p.vertical] || 'New') + '</span><span class="t5-score">' + p.score.toFixed(2) + '</span><span class="t5-status ' + statusCls + '">' + status + '</span></div>';
+    html += '</div>';
+    html += '<button class="t5-confirm ' + (confirmed ? 'sel' : '') + '" onclick="confT5(' + p.idx + ',' + i + ',this)">' + (confirmed ? '&#10003; Confirmed' : 'Confirm') + '</button>';
+    html += '</div>';
+  });
+  if (!html) html = '<div style="text-align:center;color:#999;padding:30px;font-size:12px">No projects passed the Quick Kill Filter yet.</div>';
+  document.getElementById('top5-grid').innerHTML = html;
+}
+
+function confT5(pidx, rank, btn) {
+  var i = top5Confirmed.indexOf(pidx);
+  if (i > -1) {
+    top5Confirmed.splice(i, 1);
+    btn.innerHTML = 'Confirm'; btn.classList.remove('sel');
+    btn.closest('.t5-card').classList.remove('confirmed');
+  } else {
+    top5Confirmed.push(pidx);
+    btn.innerHTML = '&#10003; Confirmed'; btn.classList.add('sel');
+    btn.closest('.t5-card').classList.add('confirmed');
+  }
+}
+
+// ===== R&O =====
+function addRORow() {
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><select class="ro-type-sel"><option>RISK</option><option>OPP</option></select></td><td><input class="ro-inp" placeholder="Description..."></td><td><select class="prob-sel"><option>High</option><option selected>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>High</option><option selected>Medium</option><option>Low</option></select></td><td><select class="prob-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select></td><td><select class="status-sel ss-o"><option selected>Open</option><option>Monitoring</option><option>Escalated</option><option>Closed</option></select></td><td><input class="ro-inp" placeholder="Action..."></td>';
+  document.getElementById('ro-body').appendChild(tr);
+}
+
+// ===== SUMMARY =====
+function buildSummary() {
+  var html = '';
+  // Top 5
+  html += '<div class="sum-block"><div class="sum-title"><span class="sum-tag" style="background:#7C3AED">TOP 5</span>New Priority Stack — feeds Monday\'s meeting</div>';
+  var scored = deProjects.map(function(p, i) {
+    return {idx:i, name:p.name, owner:p.owner, vertical:p.vertical, score:calcScore(p)};
+  }).filter(function(p){return getQKResult(deProjects[p.idx].qk).cls !== 'qkr-kill';})
+    .sort(function(a,b){return b.score-a.score;}).slice(0,5);
+  var vLabels = {p:'Products',s:'Services',f:'Future',n:'New'};
+  var rankColors = ['#1A1A2E','#2C5F8A','#4a8fc0','#888','#aaa'];
+  if (scored.length === 0) {
+    html += '<div class="sum-empty">No projects confirmed yet.</div>';
+  } else {
+    scored.forEach(function(p, i) {
+      var confirmed = top5Confirmed.indexOf(p.idx) > -1;
+      html += '<div class="sum-item"><span class="sum-tag" style="background:' + rankColors[i] + '">' + (i+1) + '</span><span class="sum-name">' + p.name + '</span><span class="sum-meta">' + p.owner + ' &middot; ' + (vLabels[p.vertical]||'New') + ' &middot; ' + p.score.toFixed(2) + (confirmed ? ' &#10003;' : ' ⚠ not confirmed') + '</span></div>';
+    });
+  }
+  html += '</div>';
+
+  // Quick Kill results
+  html += '<div class="sum-block"><div class="sum-title"><span class="sum-tag" style="background:#7F1D1D">KILL FILTER</span>Quick Kill results</div>';
+  deProjects.forEach(function(p) {
+    var r = getQKResult(p.qk);
+    html += '<div class="sum-item"><span class="sum-name">' + (p.name||'Unnamed') + '</span><span class="sum-meta"><span class="qk-result ' + r.cls + '" style="font-size:10px">' + r.label + '</span></span></div>';
+  });
+  html += '</div>';
+
+  // Full DE ranking
+  html += '<div class="sum-block"><div class="sum-title"><span class="sum-tag" style="background:#1E40AF">ENGINE</span>Full Decision Engine ranking</div>';
+  var allScored = deProjects.map(function(p, i) {
+    return {name:p.name, owner:p.owner, score:calcScore(p), qk:getQKResult(p.qk).cls};
+  }).sort(function(a,b){return b.score-a.score;});
+  allScored.forEach(function(p, i) {
+    var d = p.score >= 0.55 ? 'PURSUE' : p.score >= 0.40 ? 'PARK' : 'DISREGARD';
+    var dc = p.score >= 0.55 ? '#15803d' : p.score >= 0.40 ? '#854D0E' : '#991B1B';
+    html += '<div class="sum-item"><span style="font-size:11px;color:#999;width:18px;flex-shrink:0">' + (i+1) + '.</span><span class="sum-name">' + (p.name||'Unnamed') + '</span><span class="sum-meta">' + p.owner + ' &middot; <b style="color:' + dc + '">' + d + '</b> &middot; ' + p.score.toFixed(2) + '</span></div>';
+  });
+  html += '</div>';
+
+  // R&O
+  var rows = document.querySelectorAll('#ro-body tr');
+  html += '<div class="sum-block"><div class="sum-title"><span class="sum-tag" style="background:#7F1D1D">R&amp;O</span>Full register reviewed this month</div>';
+  var hasRO = false;
+  rows.forEach(function(row) {
+    var cells = row.querySelectorAll('td');
+    if (cells.length < 7) return;
+    var desc = cells[1].querySelector('input').value;
+    if (!desc) return;
+    hasRO = true;
+    var type = cells[0].querySelector('select').value;
+    var prob = cells[2].querySelector('select').value;
+    var impact = cells[3].querySelector('select').value;
+    var owner = cells[4].querySelector('select').value;
+    var status = cells[5].querySelector('select').value;
+    var action = cells[6].querySelector('input').value;
+    html += '<div class="sum-item"><span style="font-size:10px;font-weight:700;background:' + (type==='RISK'?'#FEE2E2':'#DCFCE7') + ';color:' + (type==='RISK'?'#7F1D1D':'#14532D') + ';padding:1px 6px;border-radius:4px;flex-shrink:0">' + type + '</span><span class="sum-name">' + desc + '</span><span class="sum-meta">' + owner + ' &middot; ' + prob + '&times;' + impact + ' &middot; ' + status + (action ? ' — ' + action : '') + '</span></div>';
+  });
+  if (!hasRO) html += '<div class="sum-empty">No R&amp;O tickets reviewed</div>';
+  html += '</div>';
+
+  document.getElementById('sum-content').innerHTML = html;
+}
+
+function exportJSON() {
+  var scored = deProjects.map(function(p, i) {
+    return {idx:i, name:p.name, owner:p.owner, vertical:p.vertical, score:parseFloat(calcScore(p).toFixed(2)), confirmed:top5Confirmed.indexOf(i) > -1, qk: getQKResult(p.qk).label};
+  }).sort(function(a,b){return b.score-a.score;});
+  var data = {
+    month: document.getElementById('wmonth').value,
+    exported: new Date().toISOString(),
+    top5: scored.filter(function(p){return p.confirmed;}).slice(0,5),
+    fullRanking: scored
+  };
+  var json = JSON.stringify(data, null, 2);
+  var out = document.getElementById('json-out');
+  out.value = json; out.style.display = 'block'; out.select();
+  try { document.execCommand('copy'); alert('JSON copied. Update the Top 5 in Monday\'s Priority Stack HTML.'); }
+  catch(e) { alert('JSON ready below. Copy it manually.'); }
+}
+
+function sw(tab, btn) {
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-' + tab).classList.add('on');
+  btn.classList.add('on');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

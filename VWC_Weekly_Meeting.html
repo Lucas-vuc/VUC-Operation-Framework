@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VWC Ghana — Weekly Meeting</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
+.hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hdr h1{color:#fff;font-size:18px;font-weight:700}
+.hdr p{color:#6dbf8a;font-size:12px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
+.nav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.nav button{background:none;border:none;border-bottom:3px solid transparent;padding:14px 16px;font-size:13px;font-weight:600;color:#999;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav button:hover{color:#1A1A2E}
+.nav button.on{color:#1A1A2E;border-bottom-color:#1B5E38}
+.main{max-width:980px;margin:0 auto;padding:24px 20px}
+.tab{display:none}.tab.on{display:block}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#999;margin-bottom:12px}
+.hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#666;line-height:1.5}
+.hint b{color:#1A1A2E}
+
+/* IMPORT BOX (Tab 0) */
+.import-box{background:#EFF6FF;border:1px solid #93C5FD;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.import-title{font-size:12px;font-weight:700;color:#1E40AF;margin-bottom:8px}
+.import-desc{font-size:12px;color:#555;margin-bottom:10px}
+.import-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;background:#1E40AF;color:#fff;border:none;cursor:pointer}
+.import-btn:hover{background:#1e3a8a}
+.import-btn.s{background:#fff;color:#1E40AF;border:1px solid #93C5FD;margin-left:6px}
+.import-info{font-size:11px;color:#1E40AF;margin-top:6px;font-style:italic;display:none}
+.import-info.show{display:block}
+
+/* PREVIOUS WEEK REVIEW */
+.rev-panel{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:16px;margin-bottom:16px}
+.rev-title{font-size:13px;font-weight:700;color:#1A1A2E;margin-bottom:4px}
+.rev-sub{font-size:11px;color:#999;margin-bottom:14px}
+.rev-pillar{border-bottom:1px solid #f0f0f0;padding:10px 0}
+.rev-pillar:last-child{border-bottom:none}
+.rev-pillar-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rev-pillar-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff}
+.rev-pillar-name{font-size:12px;font-weight:700;color:#1A1A2E}
+.rev-task-line{display:flex;align-items:center;gap:10px;padding:4px 0 4px 28px;font-size:12px}
+.rev-task-text{flex:1;color:#333}
+.rev-status-btns{display:flex;gap:3px;flex-shrink:0}
+.rev-btn{font-size:10px;padding:3px 8px;border:1px solid #e0e0e0;border-radius:12px;background:#fff;cursor:pointer;color:#666;font-weight:600;transition:all .15s;font-family:inherit}
+.rev-btn:hover{border-color:#999}
+.rev-btn.done.sel{background:#dcfce7;color:#15803d;border-color:#86efac}
+.rev-btn.partial.sel{background:#fef9c3;color:#854D0E;border-color:#fde68a}
+.rev-btn.missed.sel{background:#fee2e2;color:#991B1B;border-color:#fca5a5}
+.rev-empty{font-size:12px;color:#ccc;font-style:italic;padding:8px 0}
+.rev-summary{background:#f9fafb;border-radius:6px;padding:10px 12px;margin-top:12px;font-size:12px;color:#555;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.rev-stat{display:flex;align-items:center;gap:4px}
+.rev-stat b{font-weight:700;font-size:14px}
+
+/* GHANA PULSE */
+.pulse-hdr{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pulse-hdr-l{display:flex;align-items:center;gap:12px}
+.pulse-emm{width:40px;height:40px;border-radius:50%;background:#6D4C0A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.pulse-name{font-size:13px;font-weight:700;color:#1A1A2E}
+.pulse-role{font-size:11px;color:#999}
+.report-status{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.rs-good{background:#dcfce7;color:#15803d}
+.rs-warn{background:#fef9c3;color:#854D0E}
+.rs-bad{background:#fee2e2;color:#991B1B}
+.rs-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.rs-missed{font-weight:400;color:#666}
+.rs-missed b{font-weight:700}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 12px;position:relative}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#666;margin-bottom:4px}
+.kpi-val{font-size:18px;font-weight:700;color:#1A1A2E}
+.kpi-unit{font-size:11px;color:#999;font-weight:400;margin-left:3px}
+.kpi-input{width:100%;border:none;font-size:18px;font-weight:700;color:#1A1A2E;outline:none;background:transparent;font-family:inherit;padding:0;border-bottom:1px solid #e8e8e8}
+.kpi-input:focus{border-bottom-color:#1B5E38}
+.kpi-input::placeholder{color:#fcd34d;font-size:14px}
+.kpi.pending{background:#FEF9C3;border-color:#FDE68A}
+.kpi.pending .kpi-label{color:#854D0E}
+.kpi.reported{background:#F0FDF4;border-color:#86EFAC}
+.kpi-tag{position:absolute;top:6px;right:8px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.kpi-tag.p{background:#FCD34D;color:#78350F}
+.kpi-tag.r{background:#22C55E;color:#fff}
+
+.issue-box{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:12px 14px;margin-bottom:16px}
+.issue-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#666;margin-bottom:6px}
+.issue-inp{width:100%;border:none;outline:none;font-size:13px;color:#1A1A2E;font-family:inherit;padding:4px 0;border-bottom:1px solid #e8e8e8}
+.issue-inp:focus{border-bottom-color:#1B5E38}
+
+/* PILLARS */
+.pillar{border-radius:10px;overflow:hidden;margin-bottom:10px;border:1px solid #e8e8e8;background:#fff}
+.pillar-hdr{padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity .15s}
+.pillar-hdr:hover{opacity:.92}
+.ph-l{display:flex;align-items:center;gap:10px}
+.ph-num{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;background:rgba(255,255,255,.18)}
+.ph-name{font-size:13px;font-weight:700;color:#fff}
+.ph-owner{font-size:11px;color:rgba(255,255,255,.7);margin-left:4px}
+.ph-arr{font-size:14px;color:rgba(255,255,255,.65);transition:transform .2s}
+.ph-arr.open{transform:rotate(90deg)}
+.pillar-body{display:none}
+.pillar-body.open{display:block}
+.p-cols{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #e8e8e8;background:#f9fafb}
+.p-col-hdr{padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-align:center;border-right:1px solid #e8e8e8}
+.p-col-hdr:last-child{border-right:none}
+.p-content{display:grid;grid-template-columns:1fr 1fr 1fr}
+.p-cell{padding:12px;border-right:1px solid #f0f0f0;min-height:100px}
+.p-cell:last-child{border-right:none}
+.p-cell:nth-child(2){background:#fafafa}
+.sprint-item{font-size:12px;color:#333;padding:3px 0 3px 14px;position:relative;line-height:1.4}
+.sprint-item::before{content:"\2022";position:absolute;left:2px;color:#1B5E38}
+.write-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.write-line{flex:1;border:none;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;background:transparent;outline:none;font-family:inherit;padding:3px 0}
+.write-line:focus{border-color:#1B5E38}
+.write-line.carryover{background:#FEF3C7;padding:3px 6px;border-radius:4px;border-bottom:1px solid #FDE68A}
+.carryover-badge{font-size:9px;font-weight:700;color:#78350F;background:#FEF3C7;padding:1px 6px;border-radius:10px;flex-shrink:0}
+.task-del{width:16px;height:16px;border-radius:50%;border:1px solid #e8e8e8;background:#fff;color:#ccc;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;padding:0;line-height:1}
+.task-del:hover{background:#fee2e2;color:#b91c1c}
+.add-task{font-size:11px;color:#1B5E38;cursor:pointer;margin-top:6px;display:inline-block}
+.add-task:hover{text-decoration:underline}
+.blocker-row{background:#fef9f0;padding:8px 14px;border-top:1px solid #fde8c8;font-size:12px;color:#92400e;display:flex;gap:8px;align-items:center}
+.blocker-row b{color:#B45309;flex-shrink:0}
+.blocker-inp{flex:1;border:none;border-bottom:1px solid #fde8c8;font-size:12px;color:#92400e;background:transparent;outline:none;font-family:inherit;padding:2px 0}
+
+/* CROSS-PILLAR */
+.cross-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8}
+.cross-table th{background:#1A1A2E;color:#fff;font-size:11px;padding:10px 12px;text-align:left;font-weight:600}
+.cross-table td{font-size:12px;padding:8px 12px;border-bottom:1px solid #e8e8e8;vertical-align:middle}
+.cross-table tr:last-child td{border-bottom:none}
+.cross-inp{width:100%;border:none;font-size:12px;background:transparent;outline:none;font-family:inherit;padding:3px 0;border-bottom:1px solid #e8e8e8}
+.cross-inp:focus{border-bottom-color:#1B5E38}
+.cross-sel{font-size:11px;padding:3px 8px;border:1px solid #e0e0e0;border-radius:20px;background:#fff;outline:none;font-family:inherit}
+
+/* SUMMARY */
+.sum-section{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:16px;margin-bottom:12px}
+.sum-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f0f0f0}
+.sum-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff}
+.sum-name{font-size:14px;font-weight:700;color:#1A1A2E}
+.sum-owner{font-size:11px;color:#666;margin-left:4px}
+.sum-col-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#666;margin:8px 0 4px}
+.sum-task{font-size:12px;color:#333;padding:3px 0 3px 14px;position:relative}
+.sum-task::before{content:"\2022";position:absolute;left:2px}
+.sum-empty{font-size:11px;color:#ccc;font-style:italic}
+
+.btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
+.btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
+.btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
+.btn-g{background:#dcfce7;color:#15803d;border:1px solid #86efac}.btn-g:hover{background:#bbf7d0}
+.btn-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.footer{background:#1A1A2E;border-radius:10px;padding:14px 18px;margin-top:20px;font-size:12px;color:#7aaccc;line-height:1.6}
+.footer b{color:#fff}
+
+@media(max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr}.p-cols,.p-content{grid-template-columns:1fr}.hdr{padding:14px 16px}.main{padding:16px 12px}.nav{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>VWC Ghana &mdash; Weekly Meeting</h1><p>Previous Week &rarr; Ghana Pulse &rarr; Four Pillars &rarr; Actions</p></div>
+  <div class="hdr-r"><input class="dinp" type="date" id="wdate"></div>
+</div>
+<nav class="nav">
+  <button class="on" onclick="sw('review',this)">0. Previous Week</button>
+  <button onclick="sw('pulse',this)">1. Ghana Pulse</button>
+  <button onclick="sw('pillars',this)">2. Four Pillars</button>
+  <button onclick="sw('cross',this)">3. Cross-Pillar Actions</button>
+  <button onclick="sw('sum',this)">4. Summary</button>
+</nav>
+
+<div class="main">
+
+<!-- TAB 0: REVIEW -->
+<div class="tab on" id="tab-review">
+  <div class="sl">Close last week before opening this one</div>
+  <div class="hint"><b>Rule:</b> You cannot open this week without reviewing last week. Every objective committed gets marked Done, Partial, or Missed. Partial and Missed become carryovers in the pillar sections.</div>
+
+  <div class="import-box">
+    <div class="import-title">Import last week's JSON</div>
+    <div class="import-desc">Paste the JSON exported last Tuesday, or start fresh for the first meeting.</div>
+    <textarea id="import-json" style="width:100%;border:1px solid #93C5FD;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;min-height:60px;display:none" placeholder="Paste JSON here..."></textarea>
+    <div style="margin-top:8px">
+      <button class="import-btn" onclick="togImport()">Paste JSON</button>
+      <button class="import-btn s" onclick="loadJSON()">Load</button>
+      <button class="import-btn s" onclick="startFresh()">Start fresh (first meeting)</button>
+    </div>
+    <div class="import-info" id="import-info"></div>
+  </div>
+
+  <div class="rev-panel" id="rev-panel" style="display:none">
+    <div class="rev-title">Last week's pillar commitments</div>
+    <div class="rev-sub">Mark each objective: Done, Partial, or Missed. Partial/Missed will carry over to this week.</div>
+    <div id="rev-body"></div>
+    <div class="rev-summary" id="rev-summary"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-g" onclick="confirmReview()">Continue to Ghana Pulse &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 1: GHANA PULSE -->
+<div class="tab" id="tab-pulse">
+  <div class="sl">Ghana operations &mdash; Emmanuel reports live</div>
+  <div class="hint"><b>Forcing function:</b> if any metric is pending, the first minutes of the meeting are spent getting the number before moving on. "Pending" stays visible in the PDF and JSON &mdash; everyone sees the reporting history.</div>
+
+  <div class="pulse-hdr">
+    <div class="pulse-hdr-l">
+      <div class="pulse-emm">Em</div>
+      <div>
+        <div class="pulse-name">Emmanuel &mdash; Ghana operations</div>
+        <div class="pulse-role">Reports every Tuesday before 09:00 UAE time</div>
+      </div>
+    </div>
+    <div id="report-status"></div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi pending" id="kpi-1">
+      <span class="kpi-tag p" id="tag-1">PENDING</span>
+      <div class="kpi-label">Kg Mined</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(1)" id="in-1">
+    </div>
+    <div class="kpi pending" id="kpi-2">
+      <span class="kpi-tag p" id="tag-2">PENDING</span>
+      <div class="kpi-label">Kg Processed</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(2)" id="in-2">
+    </div>
+    <div class="kpi pending" id="kpi-3">
+      <span class="kpi-tag p" id="tag-3">PENDING</span>
+      <div class="kpi-label">Gold Produced (g)</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(3)" id="in-3">
+    </div>
+    <div class="kpi pending" id="kpi-4">
+      <span class="kpi-tag p" id="tag-4">PENDING</span>
+      <div class="kpi-label">Production g/t</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(4)" id="in-4">
+    </div>
+    <div class="kpi pending" id="kpi-5">
+      <span class="kpi-tag p" id="tag-5">PENDING</span>
+      <div class="kpi-label">Operating Days</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(5)" id="in-5">
+    </div>
+    <div class="kpi pending" id="kpi-6">
+      <span class="kpi-tag p" id="tag-6">PENDING</span>
+      <div class="kpi-label">Avg Hours / Day</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(6)" id="in-6">
+    </div>
+    <div class="kpi pending" id="kpi-7">
+      <span class="kpi-tag p" id="tag-7">PENDING</span>
+      <div class="kpi-label">Weekly Cost ($)</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(7)" id="in-7">
+    </div>
+    <div class="kpi pending" id="kpi-8">
+      <span class="kpi-tag p" id="tag-8">PENDING</span>
+      <div class="kpi-label">Main Issue Status</div>
+      <input class="kpi-input" type="text" placeholder="&mdash;" oninput="updKPI(8)" id="in-8" style="font-size:13px">
+    </div>
+  </div>
+
+  <div class="issue-box">
+    <div class="issue-label">Main issue description (if any)</div>
+    <textarea class="issue-inp" rows="2" placeholder="Describe the main operational issue this week &mdash; bottleneck, risk, escalation needed..." id="issue-desc" style="resize:vertical"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('review',document.querySelectorAll('.nav button')[0])">&larr; Back</button>
+    <button class="btn btn-g" onclick="sw('pillars',document.querySelectorAll('.nav button')[2])">Continue to Four Pillars &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 2: FOUR PILLARS -->
+<div class="tab" id="tab-pillars">
+  <div class="sl">Four pillars &mdash; click to expand, write objectives for each horizon</div>
+  <div class="hint"><b>Yellow rows</b> are carryovers from last week (Partial or Missed). <b>3 horizons:</b> this week / this month / 90-day sprint. Blockers go in the last row and get escalated.</div>
+  <div id="pillar-list"></div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('pulse',document.querySelectorAll('.nav button')[1])">&larr; Back</button>
+    <button class="btn btn-g" onclick="sw('cross',document.querySelectorAll('.nav button')[3])">Continue to Actions &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 3: CROSS-PILLAR -->
+<div class="tab" id="tab-cross">
+  <div class="sl">Cross-pillar actions &mdash; dependencies between pillars</div>
+  <div class="hint">Actions where one pillar blocks or needs something from another. Example: Louis needs the technical deck from Yasin before the MLNR meeting.</div>
+
+  <table class="cross-table">
+    <thead><tr><th>Action</th><th>From</th><th>To (needs)</th><th>Deadline</th><th>Priority</th></tr></thead>
+    <tbody id="cross-body">
+      <tr><td><input class="cross-inp" placeholder="Action..."></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><input class="cross-inp" type="date"></td><td><select class="cross-sel"><option>High</option><option>Medium</option><option>Low</option></select></td></tr>
+      <tr><td><input class="cross-inp" placeholder="Action..."></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><input class="cross-inp" type="date"></td><td><select class="cross-sel"><option>High</option><option>Medium</option><option>Low</option></select></td></tr>
+    </tbody>
+  </table>
+  <span class="add-task" onclick="addCross()">+ Add action</span>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('pillars',document.querySelectorAll('.nav button')[2])">&larr; Back</button>
+    <button class="btn btn-g" onclick="buildSummary();sw('sum',document.querySelectorAll('.nav button')[4])">Generate summary &rarr;</button>
+  </div>
+</div>
+
+<!-- TAB 4: SUMMARY -->
+<div class="tab" id="tab-sum">
+  <div class="sl">Weekly summary &mdash; share with the team</div>
+  <div id="sum-content"></div>
+  <div class="footer"><b>After this meeting:</b> each pillar owner adds their Week and Month objectives to the shared VWC Jira board. Cross-pillar actions get linked tickets. Emmanuel's pending KPIs are escalated if the gap continues next week.</div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="sw('cross',document.querySelectorAll('.nav button')[3])">&larr; Back</button>
+    <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-p" onclick="exportJSON()" style="background:#1E40AF">Export JSON (for next week)</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+
+</div>
+
+<script>
+var PILLARS=[
+  {id:'p1',num:1,name:'Strategy, Government JV & Investor Partnerships',owner:'Louis',color:'#1A237E',
+    sprint:['Day 10: MLNR / MIIF first meeting','Day 60: JV framework term sheet','Day 90: MLNR MoU signed']},
+  {id:'p2',num:2,name:'Technical Infrastructure & Digital',owner:'Yasin',color:'#0D47A1',
+    sprint:['Day 14: Website scope agreed','Day 30: Geologist engaged','Day 45: Website v1 live']},
+  {id:'p3',num:3,name:'Growth & Presentation',owner:'Lucas',color:'#1B5E20',
+    sprint:['Day 21: Pitch deck first draft','Day 30: Business plan outline','Day 60: Investor-ready deck + plan']},
+  {id:'p4',num:4,name:'Ghana Operations & Data',owner:'Emmanuel',color:'#6D4C0A',
+    sprint:['Day 14: M-07 & M-08 data delivered','Ongoing: Mercury-free protocol','Ongoing: Security & custody chain']}
+];
+
+var tc=0;
+var carryover=[]; // {pi, horizon: 'week'|'month', text, fromStatus}
+var previousWeek=null;
+var kpiValues={};
+var reportStatus='pending'; // pending/partial/complete
+var lastReportDate=null; // from JSON
+
+(function(){
+  var d=new Date(),day=d.getDay(),diff=day===2?0:(9-day)%7||7;
+  d.setDate(d.getDate()+diff);
+  document.getElementById('wdate').valueAsDate=d;
+  renderStatus();
+  renderPillars();
+})();
+
+// ===== IMPORT / REVIEW =====
+function togImport(){
+  var el=document.getElementById('import-json');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function loadJSON(){
+  var raw=document.getElementById('import-json').value.trim();
+  if(!raw){alert('Paste JSON first');return;}
+  try{
+    var data=JSON.parse(raw);
+    previousWeek=data;
+    showReview();
+    showInfo('&#10003; Loaded data from ' + (data.week || 'last week'));
+  }catch(e){
+    alert('JSON invalid: '+e.message);
+  }
+}
+
+function startFresh(){
+  previousWeek={objectives:[],week:'No previous data',kpisReported:0};
+  document.getElementById('rev-panel').style.display='none';
+  showInfo('&#10003; Starting fresh &mdash; no previous week to review');
+}
+
+function showInfo(msg){
+  var el=document.getElementById('import-info');
+  el.innerHTML=msg;
+  el.classList.add('show');
+}
+
+function showReview(){
+  var panel=document.getElementById('rev-panel');
+  panel.style.display='block';
+  var body=document.getElementById('rev-body');
+  var html='';
+  PILLARS.forEach(function(p){
+    var objs=(previousWeek.objectives||[]).filter(function(o){return o.pi===p.id && (o.horizon==='week'||o.horizon==='month');});
+    html+='<div class="rev-pillar"><div class="rev-pillar-hdr"><span class="rev-pillar-tag" style="background:'+p.color+'">P'+p.num+'</span><span class="rev-pillar-name">'+p.name+'</span> <span class="ph-owner">&mdash; '+p.owner+'</span></div>';
+    if(objs.length===0){
+      html+='<div class="rev-empty">No Week or Month objectives committed last week</div>';
+    } else {
+      objs.forEach(function(o,i){
+        var rid='rev-'+p.id+'-'+i;
+        html+='<div class="rev-task-line" data-rid="'+rid+'" data-task="'+encodeURIComponent(JSON.stringify(o))+'">';
+        html+='<span style="font-size:10px;font-weight:700;color:'+p.color+'">['+(o.horizon==='week'?'WEEK':'MONTH')+']</span>';
+        html+='<span class="rev-task-text">'+o.text+'</span>';
+        html+='<div class="rev-status-btns">';
+        html+='<button class="rev-btn done" onclick="setRevStatus(this,\'done\',\''+rid+'\')">Done</button>';
+        html+='<button class="rev-btn partial" onclick="setRevStatus(this,\'partial\',\''+rid+'\')">Partial</button>';
+        html+='<button class="rev-btn missed" onclick="setRevStatus(this,\'missed\',\''+rid+'\')">Missed</button>';
+        html+='</div></div>';
+      });
+    }
+    html+='</div>';
+  });
+  body.innerHTML=html;
+  updateRevSummary();
+}
+
+function setRevStatus(btn,status,rid){
+  var parent=btn.closest('.rev-status-btns');
+  parent.querySelectorAll('.rev-btn').forEach(function(b){b.classList.remove('sel');});
+  btn.classList.add('sel');
+  btn.closest('.rev-task-line').setAttribute('data-status',status);
+  updateRevSummary();
+}
+
+function updateRevSummary(){
+  var d=0,p=0,m=0,pending=0;
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    var s=line.getAttribute('data-status');
+    if(s==='done')d++;
+    else if(s==='partial')p++;
+    else if(s==='missed')m++;
+    else pending++;
+  });
+  document.getElementById('rev-summary').innerHTML=
+    '<div class="rev-stat"><b style="color:#15803d">'+d+'</b> Done</div>'+
+    '<div class="rev-stat"><b style="color:#854D0E">'+p+'</b> Partial</div>'+
+    '<div class="rev-stat"><b style="color:#991B1B">'+m+'</b> Missed</div>'+
+    (pending>0?'<div class="rev-stat" style="color:#999"><b>'+pending+'</b> Pending review</div>':'');
+}
+
+function confirmReview(){
+  if(!previousWeek){
+    alert('Please paste last week\'s JSON or click "Start fresh"');
+    return;
+  }
+  var pending=0;
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    if(!line.getAttribute('data-status'))pending++;
+  });
+  if(pending>0 && document.getElementById('rev-panel').style.display!=='none'){
+    if(!confirm(pending+' objective(s) not yet reviewed. Continue anyway?'))return;
+  }
+  carryover=[];
+  document.querySelectorAll('.rev-task-line').forEach(function(line){
+    var s=line.getAttribute('data-status');
+    if(s==='partial'||s==='missed'){
+      try{
+        var o=JSON.parse(decodeURIComponent(line.getAttribute('data-task')));
+        carryover.push({pi:o.pi,horizon:o.horizon,text:o.text,fromStatus:s});
+      }catch(e){}
+    }
+  });
+  renderPillars();
+  updateReportStreak();
+  sw('pulse',document.querySelectorAll('.nav button')[1]);
+}
+
+// ===== GHANA PULSE =====
+function updKPI(n){
+  var inp=document.getElementById('in-'+n);
+  var kpi=document.getElementById('kpi-'+n);
+  var tag=document.getElementById('tag-'+n);
+  var val=inp.value.trim();
+  kpiValues[n]=val;
+  if(val){
+    kpi.classList.remove('pending');
+    kpi.classList.add('reported');
+    tag.textContent='REPORTED';
+    tag.className='kpi-tag r';
+  } else {
+    kpi.classList.remove('reported');
+    kpi.classList.add('pending');
+    tag.textContent='PENDING';
+    tag.className='kpi-tag p';
+  }
+  updateReportStreak();
+}
+
+function updateReportStreak(){
+  var reported=Object.values(kpiValues).filter(function(v){return v&&v.trim();}).length;
+  var total=8;
+  var el=document.getElementById('report-status');
+  var missed=(previousWeek && previousWeek.weeksWithoutReport!==undefined) ? previousWeek.weeksWithoutReport : 0;
+  if(reported===0){
+    el.className='report-status rs-bad';
+    el.innerHTML='<span class="rs-dot"></span>No data this week'+(missed>0?' &middot; <span class="rs-missed"><b>'+(missed+1)+'</b> weeks in a row</span>':'');
+  } else if(reported<total){
+    el.className='report-status rs-warn';
+    el.innerHTML='<span class="rs-dot"></span>Partial: '+reported+'/'+total+' reported';
+  } else {
+    el.className='report-status rs-good';
+    el.innerHTML='<span class="rs-dot"></span>All '+total+' KPIs reported';
+  }
+}
+
+function renderStatus(){ updateReportStreak(); }
+
+// ===== PILLARS =====
+function renderPillars(){
+  var html='';
+  PILLARS.forEach(function(p){
+    var lightBg={p1:'#E8EAF6',p2:'#E3F2FD',p3:'#E8F5E9',p4:'#FFF8E1'}[p.id];
+    html+='<div class="pillar">';
+    html+='<div class="pillar-hdr" style="background:'+p.color+'" onclick="togPillar(\''+p.id+'\')">';
+    html+='<div class="ph-l"><span class="ph-num">P0'+p.num+'</span><span class="ph-name">'+p.name+'</span><span class="ph-owner">&mdash; '+p.owner+'</span></div>';
+    html+='<span class="ph-arr" id="arr-'+p.id+'">&#9656;</span>';
+    html+='</div>';
+    html+='<div class="pillar-body" id="body-'+p.id+'">';
+    html+='<div class="p-cols">';
+    html+='<div class="p-col-hdr" style="color:'+p.color+';background:'+lightBg+'">This Week</div>';
+    html+='<div class="p-col-hdr" style="color:'+p.color+';background:'+lightBg+'">This Month</div>';
+    html+='<div class="p-col-hdr" style="color:'+p.color+';background:'+lightBg+'">90-Day Sprint</div>';
+    html+='</div>';
+    html+='<div class="p-content">';
+    // Week column (editable, with carryovers)
+    html+='<div class="p-cell"><div id="week-'+p.id+'">';
+    carryover.filter(function(c){return c.pi===p.id && c.horizon==='week';}).forEach(function(c){
+      html+=carryoverRow(p.id,'week',c.text,c.fromStatus);
+    });
+    html+=newRow(p.id,'week')+newRow(p.id,'week');
+    html+='</div><span class="add-task" onclick="addRow(\''+p.id+'\',\'week\')">+ add week objective</span></div>';
+    // Month column
+    html+='<div class="p-cell"><div id="month-'+p.id+'">';
+    carryover.filter(function(c){return c.pi===p.id && c.horizon==='month';}).forEach(function(c){
+      html+=carryoverRow(p.id,'month',c.text,c.fromStatus);
+    });
+    html+=newRow(p.id,'month')+newRow(p.id,'month');
+    html+='</div><span class="add-task" onclick="addRow(\''+p.id+'\',\'month\')">+ add month objective</span></div>';
+    // Sprint column (fixed milestones)
+    html+='<div class="p-cell">';
+    p.sprint.forEach(function(s){html+='<div class="sprint-item">'+s+'</div>';});
+    html+='</div>';
+    html+='</div>';
+    // Blocker row
+    html+='<div class="blocker-row"><b>Blocked / needs decision:</b><input class="blocker-inp" placeholder="Describe blocker..." data-pi="'+p.id+'"></div>';
+    html+='</div></div>';
+  });
+  document.getElementById('pillar-list').innerHTML=html;
+  // Auto-expand pillars that have carryovers
+  PILLARS.forEach(function(p){
+    if(carryover.some(function(c){return c.pi===p.id;}))togPillar(p.id);
+  });
+}
+
+function newRow(pi,h){
+  var tid='t'+(++tc);
+  return '<div class="write-row" data-pi="'+pi+'" data-h="'+h+'" id="r-'+tid+'"><input class="write-line" placeholder="Objective..."><button class="task-del" onclick="document.getElementById(\'r-'+tid+'\').remove()">&#x2715;</button></div>';
+}
+
+function carryoverRow(pi,h,text,from){
+  var tid='t'+(++tc);
+  var lbl=from==='partial'?'CARRY (partial)':'CARRY (missed)';
+  return '<div class="write-row" data-pi="'+pi+'" data-h="'+h+'" data-carry="1" id="r-'+tid+'"><span class="carryover-badge">'+lbl+'</span><input class="write-line carryover" value="'+text+'"><button class="task-del" onclick="document.getElementById(\'r-'+tid+'\').remove()">&#x2715;</button></div>';
+}
+
+function togPillar(id){
+  var b=document.getElementById('body-'+id);
+  var a=document.getElementById('arr-'+id);
+  var o=b.classList.contains('open');
+  b.classList.toggle('open',!o);
+  a.classList.toggle('open',!o);
+}
+
+function addRow(pi,h){
+  var c=document.getElementById(h+'-'+pi);
+  var d=document.createElement('div');
+  d.innerHTML=newRow(pi,h);
+  c.appendChild(d.firstChild);
+}
+
+// ===== CROSS-PILLAR =====
+function addCross(){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input class="cross-inp" placeholder="Action..."></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><select class="cross-sel"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></td><td><input class="cross-inp" type="date"></td><td><select class="cross-sel"><option>High</option><option>Medium</option><option>Low</option></select></td>';
+  document.getElementById('cross-body').appendChild(tr);
+}
+
+// ===== SUMMARY =====
+function collectObjectives(){
+  var out=[];
+  document.querySelectorAll('.write-row').forEach(function(row){
+    var inp=row.querySelector('.write-line');
+    if(!inp||!inp.value.trim())return;
+    var pi=row.getAttribute('data-pi');
+    var h=row.getAttribute('data-h');
+    var carry=row.getAttribute('data-carry')==='1';
+    out.push({pi:pi,horizon:h,text:inp.value.trim(),carry:carry});
+  });
+  return out;
+}
+
+function collectKPIs(){
+  var o={};
+  for(var i=1;i<=8;i++){
+    var v=document.getElementById('in-'+i).value.trim();
+    if(v)o[i]=v;
+  }
+  var issue=document.getElementById('issue-desc').value.trim();
+  return {values:o,issueDescription:issue};
+}
+
+function collectBlockers(){
+  var out=[];
+  document.querySelectorAll('.blocker-inp').forEach(function(inp){
+    if(inp.value.trim())out.push({pi:inp.getAttribute('data-pi'),text:inp.value.trim()});
+  });
+  return out;
+}
+
+function collectCross(){
+  var out=[];
+  document.querySelectorAll('#cross-body tr').forEach(function(tr){
+    var cells=tr.querySelectorAll('td');
+    var action=cells[0].querySelector('input').value.trim();
+    if(!action)return;
+    var from=cells[1].querySelector('select').value;
+    var to=cells[2].querySelector('select').value;
+    var deadline=cells[3].querySelector('input').value;
+    var prio=cells[4].querySelector('select').value;
+    out.push({action:action,from:from,to:to,deadline:deadline,priority:prio});
+  });
+  return out;
+}
+
+function buildSummary(){
+  var objs=collectObjectives();
+  var kpis=collectKPIs();
+  var blockers=collectBlockers();
+  var cross=collectCross();
+  var html='';
+
+  // KPI section
+  var kpiLabels=['Kg Mined','Kg Processed','Gold Produced (g)','Production g/t','Operating Days','Avg Hours/Day','Weekly Cost ($)','Main Issue Status'];
+  var reportedCount=Object.keys(kpis.values).length;
+  html+='<div class="sum-section"><div class="sum-hdr"><span class="sum-tag" style="background:#6D4C0A">KPI</span><span class="sum-name">Ghana Operations Pulse</span><span class="sum-owner">&mdash; Emmanuel</span></div>';
+  if(reportedCount===0){
+    html+='<div style="background:#FEE2E2;border:1px solid #FCA5A5;border-radius:6px;padding:10px 14px;font-size:12px;color:#991B1B"><b>No KPIs reported this week.</b> Follow up with Emmanuel before the next meeting.</div>';
+  } else {
+    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:12px">';
+    for(var i=1;i<=8;i++){
+      var v=kpis.values[i];
+      html+='<div style="padding:6px 10px;background:'+(v?'#F0FDF4':'#FEF9C3')+';border-radius:6px"><b>'+kpiLabels[i-1]+':</b> '+(v||'<i style="color:#854D0E">pending</i>')+'</div>';
+    }
+    html+='</div>';
+    if(kpis.issueDescription){
+      html+='<div style="margin-top:10px;padding:8px 10px;background:#FEF2F2;border-left:3px solid #991B1B;font-size:12px;color:#333"><b>Main issue:</b> '+kpis.issueDescription+'</div>';
+    }
+  }
+  html+='</div>';
+
+  // Pillars
+  PILLARS.forEach(function(p){
+    var wObjs=objs.filter(function(o){return o.pi===p.id && o.horizon==='week';});
+    var mObjs=objs.filter(function(o){return o.pi===p.id && o.horizon==='month';});
+    var pBlockers=blockers.filter(function(b){return b.pi===p.id;});
+    if(wObjs.length===0 && mObjs.length===0 && pBlockers.length===0)return;
+
+    html+='<div class="sum-section"><div class="sum-hdr"><span class="sum-tag" style="background:'+p.color+'">P'+p.num+'</span><span class="sum-name">'+p.name+'</span><span class="sum-owner">&mdash; '+p.owner+'</span></div>';
+    if(wObjs.length){
+      html+='<div class="sum-col-label" style="color:'+p.color+'">This week</div>';
+      wObjs.forEach(function(o){
+        html+='<div class="sum-task">'+o.text+(o.carry?' <span class="carryover-badge" style="margin-left:4px">CARRY</span>':'')+'</div>';
+      });
+    }
+    if(mObjs.length){
+      html+='<div class="sum-col-label" style="color:'+p.color+'">This month</div>';
+      mObjs.forEach(function(o){
+        html+='<div class="sum-task">'+o.text+(o.carry?' <span class="carryover-badge" style="margin-left:4px">CARRY</span>':'')+'</div>';
+      });
+    }
+    if(pBlockers.length){
+      html+='<div class="sum-col-label" style="color:#B45309">Blocker</div>';
+      pBlockers.forEach(function(b){html+='<div class="sum-task" style="color:#92400e">'+b.text+'</div>';});
+    }
+    html+='</div>';
+  });
+
+  // Cross-pillar
+  if(cross.length){
+    html+='<div class="sum-section"><div class="sum-hdr"><span class="sum-tag" style="background:#1A1A2E">CROSS</span><span class="sum-name">Cross-pillar actions</span></div>';
+    cross.forEach(function(c){
+      var dl=c.deadline?new Date(c.deadline+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'no date';
+      html+='<div class="sum-task"><b>['+c.from+' &rarr; '+c.to+']</b> '+c.action+' &middot; <span style="color:#666">'+c.priority+' &middot; '+dl+'</span></div>';
+    });
+    html+='</div>';
+  }
+
+  if(html==='')html='<div style="text-align:center;color:#999;padding:40px 0">No data yet &mdash; go back and fill in objectives.</div>';
+  document.getElementById('sum-content').innerHTML=html;
+}
+
+function exportJSON(){
+  var objs=collectObjectives();
+  var kpis=collectKPIs();
+  var blockers=collectBlockers();
+  var cross=collectCross();
+  var reportedCount=Object.keys(kpis.values).length;
+  var weeksWithout=reportedCount===0?((previousWeek&&previousWeek.weeksWithoutReport||0)+1):0;
+  var data={
+    week:document.getElementById('wdate').value||new Date().toISOString().slice(0,10),
+    exported:new Date().toISOString(),
+    objectives:objs,
+    kpis:kpis,
+    blockers:blockers,
+    crossPillar:cross,
+    weeksWithoutReport:weeksWithout
+  };
+  var json=JSON.stringify(data,null,2);
+  var out=document.getElementById('json-out');
+  out.value=json;
+  out.style.display='block';
+  out.select();
+  try{document.execCommand('copy');alert('JSON copied. Save it with the PDF so you can paste it next Tuesday.');}
+  catch(e){alert('JSON ready below. Copy it manually.');}
+}
+
+function sw(tab,btn){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-'+tab).classList.add('on');
+  btn.classList.add('on');window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Ideas Session</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a;font-size:14px;line-height:1.6}
+.hdr{background:#1A1A2E;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hdr h1{color:#fff;font-size:18px;font-weight:700}
+.hdr p{color:#FCA5A5;font-size:12px;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.dinp{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#fff;font-size:12px;padding:4px 10px;outline:none}
+.main{max-width:860px;margin:0 auto;padding:24px 20px}
+.hint{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#666;line-height:1.5;border-left:4px solid #B91C1C}
+.hint b{color:#1A1A2E}
+
+/* SESSION HEADER */
+.session-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.sm{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px}
+.sm-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:4px}
+.sm-val{font-size:13px;font-weight:600;color:#1A1A2E}
+.sm-inp{border:none;border-bottom:1px solid #e0e0e0;width:100%;background:transparent;font-size:13px;font-weight:600;color:#1A1A2E;outline:none;font-family:inherit;padding:2px 0}
+.sm-inp::placeholder{color:#bbb;font-weight:400}
+.count-badge{font-size:24px;font-weight:700;color:#B91C1C}
+
+/* IDEA CAPTURE */
+.capture-area{margin-bottom:24px}
+.capture-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.capture-line{flex:1;height:1px;background:#e0e0e0}
+.new-idea-box{background:#fff;border:2px dashed #FCA5A5;border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s;display:flex;flex-direction:column;gap:8px}
+.new-idea-box:focus-within{border-color:#B91C1C}
+.new-idea-inp{border:none;font-size:16px;font-weight:600;color:#1A1A2E;outline:none;font-family:inherit;width:100%;background:transparent}
+.new-idea-inp::placeholder{color:#ddd;font-weight:400;font-size:15px}
+.new-idea-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nim{display:flex;flex-direction:column;gap:3px}
+.nim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#999}
+.nim-inp{border:none;border-bottom:1px solid #e0e0e0;font-size:12px;color:#333;outline:none;font-family:inherit;padding:3px 0;background:transparent}
+.nim-inp:focus{border-color:#B91C1C}
+.nim-sel{border:1px solid #e0e0e0;border-radius:20px;font-size:11px;padding:3px 8px;outline:none;background:#fff;font-family:inherit;cursor:pointer}
+.add-btn{align-self:flex-end;font-size:12px;font-weight:700;padding:7px 18px;border-radius:20px;background:#B91C1C;color:#fff;border:none;cursor:pointer;transition:all .15s;margin-top:4px}
+.add-btn:hover{background:#991B1B}
+.add-btn:disabled{background:#e0e0e0;color:#999;cursor:default}
+
+/* IDEA CARDS */
+.ideas-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.idea-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;transition:all .2s}
+.idea-card.champion{border-color:#FCA5A5}
+.ic-top{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;padding:10px 14px;align-items:start}
+.ic-num{width:24px;height:24px;border-radius:50%;background:#B91C1C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ic-content{flex:1}
+.ic-name{font-size:14px;font-weight:700;color:#1A1A2E;margin-bottom:4px;border:none;background:transparent;outline:none;font-family:inherit;width:100%;padding:0}
+.ic-urgency{font-size:12px;color:#555;border:none;background:transparent;outline:none;font-family:inherit;width:100%;border-bottom:1px solid transparent;padding:0}
+.ic-urgency:focus{border-color:#e0e0e0}
+.ic-urgency::placeholder{color:#ddd}
+.ic-meta{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ic-owner-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;background:#1A1A2E}
+.ic-vertical{font-size:10px;padding:2px 8px;border-radius:20px;background:#f5f5f5;color:#555}
+.ic-mvp{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DBEAFE;color:#1E40AF}
+.ic-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.ic-expand{background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;transition:transform .2s}
+.ic-expand.open{transform:rotate(90deg)}
+.ic-del{background:none;border:none;cursor:pointer;color:#e0e0e0;font-size:13px}
+.ic-del:hover{color:#EF4444}
+.ic-notes{display:none;padding:0 14px 12px 48px;font-size:12px;color:#666;border-top:1px solid #f5f5f5}
+.ic-notes.open{display:block}
+.notes-inp{width:100%;border:none;border-bottom:1px solid #e0e0e0;font-size:12px;color:#555;background:transparent;outline:none;font-family:inherit;padding:4px 0;margin-top:6px}
+.notes-inp::placeholder{color:#ccc}
+.ic-mvp-check{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:#555;cursor:pointer}
+.mvp-box{width:16px;height:16px;border:2px solid #e0e0e0;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:all .15s;flex-shrink:0}
+.mvp-box.checked{background:#1E40AF;border-color:#1E40AF;color:#fff}
+
+/* PIPELINE READY */
+.pipeline-section{background:#1A1A2E;border-radius:10px;padding:16px 18px;margin-bottom:20px}
+.ps-title{color:#fff;font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.ps-sub{color:#93C5FD;font-size:11px;margin-bottom:12px}
+.ps-check-list{display:flex;flex-direction:column;gap:6px}
+.ps-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.ps-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ps-dot.ok{background:#22C55E}
+.ps-dot.warn{background:#F59E0B}
+.ps-dot.bad{background:#EF4444}
+.ps-text{color:#fff}
+.ps-text.warn{color:#FCD34D}
+.ps-text.bad{color:#FCA5A5}
+
+/* RULES */
+.rules-box{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px 16px;margin-bottom:20px}
+.rule-item{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:12px;color:#333;align-items:flex-start}
+.rule-item:last-child{border-bottom:none}
+.rule-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+.btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
+.btn-p{background:#1A1A2E;color:#fff}.btn-p:hover{background:#2d3f6e}
+.btn-s{background:#fff;color:#555;border:1px solid #e0e0e0}.btn-s:hover{background:#f5f5f5}
+.btn-r{background:#B91C1C;color:#fff}.btn-r:hover{background:#991B1B}
+.btn-row{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+
+@media(max-width:640px){.session-meta{grid-template-columns:1fr}.new-idea-meta{grid-template-columns:1fr}.ic-top{grid-template-columns:auto 1fr auto}.hdr{padding:14px 16px}.main{padding:16px 12px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>Ideas Session</h1><p>Friday &middot; 30 min &middot; Louis, Yasin, Lucas &middot; No decisions &mdash; only capture</p></div>
+  <div class="hdr-r"><input class="dinp" type="date" id="wdate"></div>
+</div>
+
+<div class="main">
+
+  <div class="hint">
+    <b>The only rule that matters:</b> if an idea is not captured here before the session closes, it does not exist. No ticket = no idea. The owner has until the end of this session to name their idea, state why now, and claim ownership. Everything else happens Tuesday.
+  </div>
+
+  <!-- SESSION META -->
+  <div class="session-meta">
+    <div class="sm"><div class="sm-label">Facilitator</div><div class="sm-val">Lucas</div></div>
+    <div class="sm"><div class="sm-label">Ideas captured today</div><div class="count-badge" id="idea-count">0</div></div>
+    <div class="sm"><div class="sm-label">Session theme (optional)</div><input class="sm-inp" type="text" placeholder="e.g. Ghana expansion, AI products..." id="session-theme"></div>
+  </div>
+
+  <!-- CAPTURE -->
+  <div class="capture-area">
+    <div class="capture-label"><span>Capture new idea</span><div class="capture-line"></div></div>
+
+    <div class="new-idea-box">
+      <input class="new-idea-inp" id="new-name" placeholder="What's the idea? (one line is enough)" onkeydown="if(event.key==='Enter')tryAdd()">
+      <div class="new-idea-meta">
+        <div class="nim">
+          <div class="nim-label">Why now?</div>
+          <input class="nim-inp" id="new-urgency" placeholder="Urgency in one sentence...">
+        </div>
+        <div class="nim">
+          <div class="nim-label">Owner</div>
+          <select class="nim-sel" id="new-owner">
+            <option>Louis</option><option>Yasin</option><option selected>Lucas</option>
+          </select>
+        </div>
+      </div>
+      <div class="new-idea-meta">
+        <div class="nim">
+          <div class="nim-label">Vertical</div>
+          <select class="nim-sel" id="new-vertical">
+            <option>Products &mdash; Mining (VWC)</option>
+            <option>Services &mdash; Consulting</option>
+            <option>Services &mdash; VC Matchmaking</option>
+            <option>Future &mdash; Agriculture</option>
+            <option>Future &mdash; Construction</option>
+            <option>Future &mdash; Software</option>
+            <option>Future &mdash; Mining Expansion</option>
+            <option>New &mdash; Outside current categories</option>
+          </select>
+        </div>
+        <div class="nim">
+          <div class="nim-label">MVP exists?</div>
+          <select class="nim-sel" id="new-mvp">
+            <option value="no">No</option>
+            <option value="partial">Partial</option>
+            <option value="yes">Yes &mdash; skip Idea Pool</option>
+          </select>
+        </div>
+      </div>
+      <button class="add-btn" onclick="tryAdd()" id="add-btn">Add to pipeline &rarr;</button>
+    </div>
+  </div>
+
+  <!-- IDEAS LIST -->
+  <div class="capture-label" id="ideas-label" style="display:none"><span>Ideas captured this session</span><div class="capture-line"></div></div>
+  <div class="ideas-list" id="ideas-list"></div>
+
+  <!-- PIPELINE READINESS -->
+  <div class="pipeline-section" id="pipeline-section">
+    <div class="ps-title">&#128073; Pipeline readiness</div>
+    <div class="ps-sub">Before closing, every idea needs these 3 fields. Ideas with MVP go directly to Incubation next Tuesday.</div>
+    <div class="ps-check-list" id="ps-checks"></div>
+  </div>
+
+  <!-- SESSION RULES -->
+  <div class="rules-box">
+    <div class="rule-item"><span class="rule-icon">&#128161;</span><span>This is a <b>capture session</b>, not a decision session. No idea is killed or approved today.</span></div>
+    <div class="rule-item"><span class="rule-icon">&#9201;</span><span>30 minutes total. Each idea gets 3&ndash;5 minutes max. Move fast.</span></div>
+    <div class="rule-item"><span class="rule-icon">&#128221;</span><span>The owner defends the idea. The other two ask questions only &mdash; not judge, not kill.</span></div>
+    <div class="rule-item"><span class="rule-icon">&#128994;</span><span>Ideas with a working MVP skip Idea Pool and go directly to Incubation next Tuesday.</span></div>
+    <div class="rule-item"><span class="rule-icon">&#9196;</span><span>What goes to Tuesday: all ideas with name + owner + urgency become Jira tickets in Idea Pool (or Incubation if MVP).</span></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-p" onclick="window.print()">Print / PDF</button>
+    <button class="btn btn-r" onclick="exportJSON()">Export for Pipeline Review (JSON)</button>
+  </div>
+  <textarea id="json-out" style="width:100%;margin-top:12px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:80px;display:none" readonly></textarea>
+</div>
+
+<script>
+var ic=0;
+var ideas=[];
+
+(function(){
+  var d=new Date();
+  document.getElementById('wdate').valueAsDate=d;
+  renderPipelineCheck();
+})();
+
+function tryAdd(){
+  var name=document.getElementById('new-name').value.trim();
+  var urgency=document.getElementById('new-urgency').value.trim();
+  var owner=document.getElementById('new-owner').value;
+  var vertical=document.getElementById('new-vertical').value;
+  var mvp=document.getElementById('new-mvp').value;
+
+  if(!name){
+    document.getElementById('new-name').focus();
+    document.getElementById('new-name').style.borderBottom='1px solid #EF4444';
+    setTimeout(function(){document.getElementById('new-name').style.borderBottom='';},1500);
+    return;
+  }
+
+  ideas.push({
+    id:'i'+(++ic),
+    name:name,
+    urgency:urgency,
+    owner:owner,
+    vertical:vertical,
+    mvp:mvp,
+    notes:'',
+    champion:true
+  });
+
+  // Clear form
+  document.getElementById('new-name').value='';
+  document.getElementById('new-urgency').value='';
+  document.getElementById('new-mvp').value='no';
+
+  renderIdeas();
+  renderPipelineCheck();
+  document.getElementById('new-name').focus();
+}
+
+function renderIdeas(){
+  var list=document.getElementById('ideas-list');
+  var label=document.getElementById('ideas-label');
+  document.getElementById('idea-count').textContent=ideas.length;
+  label.style.display=ideas.length>0?'flex':'none';
+
+  if(ideas.length===0){list.innerHTML='';return;}
+
+  var html='';
+  ideas.forEach(function(idea,i){
+    var mvpBadge=idea.mvp==='yes'?'<span class="ic-mvp">&#10004; MVP &mdash; goes to Incubation</span>':idea.mvp==='partial'?'<span class="ic-mvp" style="background:#EDE9FE;color:#5B21B6">Partial MVP</span>':'';
+    html+='<div class="idea-card '+(idea.champion?'champion':'')+'" id="card-'+idea.id+'">';
+    html+='<div class="ic-top">';
+    html+='<div class="ic-num">'+(i+1)+'</div>';
+    html+='<div class="ic-content">';
+    html+='<input class="ic-name" value="'+escHtml(idea.name)+'" oninput="updIdea(\''+idea.id+'\',\'name\',this.value)">';
+    html+='<input class="ic-urgency" value="'+escHtml(idea.urgency)+'" placeholder="Why now? (urgency...)" oninput="updIdea(\''+idea.id+'\',\'urgency\',this.value)">';
+    html+='<div class="ic-meta">';
+    html+='<span class="ic-owner-tag">'+idea.owner+'</span>';
+    html+='<span class="ic-vertical">'+idea.vertical+'</span>';
+    html+=mvpBadge;
+    html+='</div></div>';
+    html+='<div class="ic-actions">';
+    html+='<button class="ic-expand '+(false?'open':'')+'" id="exp-'+idea.id+'" onclick="togNotes(\''+idea.id+'\')">&#9656;</button>';
+    html+='<button class="ic-del" onclick="delIdea(\''+idea.id+'\')" title="Remove">&#x2715;</button>';
+    html+='</div></div>';
+    html+='<div class="ic-notes" id="notes-'+idea.id+'">';
+    html+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-bottom:2px">Discussion notes</div>';
+    html+='<input class="notes-inp" placeholder="Key points from discussion..." value="'+escHtml(idea.notes||'')+'" oninput="updIdea(\''+idea.id+'\',\'notes\',this.value)">';
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+  renderPipelineCheck();
+}
+
+function togNotes(id){
+  var notes=document.getElementById('notes-'+id);
+  var exp=document.getElementById('exp-'+id);
+  var o=notes.classList.contains('open');
+  notes.classList.toggle('open',!o);
+  exp.classList.toggle('open',!o);
+}
+
+function updIdea(id,field,val){
+  var idea=ideas.find(function(x){return x.id===id;});
+  if(idea){idea[field]=val;renderPipelineCheck();}
+}
+
+function delIdea(id){
+  if(!confirm('Remove this idea?'))return;
+  ideas=ideas.filter(function(x){return x.id!==id;});
+  renderIdeas();
+}
+
+function renderPipelineCheck(){
+  var checks=document.getElementById('ps-checks');
+  if(ideas.length===0){
+    checks.innerHTML='<div class="ps-item"><span class="ps-dot warn"></span><span class="ps-text warn">No ideas captured yet</span></div>';
+    return;
+  }
+  var ready=0,partial=0,missing=0;
+  var html='';
+  ideas.forEach(function(idea,i){
+    var hasName=!!(idea.name&&idea.name.trim());
+    var hasUrgency=!!(idea.urgency&&idea.urgency.trim());
+    var hasOwner=!!idea.owner;
+    var all=hasName&&hasUrgency&&hasOwner;
+    var none=!hasName&&!hasUrgency;
+    if(all)ready++;
+    else if(!none)partial++;
+    else missing++;
+    var statusDot=all?'ok':(!none?'warn':'bad');
+    var statusText=all?'Ready for Pipeline Review':(hasName&&!hasUrgency?'Missing urgency':!hasName?'Missing name':'Incomplete');
+    var mvpNote=idea.mvp==='yes'?' &rarr; goes to Incubation':'';
+    html+='<div class="ps-item"><span class="ps-dot '+statusDot+'"></span><span class="ps-text '+(all?'':'warn')+'">'+(i+1)+'. '+(idea.name||'Unnamed')+' &mdash; '+statusText+mvpNote+'</span></div>';
+  });
+  var summary='<div class="ps-item" style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px">';
+  summary+='<span class="ps-dot ok"></span><span class="ps-text">'+ready+' ready &middot; '+partial+' incomplete &middot; '+missing+' missing</span></div>';
+  checks.innerHTML=html+summary;
+}
+
+function escHtml(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function exportJSON(){
+  var data={
+    session:document.getElementById('wdate').value||new Date().toISOString().slice(0,10),
+    theme:document.getElementById('session-theme').value||'',
+    exported:new Date().toISOString(),
+    ideas:ideas.map(function(i){
+      return {
+        name:i.name,
+        urgency:i.urgency,
+        owner:i.owner,
+        vertical:i.vertical,
+        mvp:i.mvp,
+        notes:i.notes,
+        // Stage is determined by MVP status
+        stage:i.mvp==='yes'?'incubation':'pool'
+      };
+    })
+  };
+  var json=JSON.stringify(data,null,2);
+  var out=document.getElementById('json-out');
+  out.value=json;out.style.display='block';out.select();
+  try{
+    document.execCommand('copy');
+    alert('JSON copied! Paste it into Tuesday\'s Pipeline Review to load these ideas automatically.');
+  }catch(e){
+    alert('JSON ready below. Copy it manually and paste it into Tuesday\'s Pipeline Review.');
+  }
+}
+</script>
+</body>
+</html>
