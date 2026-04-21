@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Meeting Flow Diagram</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1a1a1a}
+.hdr{background:#1A1A2E;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hdr h1{color:#fff;font-size:20px;font-weight:700}
+.hdr p{color:#7aaccc;font-size:13px;margin-top:2px}
+.hdr-badge{background:rgba(255,255,255,.1);color:#aaa;font-size:11px;padding:4px 12px;border-radius:20px}
+.main{max-width:820px;margin:0 auto;padding:32px 20px}
+.diagram-wrap{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:24px;margin-bottom:20px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:#555}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.note{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:12px 16px;font-size:13px;color:#555;line-height:1.6;border-left:4px solid #1A1A2E}
+.note b{color:#1A1A2E}
+svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div><h1>VUC Operating Framework</h1><p>How ideas and projects flow through the meeting system</p></div>
+  <span class="hdr-badge">Version 1.0 &mdash; April 2026</span>
+</div>
+<div class="main">
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#D85A30"></div>Entry &amp; Execution (Friday / Monday)</div>
+    <div class="leg"><div class="leg-dot" style="background:#1A5FA5"></div>Evaluation gates (Tuesday PM / Bi-weekly / Monthly)</div>
+    <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Approved / Top 5</div>
+    <div class="leg"><div class="leg-dot" style="background:#888780"></div>Exit paths (Kill / Park / Return)</div>
+    <div class="leg"><div class="leg-dot" style="background:#ddd;border:1px dashed #999"></div>MVP fast-track</div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg width="100%" viewBox="0 0 680 920" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>VUC idea-to-execution flow</title>
+    <desc>Flowchart showing how ideas move from Friday Ideas Session through Pipeline Review, Incubation Meeting, Monthly Strategic Review, and finally to Monday Execution Meeting.</desc>
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- ─── FRIDAY ─── -->
+    <rect x="220" y="30" width="240" height="44" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="1"/>
+    <text x="340" y="52" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#4A1B0C">Friday — ideas session</text>
+    <text x="340" y="86" text-anchor="middle" font-size="11" fill="#666">Ideas captured with owner + urgency + vertical</text>
+
+    <line x1="340" y1="96" x2="340" y2="116" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- IDEA POOL -->
+    <rect x="230" y="118" width="220" height="44" rx="8" fill="#FAEEDA" stroke="#BA7517" stroke-width="1"/>
+    <text x="340" y="140" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#412402">Idea Pool (Jira)</text>
+    <text x="340" y="174" text-anchor="middle" font-size="11" fill="#666">Ticket created before session closes</text>
+
+    <line x1="340" y1="184" x2="340" y2="204" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ─── TUESDAY PM ─── -->
+    <rect x="196" y="206" width="288" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+    <text x="340" y="228" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#042C53">Tuesday PM — pipeline review</text>
+    <text x="340" y="262" text-anchor="middle" font-size="11" fill="#666">Check 4 requirements: owner · urgency · description · fit</text>
+
+    <!-- 3-way split -->
+    <line x1="340" y1="272" x2="340" y2="290" stroke="#ccc" stroke-width="0.8"/>
+    <line x1="100" y1="290" x2="580" y2="290" stroke="#ccc" stroke-width="0.8"/>
+
+    <!-- LEFT: Return to owner -->
+    <line x1="100" y1="290" x2="100" y2="312" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="32" y="314" width="136" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+    <text x="100" y="333" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#2C2C2A">Return to owner</text>
+    <text x="100" y="349" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#888">Missing fields</text>
+
+    <!-- CENTER: Under Review -->
+    <line x1="340" y1="290" x2="340" y2="312" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="244" y="314" width="192" height="44" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+    <text x="340" y="336" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#042C53">Under review</text>
+
+    <!-- RIGHT: Kill/Park -->
+    <line x1="580" y1="290" x2="580" y2="312" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="512" y="314" width="136" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+    <text x="580" y="333" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#2C2C2A">Kill / Park</text>
+    <text x="580" y="349" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#888">Reason in Jira</text>
+
+    <!-- Under Review → Incubation -->
+    <line x1="340" y1="358" x2="340" y2="400" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ─── BIWEEKLY ─── -->
+    <rect x="174" y="402" width="332" height="44" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+    <text x="340" y="424" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#26215C">Bi-weekly — incubation meeting</text>
+    <text x="340" y="458" text-anchor="middle" font-size="11" fill="#666">5-min case · Strategic Fit × Feasibility (1–5)</text>
+
+    <!-- 3-way split from Incubation -->
+    <line x1="340" y1="468" x2="340" y2="486" stroke="#ccc" stroke-width="0.8"/>
+    <line x1="140" y1="486" x2="540" y2="486" stroke="#ccc" stroke-width="0.8"/>
+
+    <!-- LEFT: Continue incubation -->
+    <line x1="140" y1="486" x2="140" y2="508" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="50" y="510" width="180" height="50" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+    <text x="140" y="530" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#2C2C2A">Continue incubation</text>
+    <text x="140" y="548" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#888">Back next bi-weekly</text>
+
+    <!-- CENTER: Approved -->
+    <line x1="340" y1="486" x2="340" y2="508" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="248" y="510" width="184" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+    <text x="340" y="532" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#04342C">Approved</text>
+    <text x="340" y="548" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#0F6E56">Goes to Decision Engine</text>
+
+    <!-- RIGHT: Kill/Park from incubation -->
+    <line x1="540" y1="486" x2="540" y2="508" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="460" y="510" width="160" height="50" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+    <text x="540" y="530" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="#2C2C2A">Kill / Park</text>
+    <text x="540" y="548" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#888">Reason in Jira</text>
+
+    <!-- Approved → Monthly -->
+    <line x1="340" y1="554" x2="340" y2="596" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ─── MONTHLY ─── -->
+    <rect x="164" y="598" width="352" height="44" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+    <text x="340" y="620" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#26215C">Monthly — strategic review</text>
+    <text x="340" y="654" text-anchor="middle" font-size="11" fill="#666">Quick Kill Filter · Decision Engine · New Top 5</text>
+
+    <!-- Monthly → Top 5 -->
+    <line x1="340" y1="664" x2="340" y2="706" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- TOP 5 -->
+    <rect x="228" y="708" width="224" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5"/>
+    <text x="340" y="730" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#04342C">Top 5 priority stack</text>
+    <text x="340" y="764" text-anchor="middle" font-size="11" fill="#666">Louis proposes · three validate</text>
+
+    <!-- Top 5 → Monday -->
+    <line x1="340" y1="774" x2="340" y2="796" stroke="#aaa" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ─── MONDAY ─── -->
+    <rect x="186" y="798" width="308" height="44" rx="8" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/>
+    <text x="340" y="820" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#4A1B0C">Monday — execution meeting</text>
+    <text x="340" y="854" text-anchor="middle" font-size="11" fill="#666">Tasks per person · Eisenhower Matrix · Jira</text>
+
+    <!-- ─── MVP FAST-TRACK ─── -->
+    <path d="M230 140 L72 140 L72 424 L174 424" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arr)"/>
+    <rect x="20" y="264" width="52" height="36" rx="6" fill="#f9f9f9" stroke="#ccc" stroke-width="0.5"/>
+    <text x="46" y="278" text-anchor="middle" font-size="10" fill="#999">MVP</text>
+    <text x="46" y="292" text-anchor="middle" font-size="10" fill="#999">fast-track</text>
+
+    <!-- ─── DAY LABELS ─── -->
+    <text x="640" y="52" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="#aaa">FRI</text>
+    <text x="640" y="228" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="#aaa">TUE PM</text>
+    <text x="640" y="424" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="#aaa">2-WK</text>
+    <text x="640" y="620" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="#aaa">MONTHLY</text>
+    <text x="640" y="820" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="#aaa">MON</text>
+
+    <line x1="626" y1="30" x2="626" y2="74" stroke="#e0e0e0" stroke-width="0.5"/>
+    <line x1="626" y1="206" x2="626" y2="250" stroke="#e0e0e0" stroke-width="0.5"/>
+    <line x1="626" y1="402" x2="626" y2="446" stroke="#e0e0e0" stroke-width="0.5"/>
+    <line x1="626" y1="598" x2="626" y2="642" stroke="#e0e0e0" stroke-width="0.5"/>
+    <line x1="626" y1="798" x2="626" y2="842" stroke="#e0e0e0" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <div class="note">
+    <b>How to read this diagram:</b> The main flow is vertical — an idea enters on Friday and works its way down to Monday execution. At each evaluation gate (Tuesday PM and Bi-weekly), ideas can exit left (returned or continued) or right (killed/parked). The dashed line on the left is the MVP fast-track — ideas with a working prototype skip the Idea Pool and Pipeline Review and enter the Incubation Meeting directly.
+  </div>
+
+</div>
+</body>
+</html>
