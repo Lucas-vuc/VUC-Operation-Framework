@@ -40,6 +40,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .rev-task-line{display:flex;align-items:center;gap:10px;padding:4px 0 4px 28px;font-size:12px}
 .rev-task-text{flex:1;color:#333}
 .rev-task-proj{font-size:10px;font-weight:700;color:#999;margin-right:6px}
+.q-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;flex-shrink:0;margin-right:6px}
+.qb1{background:#FEE2E2;color:#7F1D1D}
+.qb2{background:#DBEAFE;color:#1E40AF}
+.qb3{background:#FEF9C3;color:#78350F}
+.qb4{background:#F3F4F6;color:#555}
+.task-desc-hint{font-size:10px;color:#999;font-style:italic;margin-left:4px}
 .rev-status-btns{display:flex;gap:3px;flex-shrink:0}
 .rev-btn{font-size:10px;padding:3px 8px;border:1px solid #e0e0e0;border-radius:12px;background:#fff;cursor:pointer;color:#666;font-weight:600;transition:all .15s;font-family:inherit}
 .rev-btn:hover{border-color:#999}
@@ -370,16 +376,19 @@ function showReview(){
   panel.style.display='block';
   var html='';
   PPL.forEach(function(pe){
-    var pTasks=previousWeek.tasks.filter(function(t){return t.pk===pe.key && (t.q==='q1'||t.q==='q2');});
+    var pTasks=previousWeek.tasks.filter(function(t){return t.pk===pe.key && t.q!=='inbox';});
     html+='<div class="rev-person"><div class="rev-person-hdr"><div class="ow-av '+pe.cls+'">'+pe.init+'</div><span class="ow-nm">'+pe.name+'</span></div>';
     if(pTasks.length===0){
       html+='<div class="rev-empty">No Q1 or Q2 tasks committed last week</div>';
     } else {
       pTasks.forEach(function(t,i){
         var rid='rev-'+pe.key+'-'+i;
+        var qLabels={q1:'Q1: do first',q2:'Q2: schedule',q3:'Q3: delegate',q4:'Q4: skipped'};
+        var qCls={q1:'qb1',q2:'qb2',q3:'qb3',q4:'qb4'};
         html+='<div class="rev-task-line" data-rid="'+rid+'" data-task="'+encodeURIComponent(JSON.stringify(t))+'">';
+        html+='<span class="q-badge '+(qCls[t.q]||'qb4')+'">'+(qLabels[t.q]||t.q||'?')+'</span>';
         html+='<span class="rev-task-proj">['+(t.pn||'').substring(0,8).toUpperCase()+']</span>';
-        html+='<span class="rev-task-text">'+t.text+'</span>';
+        html+='<div style="flex:1"><span class="rev-task-text">'+t.text+'</span>'+(t.desc?'<div class="task-desc-hint" style="margin-top:1px">'+t.desc+'</div>':'')+'</div>';
         html+='<div class="rev-status-btns">';
         html+='<button class="rev-btn done" onclick="setRevStatus(this,\'done\',\''+rid+'\')">Done</button>';
         html+='<button class="rev-btn partial" onclick="setRevStatus(this,\'partial\',\''+rid+'\')">Partial</button>';
