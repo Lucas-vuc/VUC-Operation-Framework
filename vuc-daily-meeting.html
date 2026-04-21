@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Daily Meeting</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root {
+    --navy:   #0D1B2A;
+    --gold:   #C9A84C;
+    --gold2:  #E8C76A;
+    --slate:  #2E4057;
+    --fog:    #F4F6F9;
+    --line:   #DDE2EA;
+    --muted:  #8494A8;
+    --white:  #FFFFFF;
+    --red:    #B03030;
+    --amber:  #C47C15;
+    --green:  #1E7A4A;
+    --tag-bg: #EEF1F6;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0D1B2A;
+    min-height: 100vh;
+    padding: 0;
+    color: var(--navy);
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--navy);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .topbar-brand .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .topbar-brand .subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .topbar-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .topbar-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .timer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--white);
+    letter-spacing: 2px;
+    min-width: 62px;
+  }
+  .timer-display.warn { color: var(--amber); }
+  .timer-display.over { color: var(--red); }
+  .btn-timer {
+    background: none;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    transition: all .15s;
+  }
+  .btn-timer:hover { background: var(--gold); color: var(--navy); }
+  .progress-bar-wrap {
+    width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width .5s linear, background .5s;
+    border-radius: 2px;
+  }
+
+  /* ── PAGE ── */
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    background: rgba(201,168,76,.12);
+    border: 1px solid rgba(201,168,76,.35);
+    padding: 4px 9px;
+    border-radius: 3px;
+    letter-spacing: 2px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--white);
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .section-mins {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: auto;
+    letter-spacing: 1px;
+  }
+  .section-rule {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(201,168,76,.4) 0%, rgba(201,168,76,0) 60%);
+    margin-bottom: 20px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  }
+
+  /* ── PERSON BLOCK ── */
+  .person-block {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.15);
+    margin-bottom: 14px;
+  }
+  .person-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+  }
+  .person-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--white);
+    flex-shrink: 0;
+  }
+  .person-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+  }
+  .person-role {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .5px;
+  }
+  .person-body {
+    padding: 0 20px 16px;
+  }
+
+  /* ── EISENHOWER ── */
+  .eisenhower-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .eis-cell {
+    padding: 14px 16px;
+    min-height: 110px;
+    position: relative;
+  }
+  .eis-cell.do-first    { background: #FFF8EC; border: 1.5px solid #E8B84B; }
+  .eis-cell.schedule    { background: #F0F7FF; border: 1.5px solid #6B9FD4; }
+  .eis-cell.delegate    { background: #FFF3F3; border: 1.5px solid #D47B7B; }
+  .eis-cell.eliminate   { background: #F5F5F5; border: 1.5px solid #BBBBBB; }
+  .eis-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .eis-cell.do-first  .eis-label { color: #A07020; }
+  .eis-cell.schedule  .eis-label { color: #2E5F8A; }
+  .eis-cell.delegate  .eis-label { color: #8A2E2E; }
+  .eis-cell.eliminate .eis-label { color: #888; }
+  .eis-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .do-first .eis-dot   { background: #E8B84B; }
+  .schedule .eis-dot   { background: #6B9FD4; }
+  .delegate .eis-dot   { background: #D47B7B; }
+  .eliminate .eis-dot  { background: #BBBBBB; }
+  .eis-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    color: var(--navy);
+    line-height: 1.6;
+    resize: none;
+    min-height: 60px;
+    placeholder-color: #AAA;
+  }
+  .eis-axis-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .eis-row-labels {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .eis-row-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    text-align: center;
+  }
+  .eis-wrap {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 4px;
+  }
+
+  /* ── BLOCKER ── */
+  .blocker-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #FFF5F5;
+    border: 1px solid #F0CDCD;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  .blocker-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .blocker-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--red);
+    line-height: 1.5;
+    resize: none;
+    min-height: 32px;
+  }
+  .blocker-input::placeholder { color: #D4A0A0; }
+  .add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    background: none;
+    border: 1px dashed var(--line);
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all .15s;
+  }
+  .add-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── CROSS DEPT TABLE ── */
+  .cross-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .cross-table thead tr {
+    background: var(--navy);
+  }
+  .cross-table thead th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 500;
+  }
+  .cross-table tbody tr {
+    border-bottom: 1px solid var(--line);
+  }
+  .cross-table tbody tr:hover { background: var(--fog); }
+  .cross-table td {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--navy);
+    vertical-align: top;
+  }
+  .cross-table td:first-child { width: 22%; }
+  .cross-table td:nth-child(2) { width: 36%; }
+  .cross-table td:nth-child(3) { width: 24%; }
+  .cross-table td:last-child { width: 18%; }
+  .cross-table td input, .cross-table td select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--navy);
+    cursor: text;
+  }
+  .cross-table td select { cursor: pointer; }
+  .cross-table td select option { background: var(--white); }
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    background: var(--tag-bg);
+    color: var(--slate);
+  }
+
+  /* ── FOOTER STATUS ── */
+  .meeting-footer {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+  }
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .btn-close {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-close:hover { background: var(--gold2); }
+
+  /* ── LABEL ── */
+  .field-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--line);
+    margin: 14px 0;
+  }
+
+  .btn-export {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-export:hover { background: rgba(201,168,76,.12); }
+  .btn-export.loading { opacity: .5; pointer-events: none; }
+
+  /* scroll */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: rgba(201,168,76,.3); border-radius: 3px; }
+
+  @media print {
+    body { background: white; }
+    .topbar { position: relative; background: var(--navy); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .btn-timer, .btn-close, .add-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="logo">VUC</span>
+    <span class="subtitle">Daily Meeting</span>
+  </div>
+  <div class="topbar-meta">
+    <span class="topbar-date" id="todayDate"></span>
+    <div class="timer-wrap">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width:100%"></div>
+      </div>
+      <span class="timer-display" id="timerDisplay">10:00</span>
+      <button class="btn-timer" id="timerBtn" onclick="toggleTimer()">START</button>
+      <button class="btn-timer" onclick="resetTimer()" style="border-color:var(--muted);color:var(--muted)">RESET</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- ───────────────────────────────────────────── -->
+  <!-- SECTION 1: TODAY'S PRIORITIES -->
+  <!-- ───────────────────────────────────────────── -->
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">Today's Priorities</span>
+    <span class="section-mins">6 MIN · 2 MIN / PERSON</span>
+  </div>
+  <div class="section-rule"></div>
+
+  <!-- LOUIS -->
+  <div class="person-block">
+    <div class="person-header" style="background:#F8FBFF; border-bottom:1px solid var(--line);">
+      <div class="person-avatar" style="background:#1A3A5C;">L</div>
+      <div>
+        <div class="person-name">Louis</div>
+        <div class="person-role">Co-Founder · Strategy & Investors</div>
+      </div>
+    </div>
+    <div class="person-body" style="padding-top:16px;">
+      <span class="field-label">Eisenhower Matrix — Today</span>
+      <div class="eis-axis-label">← NOT URGENT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; URGENT →</div>
+      <div class="eis-wrap">
+        <div class="eis-row-labels">
+          <div class="eis-row-label">Important</div>
+          <div class="eis-row-label">Not Important</div>
+        </div>
+        <div class="eisenhower-grid">
+          <div class="eis-cell do-first">
+            <div class="eis-label"><span class="eis-dot"></span>Do First</div>
+            <textarea class="eis-textarea" placeholder="Urgent + Important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell schedule">
+            <div class="eis-label"><span class="eis-dot"></span>Schedule</div>
+            <textarea class="eis-textarea" placeholder="Important, not urgent…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell delegate">
+            <div class="eis-label"><span class="eis-dot"></span>Delegate</div>
+            <textarea class="eis-textarea" placeholder="Urgent, not important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell eliminate">
+            <div class="eis-label"><span class="eis-dot"></span>Eliminate</div>
+            <textarea class="eis-textarea" placeholder="Neither…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <span class="field-label">Blockers</span>
+      <div id="blockers-louis"></div>
+      <button class="add-btn" onclick="addBlocker('louis')">+ Add blocker</button>
+    </div>
+  </div>
+
+  <!-- YASIN -->
+  <div class="person-block">
+    <div class="person-header" style="background:#F8FFF9; border-bottom:1px solid var(--line);">
+      <div class="person-avatar" style="background:#1A5C3A;">Y</div>
+      <div>
+        <div class="person-name">Yasin</div>
+        <div class="person-role">Co-Founder · CTO & Consulting</div>
+      </div>
+    </div>
+    <div class="person-body" style="padding-top:16px;">
+      <span class="field-label">Eisenhower Matrix — Today</span>
+      <div class="eis-axis-label">← NOT URGENT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; URGENT →</div>
+      <div class="eis-wrap">
+        <div class="eis-row-labels">
+          <div class="eis-row-label">Important</div>
+          <div class="eis-row-label">Not Important</div>
+        </div>
+        <div class="eisenhower-grid">
+          <div class="eis-cell do-first">
+            <div class="eis-label"><span class="eis-dot"></span>Do First</div>
+            <textarea class="eis-textarea" placeholder="Urgent + Important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell schedule">
+            <div class="eis-label"><span class="eis-dot"></span>Schedule</div>
+            <textarea class="eis-textarea" placeholder="Important, not urgent…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell delegate">
+            <div class="eis-label"><span class="eis-dot"></span>Delegate</div>
+            <textarea class="eis-textarea" placeholder="Urgent, not important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell eliminate">
+            <div class="eis-label"><span class="eis-dot"></span>Eliminate</div>
+            <textarea class="eis-textarea" placeholder="Neither…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <span class="field-label">Blockers</span>
+      <div id="blockers-yasin"></div>
+      <button class="add-btn" onclick="addBlocker('yasin')">+ Add blocker</button>
+    </div>
+  </div>
+
+  <!-- LUCAS -->
+  <div class="person-block">
+    <div class="person-header" style="background:#FFFCF5; border-bottom:1px solid var(--line);">
+      <div class="person-avatar" style="background:#8A5C1A;">L</div>
+      <div>
+        <div class="person-name">Lucas</div>
+        <div class="person-role">Organization & Development Manager</div>
+      </div>
+    </div>
+    <div class="person-body" style="padding-top:16px;">
+      <span class="field-label">Eisenhower Matrix — Today</span>
+      <div class="eis-axis-label">← NOT URGENT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; URGENT →</div>
+      <div class="eis-wrap">
+        <div class="eis-row-labels">
+          <div class="eis-row-label">Important</div>
+          <div class="eis-row-label">Not Important</div>
+        </div>
+        <div class="eisenhower-grid">
+          <div class="eis-cell do-first">
+            <div class="eis-label"><span class="eis-dot"></span>Do First</div>
+            <textarea class="eis-textarea" placeholder="Urgent + Important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell schedule">
+            <div class="eis-label"><span class="eis-dot"></span>Schedule</div>
+            <textarea class="eis-textarea" placeholder="Important, not urgent…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell delegate">
+            <div class="eis-label"><span class="eis-dot"></span>Delegate</div>
+            <textarea class="eis-textarea" placeholder="Urgent, not important…" rows="3"></textarea>
+          </div>
+          <div class="eis-cell eliminate">
+            <div class="eis-label"><span class="eis-dot"></span>Eliminate</div>
+            <textarea class="eis-textarea" placeholder="Neither…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <span class="field-label">Blockers</span>
+      <div id="blockers-lucas"></div>
+      <button class="add-btn" onclick="addBlocker('lucas')">+ Add blocker</button>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────────────────── -->
+  <!-- SECTION 2: CROSS-DEPARTMENT TASKS -->
+  <!-- ───────────────────────────────────────────── -->
+  <div class="section-head" style="margin-top:48px;">
+    <span class="section-num">02</span>
+    <span class="section-title">Cross-Department Tasks</span>
+    <span class="section-mins">4 MIN · DEPENDENCIES & HANDOFFS</span>
+  </div>
+  <div class="section-rule"></div>
+
+  <div class="card">
+    <table class="cross-table">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Description / Context</th>
+          <th>From → To</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="crossBody">
+        <tr>
+          <td><input type="text" placeholder="Task name…"></td>
+          <td><input type="text" placeholder="What needs to happen…"></td>
+          <td>
+            <select>
+              <option value="">Select…</option>
+              <option>Louis → Yasin</option>
+              <option>Louis → Lucas</option>
+              <option>Yasin → Louis</option>
+              <option>Yasin → Lucas</option>
+              <option>Lucas → Louis</option>
+              <option>Lucas → Yasin</option>
+              <option>VUC → VWC</option>
+              <option>VWC → VUC</option>
+            </select>
+          </td>
+          <td>
+            <select>
+              <option value="pending">⏳ Pending</option>
+              <option value="inprogress">🔄 In Progress</option>
+              <option value="done">✅ Done</option>
+              <option value="blocked">🚫 Blocked</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Task name…"></td>
+          <td><input type="text" placeholder="What needs to happen…"></td>
+          <td>
+            <select>
+              <option value="">Select…</option>
+              <option>Louis → Yasin</option>
+              <option>Louis → Lucas</option>
+              <option>Yasin → Louis</option>
+              <option>Yasin → Lucas</option>
+              <option>Lucas → Louis</option>
+              <option>Lucas → Yasin</option>
+              <option>VUC → VWC</option>
+              <option>VWC → VUC</option>
+            </select>
+          </td>
+          <td>
+            <select>
+              <option value="pending">⏳ Pending</option>
+              <option value="inprogress">🔄 In Progress</option>
+              <option value="done">✅ Done</option>
+              <option value="blocked">🚫 Blocked</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="text" placeholder="Task name…"></td>
+          <td><input type="text" placeholder="What needs to happen…"></td>
+          <td>
+            <select>
+              <option value="">Select…</option>
+              <option>Louis → Yasin</option>
+              <option>Louis → Lucas</option>
+              <option>Yasin → Louis</option>
+              <option>Yasin → Lucas</option>
+              <option>Lucas → Louis</option>
+              <option>Lucas → Yasin</option>
+              <option>VUC → VWC</option>
+              <option>VWC → VUC</option>
+            </select>
+          </td>
+          <td>
+            <select>
+              <option value="pending">⏳ Pending</option>
+              <option value="inprogress">🔄 In Progress</option>
+              <option value="done">✅ Done</option>
+              <option value="blocked">🚫 Blocked</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:10px 14px; border-top:1px solid var(--line);">
+      <button class="add-btn" onclick="addCrossRow()">+ Add row</button>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="meeting-footer">
+    <div>
+      <div class="footer-text">VUC — DAILY MEETING &nbsp;·&nbsp; 10 MIN HARD STOP</div>
+      <div class="footer-text" style="margin-top:3px; color:rgba(132,148,168,.5);">Blockers not resolved here → create Jira ticket immediately after.</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn-export" id="exportBtn" onclick="exportPDF()">⬇ Export PDF</button>
+      <button class="btn-close" onclick="closeMeeting()">Close Meeting</button>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  // ── DATE ──────────────────────────────────────────────
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  document.getElementById('todayDate').textContent =
+    days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+  // ── TIMER ─────────────────────────────────────────────
+  const TOTAL_SECS = 10 * 60;
+  let remaining = TOTAL_SECS;
+  let running = false;
+  let interval = null;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function updateTimerUI(){
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    const el = document.getElementById('timerDisplay');
+    el.textContent = pad(m) + ':' + pad(s);
+    el.className = 'timer-display' +
+      (remaining <= 60 ? ' over' : remaining <= 120 ? ' warn' : '');
+
+    const pct = (remaining / TOTAL_SECS) * 100;
+    const bar = document.getElementById('progressBar');
+    bar.style.width = pct + '%';
+    bar.style.background = remaining <= 60 ? '#B03030' : remaining <= 120 ? '#C47C15' : '#C9A84C';
+  }
+
+  function toggleTimer(){
+    if(running){
+      clearInterval(interval);
+      running = false;
+      document.getElementById('timerBtn').textContent = 'START';
+    } else {
+      running = true;
+      document.getElementById('timerBtn').textContent = 'PAUSE';
+      interval = setInterval(()=>{
+        if(remaining > 0){ remaining--; updateTimerUI(); }
+        else {
+          clearInterval(interval);
+          running = false;
+          document.getElementById('timerBtn').textContent = 'DONE';
+          document.getElementById('timerDisplay').textContent = '00:00';
+        }
+      }, 1000);
+    }
+  }
+
+  function resetTimer(){
+    clearInterval(interval);
+    running = false;
+    remaining = TOTAL_SECS;
+    document.getElementById('timerBtn').textContent = 'START';
+    updateTimerUI();
+  }
+
+  // ── BLOCKERS ─────────────────────────────────────────
+  function addBlocker(person){
+    const wrap = document.getElementById('blockers-' + person);
+    const row = document.createElement('div');
+    row.className = 'blocker-row';
+    row.innerHTML = `
+      <span class="blocker-icon">🚫</span>
+      <textarea class="blocker-input" placeholder="Describe the blocker and who can resolve it…" rows="2"></textarea>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#BBB;font-size:16px;padding:0 0 0 8px;align-self:flex-start;">×</button>
+    `;
+    wrap.appendChild(row);
+    row.querySelector('textarea').focus();
+  }
+
+  // ── CROSS DEPT ───────────────────────────────────────
+  function addCrossRow(){
+    const tbody = document.getElementById('crossBody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" placeholder="Task name…"></td>
+      <td><input type="text" placeholder="What needs to happen…"></td>
+      <td>
+        <select>
+          <option value="">Select…</option>
+          <option>Louis → Yasin</option>
+          <option>Louis → Lucas</option>
+          <option>Yasin → Louis</option>
+          <option>Yasin → Lucas</option>
+          <option>Lucas → Louis</option>
+          <option>Lucas → Yasin</option>
+          <option>VUC → VWC</option>
+          <option>VWC → VUC</option>
+        </select>
+      </td>
+      <td>
+        <select>
+          <option value="pending">⏳ Pending</option>
+          <option value="inprogress">🔄 In Progress</option>
+          <option value="done">✅ Done</option>
+          <option value="blocked">🚫 Blocked</option>
+        </select>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // ── EXPORT PDF ────────────────────────────────────────
+  function exportPDF(){
+    const btn = document.getElementById('exportBtn');
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Generating…';
+
+    // Sync textarea values to data-value spans for PDF rendering
+    // html2pdf captures the DOM visually — textareas render fine
+    // but we freeze selects as text for clean output
+    document.querySelectorAll('select').forEach(sel => {
+      sel.setAttribute('data-pdf-val', sel.options[sel.selectedIndex]?.text || '');
+    });
+
+    const now2 = new Date();
+    const dateStr = `${now2.getFullYear()}-${pad(now2.getMonth()+1)}-${pad(now2.getDate())}`;
+    const filename = `VUC_Daily_${dateStr}.pdf`;
+
+    // Hide interactive controls during export
+    const hideEls = document.querySelectorAll('.btn-timer, #timerBtn, .add-btn, .progress-bar-wrap, [onclick="resetTimer()"]');
+    hideEls.forEach(el => el.style.visibility = 'hidden');
+    // Freeze topbar (remove sticky so it prints once)
+    document.querySelector('.topbar').style.position = 'relative';
+
+    const opt = {
+      margin:      [8, 8, 8, 8],
+      filename:    filename,
+      image:       { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#0D1B2A' },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:   { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(document.body).save().then(() => {
+      // Restore UI
+      hideEls.forEach(el => el.style.visibility = '');
+      document.querySelector('.topbar').style.position = 'sticky';
+      btn.classList.remove('loading');
+      btn.textContent = '⬇ Export PDF';
+    });
+  }
+
+  // ── CLOSE ─────────────────────────────────────────────
+  function closeMeeting(){
+    if(confirm('Close this Daily Meeting? Make sure all blockers are logged in Jira.')){
+      document.querySelectorAll('textarea, input[type=text]').forEach(el => el.disabled = true);
+      document.querySelectorAll('select').forEach(el => el.disabled = true);
+      document.querySelectorAll('.add-btn').forEach(el => el.style.display = 'none');
+      document.querySelector('.btn-close').textContent = 'Meeting Closed ✓';
+      document.querySelector('.btn-close').style.background = '#1E7A4A';
+      clearInterval(interval);
+      running = false;
+    }
+  }
+
+  updateTimerUI();
+</script>
+</body>
+</html>
