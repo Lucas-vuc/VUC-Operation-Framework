@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VUC — Daily Meeting</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --navy:   #0D1B2A;
@@ -868,169 +868,241 @@
   }
 
   // ── EXPORT PDF ────────────────────────────────────────
-  function getEisRows(blockEl) {
-    const cells = blockEl.querySelectorAll('.eis-cell');
-    const labels = ['DO FIRST','SCHEDULE','DELEGATE','ELIMINATE'];
-    const colors = ['#FFF8EC','#F0F7FF','#FFF3F3','#F5F5F5'];
-    const borders = ['#E8B84B','#6B9FD4','#D47B7B','#BBBBBB'];
-    const tcolors = ['#A07020','#2E5F8A','#8A2E2E','#888888'];
-    let rows = '';
-    cells.forEach((cell, i) => {
-      const val = cell.querySelector('textarea').value.trim() || '—';
-      rows += `
-        <tr>
-          <td style="width:22%;padding:8px 10px;background:${colors[i]};border:1px solid ${borders[i]};font-size:10px;font-weight:700;letter-spacing:1px;color:${tcolors[i]};vertical-align:top;">${labels[i]}</td>
-          <td style="padding:8px 10px;border:1px solid #DDE2EA;font-size:12px;color:#0D1B2A;vertical-align:top;white-space:pre-wrap;">${val}</td>
-        </tr>`;
-    });
-    return rows;
-  }
-
-  function getBlockers(blockEl) {
-    const rows = blockEl.querySelectorAll('.blocker-row');
-    if (!rows.length) return '<p style="font-size:11px;color:#8494A8;margin:4px 0;">None</p>';
-    let html = '';
-    rows.forEach(r => {
-      const val = r.querySelector('textarea').value.trim();
-      if (val) html += `<p style="font-size:12px;color:#B03030;margin:4px 0;padding:6px 10px;background:#FFF5F5;border-left:3px solid #B03030;">🚫 ${val}</p>`;
-    });
-    return html || '<p style="font-size:11px;color:#8494A8;margin:4px 0;">None</p>';
-  }
-
-  function getCrossRows() {
-    const rows = document.querySelectorAll('#crossBody tr');
-    let html = '';
-    rows.forEach(r => {
-      const task   = r.querySelector('td:nth-child(1) input')?.value.trim() || '';
-      const desc   = r.querySelector('td:nth-child(2) input')?.value.trim() || '';
-      const dir    = r.querySelector('td:nth-child(3) select');
-      const dirVal = dir ? dir.options[dir.selectedIndex]?.text || '' : '';
-      const stat   = r.querySelector('td:nth-child(4) select');
-      const statVal= stat ? stat.options[stat.selectedIndex]?.text || '' : '';
-      if (!task && !desc) return;
-      html += `<tr>
-        <td style="padding:7px 10px;border:1px solid #DDE2EA;font-size:12px;">${task}</td>
-        <td style="padding:7px 10px;border:1px solid #DDE2EA;font-size:12px;">${desc}</td>
-        <td style="padding:7px 10px;border:1px solid #DDE2EA;font-size:12px;">${dirVal}</td>
-        <td style="padding:7px 10px;border:1px solid #DDE2EA;font-size:12px;">${statVal}</td>
-      </tr>`;
-    });
-    return html || `<tr><td colspan="4" style="padding:8px 10px;color:#8494A8;font-size:11px;border:1px solid #DDE2EA;">No cross-department tasks logged.</td></tr>`;
-  }
-
-  function personPDFBlock(name, role, avatarColor, blockId) {
-    const block = document.getElementById(blockId).closest('.person-block');
-    return `
-      <div style="margin-bottom:20px;border:1px solid #DDE2EA;border-radius:6px;overflow:hidden;page-break-inside:avoid;">
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#F4F6F9;border-bottom:1px solid #DDE2EA;">
-          <div style="width:32px;height:32px;border-radius:50%;background:${avatarColor};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">${name[0]}</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#0D1B2A;">${name}</div>
-            <div style="font-size:10px;color:#8494A8;">${role}</div>
-          </div>
-        </div>
-        <div style="padding:12px 16px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#8494A8;margin-bottom:8px;">EISENHOWER MATRIX</div>
-          <table style="width:100%;border-collapse:collapse;">
-            ${getEisRows(block)}
-          </table>
-          <div style="margin-top:12px;">
-            <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#8494A8;margin-bottom:6px;">BLOCKERS</div>
-            ${getBlockers(document.getElementById(blockId))}
-          </div>
-        </div>
-      </div>`;
-  }
-
+  // ── EXPORT PDF (jsPDF direct — no html2canvas) ───────
   function exportPDF(){
     const btn = document.getElementById('exportBtn');
     btn.classList.add('loading');
     btn.textContent = '⏳ Generating…';
 
-    const now2 = new Date();
-    const dateStr = `${now2.getFullYear()}-${pad(now2.getMonth()+1)}-${pad(now2.getDate())}`;
-    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now2.getDay()];
-    const filename = `VUC_Daily_${dateStr}.pdf`;
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const W = 210, H = 297;
+      const ML = 14, MR = 14, MT = 14;
+      const CW = W - ML - MR; // content width
+      let y = MT;
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;color:#0D1B2A;padding:0;">
+      const now2 = new Date();
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dateStr = `${days[now2.getDay()]} ${now2.getDate()} ${months[now2.getMonth()]} ${now2.getFullYear()}`;
+      const filename = `VUC_Daily_${now2.getFullYear()}-${pad(now2.getMonth()+1)}-${pad(now2.getDate())}.pdf`;
 
-        <!-- HEADER -->
-        <div style="background:#0D1B2A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-          <div>
-            <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;">VUC</span>
-            <span style="font-size:12px;color:#C9A84C;margin-left:8px;letter-spacing:2px;">DAILY MEETING</span>
-          </div>
-          <span style="font-size:11px;color:#8494A8;">${dayName}, ${dateStr}</span>
-        </div>
+      function checkPage(needed = 20) {
+        if (y + needed > H - 14) { doc.addPage(); y = MT; }
+      }
 
-        <!-- SECTION 1 -->
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #C9A84C;">
-          <span style="font-size:11px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);padding:3px 8px;border-radius:3px;color:#C9A84C;letter-spacing:2px;margin-right:10px;">01</span>
-          <span style="font-size:13px;font-weight:700;letter-spacing:1px;color:#0D1B2A;text-transform:uppercase;">Today's Priorities</span>
-        </div>
-        <div style="margin-bottom:24px;">
-          ${personPDFBlock('Louis','Co-Founder · Strategy & Investors','#1A3A5C','blockers-louis')}
-          ${personPDFBlock('Yasin','Co-Founder · CTO & Consulting','#1A5C3A','blockers-yasin')}
-          ${personPDFBlock('Lucas','Organization & Development Manager','#8A5C1A','blockers-lucas')}
-        </div>
+      function hline(yy, color = [221,226,234]) {
+        doc.setDrawColor(...color);
+        doc.setLineWidth(0.3);
+        doc.line(ML, yy, W - MR, yy);
+      }
 
-        <!-- SECTION 2 -->
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2E4057;page-break-before:auto;">
-          <span style="font-size:11px;background:rgba(46,64,87,.15);border:1px solid rgba(46,64,87,.4);padding:3px 8px;border-radius:3px;color:#2E4057;letter-spacing:2px;margin-right:10px;">02</span>
-          <span style="font-size:13px;font-weight:700;letter-spacing:1px;color:#0D1B2A;text-transform:uppercase;">Cross-Department Tasks</span>
-        </div>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:32px;">
-          <thead>
-            <tr style="background:#0D1B2A;">
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">TASK</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">DESCRIPTION</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">FROM → TO</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">STATUS</th>
-            </tr>
-          </thead>
-          <tbody>${getCrossRows()}</tbody>
-        </table>
+      function fillRect(x, yy, w, h, r, g, b) {
+        doc.setFillColor(r, g, b);
+        doc.rect(x, yy, w, h, 'F');
+      }
 
-        <!-- FOOTER NOTE -->
-        <div style="border-top:1px solid #DDE2EA;padding-top:10px;text-align:center;">
-          <span style="font-size:10px;color:#8494A8;letter-spacing:1px;">VUC — CONFIDENTIAL · Daily Meeting Record · ${dateStr}</span>
-        </div>
-      </div>`;
+      function textWrap(text, x, yy, maxW, lineH, color = [13,27,42]) {
+        doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(text || '—', maxW);
+        doc.text(lines, x, yy);
+        return yy + lines.length * lineH;
+      }
 
-    // Render into a wrapper that's visible to html2canvas
-    // html2canvas can't capture opacity:0 or off-screen fixed elements reliably
-    // Strategy: append below page content, capture, then remove
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'width:794px;background:#fff;margin:0 auto;';
-    wrapper.innerHTML = html;
+      // ── HEADER BAR ──
+      fillRect(0, 0, W, 16, 13, 27, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255);
+      doc.text('VUC', ML, 10.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(201, 168, 76);
+      doc.text('DAILY MEETING', ML + 14, 10.5);
+      doc.setTextColor(132, 148, 168);
+      doc.text(dateStr, W - MR, 10.5, { align: 'right' });
+      y = 24;
 
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:9998;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0;';
-    overlay.appendChild(wrapper);
-    document.body.appendChild(overlay);
+      // ── SECTION 01 ──
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(13, 27, 42);
+      doc.text('01  TODAY\'S PRIORITIES', ML, y);
+      doc.setDrawColor(201, 168, 76);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y + 1.5, W - MR, y + 1.5);
+      y += 7;
 
-    // Small delay to ensure render
-    setTimeout(() => {
-      const opt = {
-        margin:      [10, 10, 10, 10],
-        filename:    filename,
-        image:       { type: 'jpeg', quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
-        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:   { mode: 'avoid-all' }
-      };
+      // ── PERSON BLOCKS ──
+      const persons = [
+        { name: 'Louis',  role: 'Co-Founder · Strategy & Investors', color: [26,58,92],  blockId: 'blockers-louis' },
+        { name: 'Yasin',  role: 'Co-Founder · CTO & Consulting',     color: [26,92,58],  blockId: 'blockers-yasin' },
+        { name: 'Lucas',  role: 'Org & Development Manager',          color: [138,92,26], blockId: 'blockers-lucas' },
+      ];
 
-      html2pdf().set(opt).from(wrapper).save().then(() => {
-        document.body.removeChild(overlay);
-        btn.classList.remove('loading');
-        btn.textContent = '⬇ Export PDF';
-      }).catch(() => {
-        document.body.removeChild(overlay);
-        btn.classList.remove('loading');
-        btn.textContent = '⬇ Export PDF';
+      const eisLabels  = ['DO FIRST', 'SCHEDULE', 'DELEGATE', 'ELIMINATE'];
+      const eisBg      = [[255,248,236],[240,247,255],[255,243,243],[245,245,245]];
+      const eisTxt     = [[160,112,32],[46,95,138],[138,46,46],[136,136,136]];
+
+      persons.forEach(person => {
+        checkPage(80);
+
+        // person header
+        fillRect(ML, y, CW, 9, ...person.color);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(255,255,255);
+        doc.text(person.name, ML + 3, y + 6);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(200,220,200);
+        doc.text(person.role, ML + 22, y + 6);
+        y += 10;
+
+        // eisenhower label
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(132,148,168);
+        doc.text('EISENHOWER MATRIX', ML, y + 4);
+        y += 6;
+
+        // eisenhower 2x2 grid
+        const halfW = CW / 2 - 1;
+        const cellH = 22;
+        const block = document.getElementById(person.blockId).closest('.person-block');
+        const cells = block.querySelectorAll('.eis-cell textarea');
+
+        [[0,1],[2,3]].forEach((pair, row) => {
+          pair.forEach((idx, col) => {
+            const cx = ML + col * (halfW + 2);
+            const cy = y + row * (cellH + 2);
+            fillRect(cx, cy, halfW, cellH, ...eisBg[idx]);
+            doc.setDrawColor(...eisBg[idx].map(v => Math.max(0, v - 30)));
+            doc.setLineWidth(0.2);
+            doc.rect(cx, cy, halfW, cellH);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(6.5);
+            doc.setTextColor(...eisTxt[idx]);
+            doc.text(eisLabels[idx], cx + 2, cy + 4.5);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(13, 27, 42);
+            const val = cells[idx]?.value?.trim() || '—';
+            const wrapped = doc.splitTextToSize(val, halfW - 4);
+            doc.text(wrapped.slice(0, 3), cx + 2, cy + 9);
+          });
+        });
+        y += cellH * 2 + 6;
+
+        // blockers
+        checkPage(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(132,148,168);
+        doc.text('BLOCKERS', ML, y);
+        y += 4;
+
+        const blockerRows = document.getElementById(person.blockId).querySelectorAll('.blocker-row textarea');
+        let hasBlocker = false;
+        blockerRows.forEach(ta => {
+          const val = ta.value.trim();
+          if (!val) return;
+          hasBlocker = true;
+          checkPage(10);
+          fillRect(ML, y, CW, 8, 255, 245, 245);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(176, 48, 48);
+          const wrapped = doc.splitTextToSize('🚫 ' + val, CW - 4);
+          doc.text(wrapped[0], ML + 2, y + 5.5);
+          y += 10;
+        });
+        if (!hasBlocker) {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(8);
+          doc.setTextColor(180,180,180);
+          doc.text('None', ML + 2, y + 1);
+          y += 5;
+        }
+        y += 6;
       });
-    }, 300);
+
+      // ── SECTION 02: CROSS-DEPT ──
+      checkPage(30);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(13, 27, 42);
+      doc.text('02  CROSS-DEPARTMENT TASKS', ML, y);
+      doc.setDrawColor(46, 64, 87);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y + 1.5, W - MR, y + 1.5);
+      y += 7;
+
+      // table header
+      const colW = [CW * 0.22, CW * 0.36, CW * 0.24, CW * 0.18];
+      const colX = [ML, ML + colW[0], ML + colW[0] + colW[1], ML + colW[0] + colW[1] + colW[2]];
+      const headers = ['TASK', 'DESCRIPTION', 'FROM → TO', 'STATUS'];
+      fillRect(ML, y, CW, 8, 13, 27, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(201, 168, 76);
+      headers.forEach((h, i) => doc.text(h, colX[i] + 2, y + 5.5));
+      y += 9;
+
+      // table rows
+      const crossRows = document.querySelectorAll('#crossBody tr');
+      let hasData = false;
+      crossRows.forEach((row, ri) => {
+        const task  = row.querySelector('td:nth-child(1) input')?.value.trim() || '';
+        const desc  = row.querySelector('td:nth-child(2) input')?.value.trim() || '';
+        const dirEl = row.querySelector('td:nth-child(3) select');
+        const dir   = dirEl ? dirEl.options[dirEl.selectedIndex]?.text || '' : '';
+        const stEl  = row.querySelector('td:nth-child(4) select');
+        const stat  = stEl  ? stEl.options[stEl.selectedIndex]?.text  || '' : '';
+        if (!task && !desc) return;
+        hasData = true;
+        checkPage(10);
+        if (ri % 2 === 0) fillRect(ML, y, CW, 8, 244, 246, 249);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(13, 27, 42);
+        [task, desc, dir, stat].forEach((v, i) => {
+          const lines = doc.splitTextToSize(v || '—', colW[i] - 4);
+          doc.text(lines[0], colX[i] + 2, y + 5.5);
+        });
+        hline(y + 8, [221,226,234]);
+        y += 9;
+      });
+      if (!hasData) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(180,180,180);
+        doc.text('No cross-department tasks logged.', ML + 2, y + 5);
+        y += 10;
+      }
+
+      // ── FOOTER ──
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        hline(H - 10, [221,226,234]);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
+        doc.setTextColor(132,148,168);
+        doc.text('VUC — Confidential · Daily Meeting Record · ' + dateStr, ML, H - 6);
+        doc.text(`${i} / ${pageCount}`, W - MR, H - 6, { align: 'right' });
+      }
+
+      doc.save(filename);
+
+    } catch(err) {
+      console.error('PDF error:', err);
+      alert('PDF generation failed. Please try again.');
+    }
+
+    btn.classList.remove('loading');
+    btn.textContent = '⬇ Export PDF';
   }
 
   // ── CLOSE ─────────────────────────────────────────────
