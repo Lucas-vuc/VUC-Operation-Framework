@@ -4,671 +4,772 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VUC — Operation Framework</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy:  #0D1B2A;
-    --gold:  #C9A84C;
-    --slate: #2E4057;
-    --white: #FFFFFF;
-    --muted: #8494A8;
-    --fog:   #F0F4F8;
-    --line:  #DDE2EA;
-    --green: #1E7A4A;
-    --red:   #8B1A1A;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:    #07111A;
+  --navy:  #0D1B2A;
+  --gold:  #C9A84C;
+  --goldf: #E8C76A;
+  --white: #FFFFFF;
+  --muted: #6A7E94;
+  /* Ops — red/white */
+  --ops-acc: #C0392B;
+  --ops-lit: #E8877D;
+  --ops-bg:  rgba(192,57,43,.12);
+  /* VWC — teal */
+  --vwc-acc: #24937C;
+  --vwc-lit: #5ECFB4;
+  --vwc-bg:  rgba(36,147,124,.12);
+  /* Idea meetings — blue */
+  --ide-acc: #2563A8;
+  --ide-lit: #7AB4E8;
+  --ide-bg:  rgba(37,99,168,.12);
+  /* Pipeline stages */
+  --s1-c: rgba(255,255,255,.04);
+  --s2-c: rgba(37,99,168,.1);
+  --s3-c: rgba(139,79,191,.1);
+  --s4-c: rgba(201,168,76,.1);
+  --s5-c: rgba(36,147,124,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--white);
+  min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.022) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;z-index:0;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--navy);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,17,26,.96);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(201,168,76,.15);
+  height:56px;padding:0 44px;
+  display:flex;align-items:center;gap:14px;
+}
+.topbar-logo{
+  display:flex;align-items:center;
+  flex-shrink:0;
+}
+.topbar-logo svg{
+  width:28px;height:28px;
+  filter:brightness(1.05);
+}
+.brand-sep{width:1px;height:16px;background:rgba(201,168,76,.25);}
+.brand-sub{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;}
+.topbar-spacer{flex:1;}
+.topbar-month{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
 
-  /* ── TOPBAR ── */
-  .topbar {
-    padding: 18px 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(201,168,76,.25);
-  }
-  .brand { display: flex; align-items: baseline; gap: 12px; }
-  .brand .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: var(--white); letter-spacing: 3px; }
-  .brand .tag  { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
-  .topbar-right { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+/* ── HERO ── */
+.hero{
+  text-align:center;padding:56px 48px 44px;
+  position:relative;z-index:1;
+}
+.hero-logo-wrap{
+  display:flex;justify-content:center;margin-bottom:20px;
+  opacity:0;animation:fadeUp .6s .05s forwards;
+}
+.hero-logo-wrap svg{
+  width:160px;height:160px;
+  filter:drop-shadow(0 0 18px rgba(196,154,108,.35));
+}
+.hero-eyebrow{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:4px;
+  color:var(--gold);text-transform:uppercase;margin-bottom:10px;
+  opacity:0;animation:fadeUp .6s .15s forwards;
+}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5.5vw,64px);
+  letter-spacing:6px;line-height:1;margin-bottom:14px;
+  opacity:0;animation:fadeUp .6s .25s forwards;
+}
+.hero-title em{color:var(--gold);font-style:normal;}
+.hero-desc{
+  font-size:13.5px;color:var(--muted);max-width:540px;margin:0 auto;line-height:1.75;
+  opacity:0;animation:fadeUp .6s .35s forwards;
+}
 
-  /* ── CANVAS ── */
-  .canvas {
-    width: 100%;
-    padding: 48px 32px 80px;
-    position: relative;
-    overflow: hidden;
-  }
+/* ── ZONE WRAP ── */
+.zone-wrap{
+  max-width:1160px;margin:0 auto;
+  padding:0 48px 100px;
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;gap:0;
+}
 
-  /* subtle grid bg */
-  .canvas::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-  }
+/* ── ZONE HEADER ── */
+.zone-header{
+  display:flex;align-items:center;gap:14px;
+  padding:36px 0 20px;
+}
+.zone-icon{font-size:20px;flex-shrink:0;}
+.zone-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.5vw,27px);letter-spacing:4px;line-height:1;margin-bottom:2px;}
+.zone-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.zone-rule{flex:1;height:1px;}
+.zone-badge{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:3px;flex-shrink:0;}
 
-  /* ── FLOW LAYOUT ── */
-  .flow {
-    position: relative;
-    max-width: 1100px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
+/* Ops — red */
+.zone-ops .zone-title{color:var(--ops-lit);}
+.zone-ops .zone-rule{background:linear-gradient(90deg,rgba(192,57,43,.5),transparent);}
+.zone-ops .zone-badge{background:rgba(192,57,43,.15);color:var(--ops-lit);border:1px solid rgba(192,57,43,.3);}
+/* VWC — teal */
+.zone-vwc .zone-title{color:var(--vwc-lit);}
+.zone-vwc .zone-rule{background:linear-gradient(90deg,rgba(36,147,124,.45),transparent);}
+.zone-vwc .zone-badge{background:rgba(36,147,124,.15);color:var(--vwc-lit);border:1px solid rgba(36,147,124,.25);}
+/* Ideas — blue */
+.zone-ide .zone-title{color:var(--ide-lit);}
+.zone-ide .zone-rule{background:linear-gradient(90deg,rgba(37,99,168,.5),transparent);}
+.zone-ide .zone-badge{background:rgba(37,99,168,.15);color:var(--ide-lit);border:1px solid rgba(37,99,168,.3);}
+/* Pipeline — gold */
+.zone-pipe .zone-title{color:var(--gold);}
+.zone-pipe .zone-rule{background:linear-gradient(90deg,rgba(201,168,76,.38),transparent);}
+.zone-pipe .zone-badge{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.22);}
 
-  /* ── ROW ── */
-  .flow-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-    position: relative;
-    z-index: 2;
-  }
+.zone-sep{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06) 20%,rgba(255,255,255,.06) 80%,transparent);margin:4px 0;}
 
-  /* ── CONNECTOR VERTICAL ── */
-  .connector-v {
-    width: 2px;
-    height: 36px;
-    background: linear-gradient(180deg, rgba(201,168,76,.6), rgba(201,168,76,.2));
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-  .connector-v::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 7px solid rgba(201,168,76,.5);
-  }
+/* ── MEETING CARDS GRID ── */
+.meeting-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:4px;}
+.meeting-grid.single{grid-template-columns:1fr;max-width:500px;}
+.meeting-grid.two{grid-template-columns:1fr 1fr;}
 
-  /* connector horizontal bridge */
-  .connector-bridge {
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: relative;
-    z-index: 1;
-    margin: 0;
-  }
-  .bridge-line {
-    position: absolute;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 5%, rgba(201,168,76,.3) 20%, rgba(201,168,76,.3) 80%, transparent 95%);
-    width: 80%;
-    top: 50%;
-  }
-  .bridge-down {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: rgba(201,168,76,.3);
-    top: 0;
-  }
+/* ── CARD ── */
+.mcard{
+  border-radius:10px;overflow:hidden;
+  text-decoration:none;display:block;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  transition:all .22s;position:relative;cursor:pointer;
+}
+.mcard::after{
+  content:'↗';position:absolute;top:11px;right:13px;
+  font-size:11px;color:rgba(255,255,255,.13);transition:all .2s;
+}
+.mcard:hover::after{color:var(--gold);transform:translate(1px,-1px);}
+.mcard:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
 
-  /* ── NODE ── */
-  .node {
-    position: relative;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform .2s, box-shadow .2s;
-    text-decoration: none;
-    display: block;
-  }
-  .node:hover { transform: translateY(-3px); }
+/* card accents */
+.mcard.ops:hover{background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.35);}
+.mcard.ops .mc-bar{background:var(--ops-acc);}
+.mcard.vwc:hover{background:rgba(36,147,124,.07);border-color:rgba(36,147,124,.32);}
+.mcard.vwc .mc-bar{background:var(--vwc-acc);}
+.mcard.ide:hover{background:rgba(37,99,168,.07);border-color:rgba(37,99,168,.35);}
+.mcard.ide .mc-bar{background:var(--ide-acc);}
+.mcard.daily-card:hover{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.35);}
+.mcard.daily-card .mc-bar{background:var(--gold);}
 
-  /* START node */
-  .node-start {
-    background: linear-gradient(135deg, var(--gold) 0%, #E8C76A 100%);
-    padding: 14px 36px;
-    border-radius: 40px;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(201,168,76,.35);
-  }
-  .node-start .n-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--navy);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
+.mc-bar{height:3px;width:100%;}
+.mc-head{padding:14px 18px 11px;border-bottom:1px solid rgba(255,255,255,.05);}
+.mc-chips{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap;}
+.chip{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:3px;text-transform:uppercase;}
+.chip-gold  {background:rgba(201,168,76,.16);color:var(--gold);border:1px solid rgba(201,168,76,.28);}
+.chip-red   {background:rgba(192,57,43,.18);color:#E8877D;border:1px solid rgba(192,57,43,.3);}
+.chip-teal  {background:rgba(36,147,124,.18);color:#5ECFB4;border:1px solid rgba(36,147,124,.28);}
+.chip-blue  {background:rgba(37,99,168,.18);color:#7AB4E8;border:1px solid rgba(37,99,168,.28);}
+.chip-purple{background:rgba(139,79,191,.18);color:#C49FE8;border:1px solid rgba(139,79,191,.28);}
+.chip-dkred {background:rgba(140,40,40,.22);color:#E08080;border:1px solid rgba(140,40,40,.35);}
+.chip-muted {background:rgba(255,255,255,.05);color:var(--muted);border:1px solid rgba(255,255,255,.08);}
+.chip-async {background:rgba(255,255,255,.04);color:rgba(106,126,148,.6);border:1px dashed rgba(255,255,255,.08);}
 
-  /* DAILY node — special */
-  .node-daily {
-    background: var(--navy);
-    border: 2px solid var(--gold);
-    padding: 0;
-    width: 280px;
-    box-shadow: 0 0 24px rgba(201,168,76,.2);
-  }
-  .node-daily:hover { box-shadow: 0 6px 32px rgba(201,168,76,.35); }
-  .node-daily .n-header {
-    background: var(--gold);
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 8px 8px 0 0;
-  }
-  .node-daily .n-header .freq {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--navy);
-    opacity: .7;
-  }
-  .node-daily .n-header .n-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--navy);
-    letter-spacing: 1px;
-  }
-  .node-daily .n-body {
-    padding: 10px 16px 12px;
-  }
-  .node-daily .n-desc {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .node-daily .n-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 8px;
-  }
-  .n-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 2px 7px;
-    border-radius: 3px;
-    background: rgba(255,255,255,.06);
-    color: var(--muted);
-    border: 1px solid rgba(255,255,255,.08);
-  }
-  .n-tag.gold { background: rgba(201,168,76,.15); color: var(--gold); border-color: rgba(201,168,76,.3); }
+.mc-title{font-weight:600;font-size:14px;color:var(--white);line-height:1.2;padding-right:22px;}
+.mc-body{padding:11px 18px 14px;}
+.mc-desc{font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:9px;}
+.mc-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.mc-tag{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.8px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.04);color:rgba(106,126,148,.8);border:1px solid rgba(255,255,255,.06);}
+.mc-tag.gold  {background:rgba(201,168,76,.1); color:var(--gold); border-color:rgba(201,168,76,.2);}
+.mc-tag.red   {background:rgba(192,57,43,.1);  color:#E8877D;    border-color:rgba(192,57,43,.22);}
+.mc-tag.teal  {background:rgba(36,147,124,.1); color:#5ECFB4;    border-color:rgba(36,147,124,.2);}
+.mc-tag.blue  {background:rgba(37,99,168,.1);  color:#7AB4E8;    border-color:rgba(37,99,168,.2);}
+.mc-tag.purple{background:rgba(139,79,191,.1); color:#C49FE8;    border-color:rgba(139,79,191,.2);}
+.mc-tag.green {background:rgba(36,147,124,.1); color:#5ECFB4;    border-color:rgba(36,147,124,.2);}
 
-  /* STANDARD meeting node */
-  .node-meeting {
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.1);
-    width: 230px;
-    transition: all .2s;
-  }
-  .node-meeting:hover {
-    background: rgba(255,255,255,.08);
-    border-color: rgba(201,168,76,.4);
-    box-shadow: 0 4px 20px rgba(201,168,76,.15);
-  }
-  .node-meeting .n-header {
-    padding: 9px 14px 8px;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .freq-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 8px;
-    letter-spacing: 1.5px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
-  .freq-daily   { background: rgba(201,168,76,.2);  color: var(--gold); }
-  .freq-weekly  { background: rgba(46,64,87,.6);    color: #7EA3C4; border: 1px solid rgba(126,163,196,.2); }
-  .freq-biweekly{ background: rgba(30,122,74,.2);   color: #5DBF8A; border: 1px solid rgba(93,191,138,.2); }
-  .freq-monthly { background: rgba(139,26,26,.2);   color: #E07070; border: 1px solid rgba(224,112,112,.2); }
+.no-mtg{border:1px dashed rgba(255,255,255,.06);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;opacity:.38;}
+.no-mtg-label{font-size:12px;color:rgba(106,126,148,.5);}
 
-  .node-meeting .n-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: .3px;
-  }
-  .node-meeting .n-body {
-    padding: 8px 14px 10px;
-  }
-  .node-meeting .n-desc {
-    font-size: 10.5px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .node-meeting .n-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 7px;
-  }
-  .node-meeting .n-dur {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: rgba(132,148,168,.6);
-    margin-top: 6px;
-  }
+/* ── PIPELINE FLOW ── */
+.pipeline-flow{display:flex;flex-direction:column;gap:0;position:relative;}
+.pipeline-flow::before{
+  content:'';position:absolute;
+  left:28px;top:18px;bottom:20px;width:2px;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.1) 0%,
+    rgba(37,99,168,.5) 18%,
+    rgba(139,79,191,.5) 36%,
+    rgba(201,168,76,.6) 55%,
+    rgba(36,147,124,.5) 74%,
+    rgba(36,147,124,.1) 100%);
+  border-radius:2px;z-index:0;
+}
 
-  /* TOOL node (excel) */
-  .node-tool {
-    background: rgba(255,255,255,.03);
-    border: 1px dashed rgba(255,255,255,.12);
-    width: 200px;
-  }
-  .node-tool:hover {
-    background: rgba(255,255,255,.07);
-    border-color: rgba(201,168,76,.3);
-  }
-  .node-tool .n-header {
-    padding: 9px 14px 8px;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .node-tool .n-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(255,255,255,.6);
-  }
-  .node-tool .n-body { padding: 8px 14px 10px; }
-  .node-tool .n-desc { font-size: 10.5px; color: rgba(132,148,168,.5); line-height: 1.5; }
-  .node-tool .n-dur  { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(132,148,168,.4); margin-top: 6px; }
+.ps-row{display:grid;grid-template-columns:60px 1fr;align-items:stretch;position:relative;z-index:1;}
+.ps-num-col{display:flex;flex-direction:column;align-items:center;padding-top:18px;}
+.ps-num-bubble{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;flex-shrink:0;z-index:2;border:2px solid;}
+.ps-num-line{width:2px;flex:1;min-height:24px;margin:4px 0;opacity:.3;}
 
-  /* ── DAY LABELS ── */
-  .day-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(132,148,168,.4);
-    text-align: center;
-    margin-top: 4px;
-  }
+.ps-card{margin:8px 0 8px 16px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.08);transition:transform .22s,box-shadow .22s;}
+.ps-card:hover{transform:translateX(5px);box-shadow:0 6px 22px rgba(0,0,0,.3);}
+.ps-head{padding:13px 18px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ps-name{font-weight:600;font-size:14px;flex:1;}
+.ps-badge{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:10px;text-transform:uppercase;flex-shrink:0;}
+.ps-body{padding:10px 18px 13px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;}
+.ps-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.ps-trigger{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;border-radius:5px;white-space:nowrap;flex-shrink:0;line-height:1.55;text-align:right;}
 
-  /* ── SECTION DIVIDERS ── */
-  .flow-divider {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    width: 90%;
-    margin: 32px auto 28px;
-  }
-  .flow-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,.06); }
-  .flow-divider-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(132,148,168,.35);
-  }
+/* stage colors */
+.stage-1 .ps-num-bubble{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.14);color:rgba(255,255,255,.38);}
+.stage-1 .ps-num-line{background:rgba(37,99,168,.5);}
+.stage-1 .ps-card{background:rgba(255,255,255,.025);}
+.stage-1 .ps-name{color:rgba(255,255,255,.65);}
+.stage-1 .ps-badge{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.08);}
+.stage-1 .ps-trigger{background:rgba(255,255,255,.04);color:rgba(106,126,148,.6);border:1px solid rgba(255,255,255,.06);}
 
-  /* ── LEGEND ── */
-  .legend {
-    position: fixed;
-    bottom: 24px;
-    right: 28px;
-    background: rgba(13,27,42,.9);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 8px;
-    padding: 12px 16px;
-    backdrop-filter: blur(8px);
-    z-index: 10;
-  }
-  .legend-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-  .legend-row:last-child { margin-bottom: 0; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .legend-text { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: .5px; }
+.stage-2 .ps-num-bubble{background:rgba(37,99,168,.15);border-color:rgba(37,99,168,.4);color:#7AB4E8;}
+.stage-2 .ps-num-line{background:rgba(139,79,191,.5);}
+.stage-2 .ps-card{background:rgba(37,99,168,.06);border-color:rgba(37,99,168,.18);}
+.stage-2 .ps-name{color:#7AB4E8;}
+.stage-2 .ps-badge{background:rgba(37,99,168,.15);color:#7AB4E8;border:1px solid rgba(37,99,168,.25);}
+.stage-2 .ps-trigger{background:rgba(37,99,168,.1);color:#7AB4E8;border:1px solid rgba(37,99,168,.2);}
 
-  /* ── HOVER TOOLTIP ── */
-  .node[data-tip]:hover::after {
-    content: '→ Open';
-    position: absolute;
-    bottom: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--gold);
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
+.stage-3 .ps-num-bubble{background:rgba(139,79,191,.15);border-color:rgba(139,79,191,.4);color:#C49FE8;}
+.stage-3 .ps-num-line{background:rgba(201,168,76,.5);}
+.stage-3 .ps-card{background:rgba(139,79,191,.06);border-color:rgba(139,79,191,.18);}
+.stage-3 .ps-name{color:#C49FE8;}
+.stage-3 .ps-badge{background:rgba(139,79,191,.15);color:#C49FE8;border:1px solid rgba(139,79,191,.25);}
+.stage-3 .ps-trigger{background:rgba(139,79,191,.1);color:#C49FE8;border:1px solid rgba(139,79,191,.2);}
 
-  /* ── PIPELINE FLOW ── */
-  .pipeline-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    justify-content: center;
-    flex-wrap: nowrap;
-  }
-  .pipe-stage {
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 6px;
-    padding: 8px 14px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .pipe-stage .ps-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .pipe-arrow {
-    font-size: 12px;
-    color: rgba(201,168,76,.35);
-    padding: 0 6px;
-    flex-shrink: 0;
-  }
+/* Stage 4 — GREEN (approved) */
+.stage-4 .ps-num-bubble{background:rgba(36,147,124,.18);border-color:rgba(36,147,124,.55);color:#5ECFB4;}
+.stage-4 .ps-num-line{background:rgba(36,147,124,.55);}
+.stage-4 .ps-card{background:rgba(36,147,124,.07);border-color:rgba(36,147,124,.25);}
+.stage-4 .ps-name{color:#5ECFB4;}
+.stage-4 .ps-badge{background:rgba(36,147,124,.18);color:#5ECFB4;border:1px solid rgba(36,147,124,.3);}
+.stage-4 .ps-trigger{background:rgba(36,147,124,.1);color:#5ECFB4;border:1px solid rgba(36,147,124,.22);}
+
+/* Stage 5 — bright green (active) */
+.stage-5 .ps-num-bubble{background:rgba(36,147,124,.25);border-color:rgba(36,147,124,.6);color:#7DDBC6;}
+.stage-5 .ps-num-line{display:none;}
+.stage-5 .ps-card{background:rgba(36,147,124,.09);border-color:rgba(36,147,124,.3);}
+.stage-5 .ps-name{color:#7DDBC6;}
+.stage-5 .ps-badge{background:rgba(36,147,124,.2);color:#7DDBC6;border:1px solid rgba(36,147,124,.32);}
+.stage-5 .ps-trigger{background:rgba(36,147,124,.12);color:#7DDBC6;border:1px solid rgba(36,147,124,.25);}
+
+/* OUTCOMES */
+.outcomes-wrap{margin:4px 0 0 76px;display:flex;gap:10px;}
+.oc{flex:1;text-align:center;padding:10px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
+.oc-done {background:rgba(36,147,124,.1);color:#5ECFB4;border:1px solid rgba(36,147,124,.2);}
+.oc-park {background:rgba(201,168,76,.08);color:var(--gold);border:1px solid rgba(201,168,76,.15);}
+.oc-kill {background:rgba(120,30,30,.12);color:#E08080;border:1px solid rgba(120,30,30,.22);}
+
+/* DECISION ENGINE */
+.de-box{margin:16px 0 0 76px;border:1px solid rgba(36,147,124,.22);border-radius:10px;background:rgba(36,147,124,.04);overflow:hidden;}
+.de-head{background:rgba(36,147,124,.08);padding:11px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(36,147,124,.13);}
+.de-title{font-weight:600;font-size:13px;color:#5ECFB4;flex:1;}
+.de-body{padding:11px 18px 13px;}
+.de-sheets{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.de-sheet{font-family:'DM Mono',monospace;font-size:8.5px;padding:2px 8px;border-radius:3px;background:rgba(36,147,124,.1);color:#5ECFB4;border:1px solid rgba(36,147,124,.15);}
+.de-row{display:flex;gap:22px;flex-wrap:wrap;}
+.de-threshold{display:flex;align-items:center;gap:7px;}
+.de-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.de-label{font-family:'DM Mono',monospace;font-size:10px;}
+
+/* LEGEND */
+.legend{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:20px;padding:20px 48px 32px;border-top:1px solid rgba(255,255,255,.05);position:relative;z-index:1;}
+.leg-item{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.zone-wrap>*{opacity:0;animation:fadeUp .65s forwards;}
+.zone-wrap>*:nth-child(1){animation-delay:.3s;}
+.zone-wrap>*:nth-child(2){animation-delay:.38s;}
+.zone-wrap>*:nth-child(3){animation-delay:.44s;}
+.zone-wrap>*:nth-child(4){animation-delay:.5s;}
+.zone-wrap>*:nth-child(5){animation-delay:.56s;}
+.zone-wrap>*:nth-child(6){animation-delay:.62s;}
+.zone-wrap>*:nth-child(7){animation-delay:.68s;}
+.zone-wrap>*:nth-child(8){animation-delay:.74s;}
+.zone-wrap>*:nth-child(9){animation-delay:.80s;}
+
+/* PIPELINE MEETING CONNECTOR */
+.ps-meeting {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  align-items: center;
+  position: relative; z-index: 1;
+}
+.ps-meeting-spine {
+  display: flex; flex-direction: column; align-items: center;
+}
+.ps-meeting-line-top    { width:2px; height:14px; opacity:.3; }
+.ps-meeting-line-bottom { width:2px; height:14px; opacity:.3; }
+.ps-meeting-icon {
+  width: 30px; height: 30px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0; z-index: 2; border: 1px solid;
+}
+.ps-meeting-card {
+  margin: 3px 0 3px 16px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  display: flex; align-items: center; gap: 10px; border: 1px solid;
+  text-decoration: none;
+  transition: all .2s;
+}
+.ps-meeting-card:hover { transform: translateX(3px); }
+.ps-meeting-chip { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; padding:2px 7px; border-radius:3px; text-transform:uppercase; flex-shrink:0; }
+.ps-meeting-name { font-weight:600; font-size:12px; flex:1; }
+.ps-meeting-role { font-family:'DM Mono',monospace; font-size:9px; opacity:.6; flex-shrink:0; }
+
+.psm-amber .ps-meeting-line-top    { background:rgba(184,115,51,.6); }
+.psm-amber .ps-meeting-line-bottom { background:rgba(37,99,168,.6); }
+.psm-amber .ps-meeting-icon { background:rgba(184,115,51,.12); border-color:rgba(184,115,51,.3); }
+.psm-amber .ps-meeting-card { background:rgba(184,115,51,.05); border-color:rgba(184,115,51,.2); }
+.psm-amber .ps-meeting-card:hover { background:rgba(184,115,51,.09); border-color:rgba(184,115,51,.35); }
+.psm-amber .ps-meeting-chip { background:rgba(184,115,51,.15); color:#E8A870; border:1px solid rgba(184,115,51,.28); }
+.psm-amber .ps-meeting-name { color:#E8A870; }
+.psm-amber .ps-meeting-role { color:#E8A870; }
+
+.psm-blue .ps-meeting-line-top    { background:rgba(37,99,168,.6); }
+.psm-blue .ps-meeting-line-bottom { background:rgba(139,79,191,.6); }
+.psm-blue .ps-meeting-icon { background:rgba(37,99,168,.12); border-color:rgba(37,99,168,.3); }
+.psm-blue .ps-meeting-card { background:rgba(37,99,168,.05); border-color:rgba(37,99,168,.2); }
+.psm-blue .ps-meeting-card:hover { background:rgba(37,99,168,.1); border-color:rgba(37,99,168,.35); }
+.psm-blue .ps-meeting-chip { background:rgba(37,99,168,.15); color:#7AB4E8; border:1px solid rgba(37,99,168,.28); }
+.psm-blue .ps-meeting-name { color:#7AB4E8; }
+.psm-blue .ps-meeting-role { color:#7AB4E8; }
+
+.psm-purple .ps-meeting-line-top    { background:rgba(139,79,191,.6); }
+.psm-purple .ps-meeting-line-bottom { background:rgba(140,40,40,.6); }
+.psm-purple .ps-meeting-icon { background:rgba(139,79,191,.12); border-color:rgba(139,79,191,.3); }
+.psm-purple .ps-meeting-card { background:rgba(139,79,191,.05); border-color:rgba(139,79,191,.2); }
+.psm-purple .ps-meeting-card:hover { background:rgba(139,79,191,.1); border-color:rgba(139,79,191,.35); }
+.psm-purple .ps-meeting-chip { background:rgba(139,79,191,.15); color:#C49FE8; border:1px solid rgba(139,79,191,.28); }
+.psm-purple .ps-meeting-name { color:#C49FE8; }
+.psm-purple .ps-meeting-role { color:#C49FE8; }
+
+.psm-red .ps-meeting-line-top    { background:rgba(140,40,40,.6); }
+.psm-red .ps-meeting-line-bottom { background:rgba(36,147,124,.6); }
+.psm-red .ps-meeting-icon { background:rgba(140,40,40,.12); border-color:rgba(140,40,40,.3); }
+.psm-red .ps-meeting-card { background:rgba(140,40,40,.05); border-color:rgba(140,40,40,.22); }
+.psm-red .ps-meeting-card:hover { background:rgba(140,40,40,.1); border-color:rgba(140,40,40,.38); }
+.psm-red .ps-meeting-chip { background:rgba(140,40,40,.18); color:#E08080; border:1px solid rgba(140,40,40,.32); }
+.psm-red .ps-meeting-name { color:#E08080; }
+.psm-red .ps-meeting-role { color:#E08080; }
+
+.psm-teal .ps-meeting-line-top    { background:rgba(36,147,124,.6); }
+.psm-teal .ps-meeting-line-bottom { background:rgba(36,147,124,.2); }
+.psm-teal .ps-meeting-icon { background:rgba(36,147,124,.12); border-color:rgba(36,147,124,.3); }
+.psm-teal .ps-meeting-card { background:rgba(36,147,124,.05); border-color:rgba(36,147,124,.2); }
+.psm-teal .ps-meeting-card:hover { background:rgba(36,147,124,.1); border-color:rgba(36,147,124,.35); }
+.psm-teal .ps-meeting-chip { background:rgba(36,147,124,.15); color:#5ECFB4; border:1px solid rgba(36,147,124,.28); }
+.psm-teal .ps-meeting-name { color:#5ECFB4; }
+.psm-teal .ps-meeting-role { color:#5ECFB4; }
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:2px;}
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
-  <div class="brand">
-    <span class="logo">VUC</span>
-    <span class="tag">Operation Framework</span>
+  <div class="topbar-logo">
+    <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g transform="matrix(0.29168564,0,0,0.29168564,75.687757,84.667177)">
+        <g transform="matrix(1.3514866,0,0,1.3514866,-240.88035,-286.16546)" fill="#c49a6c">
+          <path d="m 37.890947,65.383951 c -2.283813,-0.257799 -4.842278,-1.23323 -6.413912,-2.445343 -1.181831,-0.91148 -2.25317,-2.143105 -2.936228,-3.375526 -0.415071,-0.748901 -0.90463,-2.048247 -1.120643,-2.974318 -0.291838,-1.251141 -0.277648,-0.723049 -0.310215,-11.54455 L 27.079629,34.968742 26.95474,34.698261 c -0.06869,-0.148765 -0.267117,-0.419592 -0.44095,-0.601838 -0.524377,-0.549754 -1.178266,-0.797492 -2.104934,-0.797492 h -0.414132 v -0.235629 -0.235628 l 2.38664,0.03751 c 1.312653,0.02063 3.401332,0.03752 4.64151,0.03752 h 2.254869 v 0.198113 0.198113 l -0.466981,9.83e-4 c -0.553521,0.0012 -1.125188,0.112479 -1.463173,0.284906 -0.391868,0.199916 -0.865317,0.691412 -1.048941,1.088926 l -0.162415,0.3516 -0.01739,9.339623 c -0.01225,6.579621 0.0014,9.548713 0.04614,10.04717 0.187588,2.089126 0.881806,4.145797 1.930635,5.719652 0.494915,0.74266 1.59976,1.842782 2.342503,2.332489 1.583202,1.04384 3.031352,1.497959 4.96066,1.555592 1.535766,0.04588 2.677281,-0.108138 3.95122,-0.533107 1.5152,-0.505449 2.721534,-1.259614 3.798977,-2.375008 1.225775,-1.26895 1.993957,-2.68951 2.459741,-4.548675 0.349871,-1.396504 0.331888,-0.82523 0.352799,-11.207547 0.01232,-6.114933 -0.0011,-9.646531 -0.0377,-9.94699 -0.0339,-0.278035 -0.114754,-0.588379 -0.200554,-0.769746 -0.165124,-0.349044 -0.678885,-0.867879 -1.043671,-1.053979 -0.332392,-0.169574 -0.907286,-0.283724 -1.434871,-0.284906 l -0.438679,-9.83e-4 v -0.235628 -0.235628 l 2.386641,0.03751 c 1.312652,0.02063 3.210294,0.03752 4.216981,0.03752 h 1.83034 v 0.198113 0.198113 l -0.410377,3.28e-4 c -1.188412,9.49e-4 -2.031978,0.427773 -2.48054,1.255091 L 52.1551,34.912138 52.12367,44.959307 c -0.02329,7.446381 -0.04906,10.149737 -0.09954,10.443397 -0.289275,1.682938 -0.607822,2.709119 -1.222828,3.939273 -0.884012,1.768225 -2.375075,3.346119 -4.147975,4.389526 -1.460815,0.859735 -3.347375,1.464214 -5.179961,1.659729 -0.6538,0.06975 -2.941172,0.0651 -3.58242,-0.0073 z m 1.875966,-7.985963 c -0.387093,-0.908485 -6.026766,-13.783061 -6.137182,-14.01032 -0.175476,-0.361165 -0.653184,-0.82665 -1.010623,-0.984762 -0.14437,-0.06386 -0.411842,-0.129655 -0.594383,-0.146207 -0.275119,-0.02495 -0.331891,-0.04811 -0.331891,-0.135441 0,-0.101114 0.09909,-0.105346 2.466415,-0.105346 2.312291,0 2.46523,0.0061 2.447463,0.09841 -0.01042,0.05412 -0.05687,0.103371 -0.103207,0.109438 -0.59846,0.07836 -0.904828,0.299256 -1.013478,0.730741 l -0.06497,0.258006 1.013447,2.557364 c 4.000455,10.094871 3.648638,9.244138 3.73508,9.031844 0.04288,-0.105303 1.134342,-2.73863 2.425477,-5.851838 2.129895,-5.135638 2.34508,-5.683278 2.321208,-5.907409 -0.04631,-0.434827 -0.370226,-0.743052 -0.826996,-0.786941 -0.23317,-0.0224 -0.287235,-0.04755 -0.287235,-0.133606 0,-0.101793 0.08773,-0.106006 2.207547,-0.106006 2.114897,0 2.207547,0.0044 2.207547,0.105346 0,0.0878 -0.05756,0.110565 -0.345605,0.136684 -0.729063,0.06611 -1.408314,0.578699 -1.78553,1.347431 -0.189844,0.386885 -5.060561,11.312807 -5.511523,12.363369 -0.218939,0.510041 -0.419501,1.080279 -0.542505,1.542453 -0.03594,0.135049 -0.191097,0.06977 -0.26906,-0.113207 z"/>
+          <g transform="matrix(1.0514412,0,0,1.0951533,84.421436,-21.411867)" fill="#c49a6c">
+            <path d="m -42.201967,39.656594 c -0.463667,-0.0056 -0.92743,-0.0015 -1.390846,0.0124 -14.820232,0.47466 -26.524105,10.607191 -26.470099,22.916268 l 4.779284,0.03661 c -0.04812,-11.490047 9.395444,-20.98615 21.933782,-21.429256 10.61416,-0.345249 20.138936,5.928996 23.156553,15.253891 l -3.194931,-10.300363 c -5.040658,-4.080253 -11.773353,-6.402605 -18.813743,-6.489547 z"/>
+            <path d="m -42.206979,85.151877 c -0.463667,0.0056 -0.92743,0.0015 -1.390846,-0.0124 -14.820232,-0.47466 -26.524105,-10.607191 -26.470099,-22.916268 l 4.786025,0.162596 c -0.04812,11.490047 9.388703,20.786949 21.927041,21.230055 10.61416,0.345249 20.138936,-5.928996 23.156553,-15.253891 l -3.194931,10.300363 c -5.040658,4.080253 -11.773353,6.402605 -18.813743,6.489547 z"/>
+          </g>
+        </g>
+      </g>
+    </svg>
   </div>
-  <span class="topbar-right" id="topDate"></span>
+  <div class="brand-sep"></div>
+  <span class="brand-sub">Operation Framework</span>
+  <div class="topbar-spacer"></div>
+  <span class="topbar-month" id="topMonth"></span>
 </div>
 
-<div class="canvas">
-<div class="flow">
-
-  <!-- ══ START ══ -->
-  <div class="node node-start">
-    <div class="n-title">VUC Operating System</div>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-logo-wrap">
+    <svg width="160" height="160" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g transform="matrix(0.29168564,0,0,0.29168564,75.687757,84.667177)">
+        <g transform="matrix(1.3514866,0,0,1.3514866,-240.88035,-286.16546)" fill="#c49a6c">
+          <path d="m 37.890947,65.383951 c -2.283813,-0.257799 -4.842278,-1.23323 -6.413912,-2.445343 -1.181831,-0.91148 -2.25317,-2.143105 -2.936228,-3.375526 -0.415071,-0.748901 -0.90463,-2.048247 -1.120643,-2.974318 -0.291838,-1.251141 -0.277648,-0.723049 -0.310215,-11.54455 L 27.079629,34.968742 26.95474,34.698261 c -0.06869,-0.148765 -0.267117,-0.419592 -0.44095,-0.601838 -0.524377,-0.549754 -1.178266,-0.797492 -2.104934,-0.797492 h -0.414132 v -0.235629 -0.235628 l 2.38664,0.03751 c 1.312653,0.02063 3.401332,0.03752 4.64151,0.03752 h 2.254869 v 0.198113 0.198113 l -0.466981,9.83e-4 c -0.553521,0.0012 -1.125188,0.112479 -1.463173,0.284906 -0.391868,0.199916 -0.865317,0.691412 -1.048941,1.088926 l -0.162415,0.3516 -0.01739,9.339623 c -0.01225,6.579621 0.0014,9.548713 0.04614,10.04717 0.187588,2.089126 0.881806,4.145797 1.930635,5.719652 0.494915,0.74266 1.59976,1.842782 2.342503,2.332489 1.583202,1.04384 3.031352,1.497959 4.96066,1.555592 1.535766,0.04588 2.677281,-0.108138 3.95122,-0.533107 1.5152,-0.505449 2.721534,-1.259614 3.798977,-2.375008 1.225775,-1.26895 1.993957,-2.68951 2.459741,-4.548675 0.349871,-1.396504 0.331888,-0.82523 0.352799,-11.207547 0.01232,-6.114933 -0.0011,-9.646531 -0.0377,-9.94699 -0.0339,-0.278035 -0.114754,-0.588379 -0.200554,-0.769746 -0.165124,-0.349044 -0.678885,-0.867879 -1.043671,-1.053979 -0.332392,-0.169574 -0.907286,-0.283724 -1.434871,-0.284906 l -0.438679,-9.83e-4 v -0.235628 -0.235628 l 2.386641,0.03751 c 1.312652,0.02063 3.210294,0.03752 4.216981,0.03752 h 1.83034 v 0.198113 0.198113 l -0.410377,3.28e-4 c -1.188412,9.49e-4 -2.031978,0.427773 -2.48054,1.255091 L 52.1551,34.912138 52.12367,44.959307 c -0.02329,7.446381 -0.04906,10.149737 -0.09954,10.443397 -0.289275,1.682938 -0.607822,2.709119 -1.222828,3.939273 -0.884012,1.768225 -2.375075,3.346119 -4.147975,4.389526 -1.460815,0.859735 -3.347375,1.464214 -5.179961,1.659729 -0.6538,0.06975 -2.941172,0.0651 -3.58242,-0.0073 z m 1.875966,-7.985963 c -0.387093,-0.908485 -6.026766,-13.783061 -6.137182,-14.01032 -0.175476,-0.361165 -0.653184,-0.82665 -1.010623,-0.984762 -0.14437,-0.06386 -0.411842,-0.129655 -0.594383,-0.146207 -0.275119,-0.02495 -0.331891,-0.04811 -0.331891,-0.135441 0,-0.101114 0.09909,-0.105346 2.466415,-0.105346 2.312291,0 2.46523,0.0061 2.447463,0.09841 -0.01042,0.05412 -0.05687,0.103371 -0.103207,0.109438 -0.59846,0.07836 -0.904828,0.299256 -1.013478,0.730741 l -0.06497,0.258006 1.013447,2.557364 c 4.000455,10.094871 3.648638,9.244138 3.73508,9.031844 0.04288,-0.105303 1.134342,-2.73863 2.425477,-5.851838 2.129895,-5.135638 2.34508,-5.683278 2.321208,-5.907409 -0.04631,-0.434827 -0.370226,-0.743052 -0.826996,-0.786941 -0.23317,-0.0224 -0.287235,-0.04755 -0.287235,-0.133606 0,-0.101793 0.08773,-0.106006 2.207547,-0.106006 2.114897,0 2.207547,0.0044 2.207547,0.105346 0,0.0878 -0.05756,0.110565 -0.345605,0.136684 -0.729063,0.06611 -1.408314,0.578699 -1.78553,1.347431 -0.189844,0.386885 -5.060561,11.312807 -5.511523,12.363369 -0.218939,0.510041 -0.419501,1.080279 -0.542505,1.542453 -0.03594,0.135049 -0.191097,0.06977 -0.26906,-0.113207 z"/>
+          <g transform="matrix(1.0514412,0,0,1.0951533,84.421436,-21.411867)" fill="#c49a6c">
+            <path d="m -42.201967,39.656594 c -0.463667,-0.0056 -0.92743,-0.0015 -1.390846,0.0124 -14.820232,0.47466 -26.524105,10.607191 -26.470099,22.916268 l 4.779284,0.03661 c -0.04812,-11.490047 9.395444,-20.98615 21.933782,-21.429256 10.61416,-0.345249 20.138936,5.928996 23.156553,15.253891 l -3.194931,-10.300363 c -5.040658,-4.080253 -11.773353,-6.402605 -18.813743,-6.489547 z"/>
+            <path d="m -42.206979,85.151877 c -0.463667,0.0056 -0.92743,0.0015 -1.390846,-0.0124 -14.820232,-0.47466 -26.524105,-10.607191 -26.470099,-22.916268 l 4.786025,0.162596 c -0.04812,11.490047 9.388703,20.786949 21.927041,21.230055 10.61416,0.345249 20.138936,-5.928996 23.156553,-15.253891 l -3.194931,10.300363 c -5.040658,4.080253 -11.773353,6.402605 -18.813743,6.489547 z"/>
+          </g>
+        </g>
+      </g>
+    </svg>
   </div>
+  <div class="hero-eyebrow">Operation Framework</div>
+  <div class="hero-title">How <em>VUC</em> Operates</div>
+  <div class="hero-desc">Three systems working in parallel — a daily and weekly operations cadence, a dedicated VWC Ghana track, and an idea-to-execution pipeline that turns ambition into running projects.</div>
+</div>
 
-  <div class="connector-v"></div>
+<div class="zone-wrap">
 
-  <!-- ══ IDEA PIPELINE (small) ══ -->
-  <div style="text-align:center;margin-bottom:6px;">
-    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(201,168,76,.5);margin-bottom:8px;">IDEA PIPELINE</div>
-    <div class="pipeline-row">
-      <div class="pipe-stage"><div class="ps-label">Idea Pool</div></div>
-      <div class="pipe-arrow">→</div>
-      <div class="pipe-stage"><div class="ps-label">Under Review</div></div>
-      <div class="pipe-arrow">→</div>
-      <div class="pipe-stage"><div class="ps-label">Incubation</div></div>
-      <div class="pipe-arrow">→</div>
-      <div class="pipe-stage" style="border-color:rgba(201,168,76,.3);"><div class="ps-label" style="color:var(--gold);">Approved</div></div>
-      <div class="pipe-arrow">→</div>
-      <div class="pipe-stage"><div class="ps-label">Active</div></div>
-      <div class="pipe-arrow">→</div>
-      <div class="pipe-stage"><div class="ps-label">Done / Parked / Killed</div></div>
+  <!-- ══ ZONE A — OPERATIONAL MEETINGS ══ -->
+  <div class="zone-ops">
+    <div class="zone-header">
+      <span class="zone-icon">⚙️</span>
+      <div>
+        <div class="zone-title">Operational Meetings</div>
+        <div class="zone-sub">Protect execution · Track active projects · Surface blockers</div>
+      </div>
+      <div class="zone-rule"></div>
+      <span class="zone-badge">VUC · Internal</span>
     </div>
   </div>
 
-  <div class="connector-v"></div>
-
-  <!-- ══ ROW 1: DAILY ══ -->
-  <div class="flow-divider">
-    <div class="flow-divider-line"></div>
-    <div class="flow-divider-label">Daily</div>
-    <div class="flow-divider-line"></div>
+  <div class="meeting-grid">
+    <a class="mcard daily-card" href="vuc-daily-meeting.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-gold">Every Day</span><span class="chip chip-muted">10 min · Hard stop</span></div>
+        <div class="mc-title">Daily Meeting</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Priorities of the day per person · Eisenhower matrix · Blockers declared · Cross-department handoffs tracked</div>
+        <div class="mc-tags">
+          <span class="mc-tag gold">Louis</span><span class="mc-tag gold">Yasin</span><span class="mc-tag gold">Lucas</span>
+          <span class="mc-tag">PDF export</span><span class="mc-tag">Jira blockers</span>
+        </div>
+      </div>
+    </a>
+    <a class="mcard ops" href="VUC_Weekly_Priority_Stack.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-red">Monday</span><span class="chip chip-muted">45 min</span></div>
+        <div class="mc-title">VUC Weekly — Execution Priority Stack</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Active projects only · Q1 / Q2 / Q3 task allocation · No new ideas enter this room</div>
+        <div class="mc-tags"><span class="mc-tag red">Execution</span><span class="mc-tag">Active projects</span><span class="mc-tag">Jira sync</span></div>
+      </div>
+    </a>
+    <div class="no-mtg">
+      <span class="chip chip-async">Thursday</span>
+      <span class="no-mtg-label">Async status update via Microsoft Teams — no meeting scheduled</span>
+    </div>
   </div>
 
-  <div class="flow-row">
-    <a class="node node-daily" href="vuc-daily-meeting.html" data-tip>
-      <div class="n-header">
-        <span class="freq-badge freq-daily">Daily</span>
-        <span class="n-title">Daily Meeting</span>
+  <div class="zone-sep"></div>
+
+  <!-- ══ ZONE B — VWC GHANA ══ -->
+  <div class="zone-vwc">
+    <div class="zone-header">
+      <span class="zone-icon">⛏️</span>
+      <div>
+        <div class="zone-title">VWC Ghana Operations</div>
+        <div class="zone-sub">Mining operations · 4 pillars · 3 time horizons</div>
       </div>
-      <div class="n-body">
-        <div class="n-desc">Priorities of the day per person · Eisenhower matrix · Blockers · Cross-department handoffs</div>
-        <div class="n-tags">
-          <span class="n-tag gold">Louis</span>
-          <span class="n-tag gold">Yasin</span>
-          <span class="n-tag gold">Lucas</span>
-          <span class="n-tag">10 min</span>
-          <span class="n-tag">PDF export</span>
+      <div class="zone-rule"></div>
+      <span class="zone-badge">VWC · Ghana</span>
+    </div>
+  </div>
+
+  <div class="meeting-grid single">
+    <a class="mcard vwc" href="VWC_Weekly_Meeting.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-teal">Tuesday AM</span><span class="chip chip-muted">30 min</span></div>
+        <div class="mc-title">VWC Weekly Objectives</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">4 Pillars reviewed per owner · Objectives tracked across Week / Month / 90-day horizons · R&amp;O integrated — only surfaced when Jira status changes</div>
+        <div class="mc-tags">
+          <span class="mc-tag teal">P1 Louis — Strategy &amp; Gov</span>
+          <span class="mc-tag teal">P2 Yasin — Technical</span>
+          <span class="mc-tag teal">P3 Lucas — Growth</span>
+          <span class="mc-tag teal">P4 Emmanuel — Ghana Ops</span>
         </div>
       </div>
     </a>
   </div>
 
-  <div class="connector-v"></div>
+  <div class="zone-sep"></div>
 
-  <!-- ══ ROW 2: WEEKLY ══ -->
-  <div class="flow-divider">
-    <div class="flow-divider-line"></div>
-    <div class="flow-divider-label">Weekly Cadence</div>
-    <div class="flow-divider-line"></div>
+  <!-- ══ ZONE C — IDEA SYSTEM MEETINGS ══ -->
+  <div class="zone-ide">
+    <div class="zone-header">
+      <span class="zone-icon">💡</span>
+      <div>
+        <div class="zone-title">Idea System Meetings</div>
+        <div class="zone-sub">Generate · Filter · Validate · Approve — these meetings move ideas through the pipeline</div>
+      </div>
+      <div class="zone-rule"></div>
+      <span class="zone-badge">Ideas → Execution</span>
+    </div>
   </div>
 
-  <div class="flow-row">
+  <div class="meeting-grid two">
+    <a class="mcard ide" href="VUC_Ideas_Session.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-blue">Friday</span><span class="chip chip-muted">30 min</span></div>
+        <div class="mc-title">Ideas Session</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Free ideation — no validation, no decisions. Every idea goes straight to Jira Idea Pool with a provisional owner.</div>
+        <div class="mc-tags"><span class="mc-tag blue">Feeds: Idea Pool</span><span class="mc-tag">No filtering here</span></div>
+      </div>
+    </a>
+    <a class="mcard ide" href="VUC_Pipeline_Review.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-blue">Tuesday PM</span><span class="chip chip-muted">45 min</span></div>
+        <div class="mc-title">Pipeline Review</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Move ideas stage to stage · Assign owners · Score strategic value · Kill or advance.</div>
+        <div class="mc-tags"><span class="mc-tag blue">Pool → Review → Incubation</span><span class="mc-tag">Decisions made</span></div>
+      </div>
+    </a>
+    <a class="mcard ide" href="VUC_Incubation_Meeting.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-purple">Bi-weekly</span><span class="chip chip-muted">45 min</span></div>
+        <div class="mc-title">Incubation Review</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Gate before execution. MVP defined, capacity confirmed, score validated. Go / No-go decision made here.</div>
+        <div class="mc-tags"><span class="mc-tag purple">Incubation → Approved</span><span class="mc-tag">Go / No-go gate</span></div>
+      </div>
+    </a>
+    <a class="mcard ide" href="VUC_Monthly_Strategic_Review.html">
+      <div class="mc-bar"></div>
+      <div class="mc-head">
+        <div class="mc-chips"><span class="chip chip-dkred">Monthly</span><span class="chip chip-muted">90 min</span></div>
+        <div class="mc-title">Strategic Review</div>
+      </div>
+      <div class="mc-body">
+        <div class="mc-desc">Portfolio-level decisions. Kill, park, or scale. Decision Engine v7.0 outputs reviewed. Approved projects enter execution.</div>
+        <div class="mc-tags"><span class="mc-tag gold">Decision Engine</span><span class="mc-tag">Portfolio</span><span class="mc-tag">Kill / Park / Scale</span></div>
+      </div>
+    </a>
+  </div>
 
-    <!-- MON -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VUC_Weekly_Priority_Stack.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-weekly">Monday</span>
-          <span class="n-title">Priority Stack</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">Active projects · Q1/Q2/Q3 tasks · No new ideas</div>
-          <div class="n-tags">
-            <span class="n-tag">Execution</span>
-            <span class="n-tag">VUC</span>
-          </div>
-          <div class="n-dur">45 min</div>
-        </div>
+  <div class="zone-sep"></div>
+
+  <!-- ══ ZONE D — PIPELINE FLOW ══ -->
+  <div class="zone-pipe">
+    <div class="zone-header">
+      <span class="zone-icon">🔄</span>
+      <div>
+        <div class="zone-title">Idea-to-Execution Pipeline</div>
+        <div class="zone-sub">How an idea travels from concept to running project</div>
+      </div>
+      <div class="zone-rule"></div>
+      <span class="zone-badge">5 Stages</span>
+    </div>
+  </div>
+
+  <div class="pipeline-flow">
+
+    <!-- MEETING: FRIDAY IDEAS SESSION → feeds Idea Pool -->
+    <div class="ps-meeting psm-amber">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top" style="opacity:0;"></div>
+        <div class="ps-meeting-icon">💡</div>
+        <div class="ps-meeting-line-bottom"></div>
+      </div>
+      <a class="ps-meeting-card" href="VUC_Ideas_Session.html">
+        <span class="ps-meeting-chip">Friday · 30 min</span>
+        <span class="ps-meeting-name">Ideas Session</span>
+        <span class="ps-meeting-role">captures ideas → Idea Pool</span>
       </a>
-      <div class="day-label">Mon</div>
     </div>
 
-    <!-- TUE AM -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VWC_Weekly_Meeting.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-weekly">Tue AM</span>
-          <span class="n-title">VWC Ghana Objectives</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">4 Pillars · Week / Month / 90-day horizons · R&O</div>
-          <div class="n-tags">
-            <span class="n-tag">VWC</span>
-            <span class="n-tag">Ghana</span>
-          </div>
-          <div class="n-dur">30 min</div>
-        </div>
-      </a>
-      <div class="day-label">Tue</div>
-    </div>
-
-    <!-- TUE PM -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VUC_Pipeline_Review.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-weekly">Tue PM</span>
-          <span class="n-title">Pipeline Review</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">Move ideas through stages · Assign owners · Kill or approve</div>
-          <div class="n-tags">
-            <span class="n-tag">Ideas</span>
-            <span class="n-tag">Pipeline</span>
-          </div>
-          <div class="n-dur">45 min</div>
-        </div>
-      </a>
-      <div class="day-label">Tue</div>
-    </div>
-
-    <!-- WED — no meeting -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <div class="node node-tool" style="width:140px;cursor:default;">
-        <div class="n-header">
-          <span class="freq-badge" style="background:rgba(255,255,255,.04);color:rgba(132,148,168,.4);border:1px solid rgba(255,255,255,.06);">Wed</span>
-          <span class="n-title" style="color:rgba(255,255,255,.25);">No Meeting</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc" style="color:rgba(132,148,168,.3);">Deep work day</div>
+    <!-- STAGE 1: IDEA POOL -->
+    <div class="ps-row stage-1">
+      <div class="ps-num-col"><div class="ps-num-bubble">01</div><div class="ps-num-line"></div></div>
+      <div class="ps-card">
+        <div class="ps-head"><div class="ps-name">Idea Pool</div><div class="ps-badge">Entry point</div></div>
+        <div class="ps-body">
+          <div class="ps-desc">Ideas captured and logged in Jira. Owner assigned immediately. No filter yet — idea not in Jira = idea doesn't exist.</div>
+          <div class="ps-trigger" style="background:rgba(184,115,51,.08);color:#E8A870;border:1px solid rgba(184,115,51,.2);">Jira status<br>Idea Pool</div>
         </div>
       </div>
-      <div class="day-label">Wed</div>
     </div>
 
-    <!-- THU async -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <div class="node node-tool" style="cursor:default;">
-        <div class="n-header">
-          <span class="freq-badge" style="background:rgba(255,255,255,.05);color:rgba(132,148,168,.5);border:1px solid rgba(255,255,255,.07);">Thu</span>
-          <span class="n-title">Async Update</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">Status update via Teams · No meeting</div>
-          <div class="n-dur">Async</div>
-        </div>
+    <!-- MEETING: TUESDAY PIPELINE REVIEW → moves to Under Review -->
+    <div class="ps-meeting psm-blue">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top"></div>
+        <div class="ps-meeting-icon">🔍</div>
+        <div class="ps-meeting-line-bottom"></div>
       </div>
-      <div class="day-label">Thu</div>
-    </div>
-
-    <!-- FRI ideas -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VUC_Ideas_Session.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-weekly">Friday</span>
-          <span class="n-title">Ideas Session</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">Free ideation · No validation · Capture to Jira</div>
-          <div class="n-tags">
-            <span class="n-tag">Ideas</span>
-          </div>
-          <div class="n-dur">30 min</div>
-        </div>
-      </a>
-      <div class="day-label">Fri</div>
-    </div>
-
-  </div><!-- /flow-row weekly -->
-
-  <div class="connector-v"></div>
-
-  <!-- ══ ROW 3: BI-WEEKLY + MONTHLY ══ -->
-  <div class="flow-divider">
-    <div class="flow-divider-line"></div>
-    <div class="flow-divider-label">Bi-weekly &amp; Monthly</div>
-    <div class="flow-divider-line"></div>
-  </div>
-
-  <div class="flow-row">
-
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VUC_Incubation_Meeting.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-biweekly">Bi-weekly</span>
-          <span class="n-title">Incubation Review</span>
-        </div>
-        <div class="n-body">
-          <div class="n-desc">Validate ideas before execution · Go / No-go decisions</div>
-          <div class="n-tags">
-            <span class="n-tag">Incubation</span>
-            <span class="n-tag">Gate</span>
-          </div>
-          <div class="n-dur">45 min</div>
-        </div>
+      <a class="ps-meeting-card" href="VUC_Pipeline_Review.html">
+        <span class="ps-meeting-chip">Tue PM · 45 min</span>
+        <span class="ps-meeting-name">Pipeline Review</span>
+        <span class="ps-meeting-role">evaluates Pool → moves to Review or kills</span>
       </a>
     </div>
 
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-      <a class="node node-meeting" href="VUC_Monthly_Strategic_Review.html" data-tip>
-        <div class="n-header">
-          <span class="freq-badge freq-monthly">Monthly</span>
-          <span class="n-title">Strategic Review</span>
+    <!-- STAGE 2: UNDER REVIEW -->
+    <div class="ps-row stage-2">
+      <div class="ps-num-col"><div class="ps-num-bubble">02</div><div class="ps-num-line"></div></div>
+      <div class="ps-card">
+        <div class="ps-head"><div class="ps-name">Under Review</div><div class="ps-badge">Evaluate</div></div>
+        <div class="ps-body">
+          <div class="ps-desc">Strategic value scored. Urgency justified. Owner confirmed. Move forward or kill — no parking without justification.</div>
+          <div class="ps-trigger" style="background:rgba(37,99,168,.08);color:#7AB4E8;border:1px solid rgba(37,99,168,.2);">Jira status<br>Under Review</div>
         </div>
-        <div class="n-body">
-          <div class="n-desc">Portfolio decisions · Verticals health · Kill / Park / Scale</div>
-          <div class="n-tags">
-            <span class="n-tag">Strategy</span>
-            <span class="n-tag">Portfolio</span>
-          </div>
-          <div class="n-dur">90 min</div>
-        </div>
+      </div>
+    </div>
+
+    <!-- MEETING: PIPELINE REVIEW (continued) → advances to Incubation -->
+    <div class="ps-meeting psm-blue">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top"></div>
+        <div class="ps-meeting-icon">🔍</div>
+        <div class="ps-meeting-line-bottom"></div>
+      </div>
+      <a class="ps-meeting-card" href="VUC_Pipeline_Review.html">
+        <span class="ps-meeting-chip">Tue PM · 45 min</span>
+        <span class="ps-meeting-name">Pipeline Review</span>
+        <span class="ps-meeting-role">advances Review → Incubation or parks</span>
       </a>
     </div>
 
-  </div>
-
-  <div class="connector-v"></div>
-
-  <!-- ══ ROW 4: DECISION ENGINE ══ -->
-  <div class="flow-divider">
-    <div class="flow-divider-line"></div>
-    <div class="flow-divider-label">Tools</div>
-    <div class="flow-divider-line"></div>
-  </div>
-
-  <div class="flow-row">
-    <div class="node node-tool" style="cursor:default;width:260px;">
-      <div class="n-header">
-        <span class="freq-badge" style="background:rgba(30,122,74,.15);color:#5DBF8A;border:1px solid rgba(93,191,138,.15);">Excel</span>
-        <span class="n-title" style="color:rgba(255,255,255,.5);">Decision Engine v7.0</span>
-      </div>
-      <div class="n-body">
-        <div class="n-desc" style="color:rgba(132,148,168,.45);">Project scoring · Quick Kill Filter · Portfolio Dashboard · Priority Allocation</div>
-        <div class="n-dur">Used in Monthly Strategic Review</div>
+    <!-- STAGE 3: INCUBATION -->
+    <div class="ps-row stage-3">
+      <div class="ps-num-col"><div class="ps-num-bubble">03</div><div class="ps-num-line"></div></div>
+      <div class="ps-card">
+        <div class="ps-head"><div class="ps-name">Incubation</div><div class="ps-badge">Validate</div></div>
+        <div class="ps-body">
+          <div class="ps-desc">MVP defined. Execution capacity confirmed. Decision Engine scoring applied. Bi-weekly gate required to proceed.</div>
+          <div class="ps-trigger" style="background:rgba(139,79,191,.08);color:#C49FE8;border:1px solid rgba(139,79,191,.2);">Jira status<br>Incubation</div>
+        </div>
       </div>
     </div>
+
+    <!-- MEETING: BI-WEEKLY INCUBATION REVIEW → validates to Approved -->
+    <div class="ps-meeting psm-purple">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top"></div>
+        <div class="ps-meeting-icon">🧪</div>
+        <div class="ps-meeting-line-bottom"></div>
+      </div>
+      <a class="ps-meeting-card" href="VUC_Incubation_Meeting.html">
+        <span class="ps-meeting-chip">Bi-weekly · 45 min</span>
+        <span class="ps-meeting-name">Incubation Review</span>
+        <span class="ps-meeting-role">Go / No-go gate → Approved or killed</span>
+      </a>
+    </div>
+
+    <!-- MEETING: MONTHLY STRATEGIC REVIEW → final approval -->
+    <div class="ps-meeting psm-red">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top"></div>
+        <div class="ps-meeting-icon">📊</div>
+        <div class="ps-meeting-line-bottom"></div>
+      </div>
+      <a class="ps-meeting-card" href="VUC_Monthly_Strategic_Review.html">
+        <span class="ps-meeting-chip">Monthly · 90 min</span>
+        <span class="ps-meeting-name">Monthly Strategic Review</span>
+        <span class="ps-meeting-role">portfolio approval + budget allocation</span>
+      </a>
+    </div>
+
+    <!-- STAGE 4: APPROVED — GREEN -->
+    <div class="ps-row stage-4">
+      <div class="ps-num-col"><div class="ps-num-bubble">04</div><div class="ps-num-line"></div></div>
+      <div class="ps-card">
+        <div class="ps-head"><div class="ps-name">Approved for Execution</div><div class="ps-badge">Go ✓</div></div>
+        <div class="ps-body">
+          <div class="ps-desc">Score ≥ 0.55 confirmed. Budget allocated. Enters Monday Priority Stack as an active project with owner and deadline.</div>
+          <div class="ps-trigger" style="background:rgba(36,147,124,.08);color:#5ECFB4;border:1px solid rgba(36,147,124,.2);">Jira status<br>Approved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEETING: MON PRIORITY STACK + DAILY → tracks execution -->
+    <div class="ps-meeting psm-teal">
+      <div class="ps-meeting-spine">
+        <div class="ps-meeting-line-top"></div>
+        <div class="ps-meeting-icon">⚙️</div>
+        <div class="ps-meeting-line-bottom"></div>
+      </div>
+      <div class="ps-meeting-card" style="cursor:default;">
+        <span class="ps-meeting-chip">Mon 45 min + Daily 10 min</span>
+        <span class="ps-meeting-name">Priority Stack &amp; Daily Meeting</span>
+        <span class="ps-meeting-role">activates &amp; tracks execution</span>
+      </div>
+    </div>
+
+    <!-- STAGE 5: ACTIVE EXECUTION -->
+    <div class="ps-row stage-5">
+      <div class="ps-num-col"><div class="ps-num-bubble">05</div></div>
+      <div class="ps-card">
+        <div class="ps-head"><div class="ps-name">Active Execution</div><div class="ps-badge">Running</div></div>
+        <div class="ps-body">
+          <div class="ps-desc">Owner drives. Progress tracked every Monday. Blockers surfaced in Daily and escalated to Jira. Visible on board.</div>
+          <div class="ps-trigger" style="background:rgba(36,147,124,.1);color:#5ECFB4;border:1px solid rgba(36,147,124,.22);">Jira status<br>Active</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="outcomes-wrap">
+      <div class="oc oc-done">✓ &nbsp;Completed</div>
+      <div class="oc oc-park">⏸ &nbsp;Parked</div>
+      <div class="oc oc-kill">✕ &nbsp;Killed</div>
+    </div>
+
+    <div class="de-box">
+      <div class="de-head">
+        <span class="chip chip-teal" style="font-size:8px;">Excel Tool</span>
+        <span class="de-title">Decision Engine v7.0</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">Used in Monthly Strategic Review</span>
+      </div>
+      <div class="de-body">
+        <div class="de-sheets">
+          <span class="de-sheet">Instructions</span>
+          <span class="de-sheet">Inputs &amp; Scoring</span>
+          <span class="de-sheet">Quick Kill Filter</span>
+          <span class="de-sheet">Portfolio Dashboard</span>
+          <span class="de-sheet">Priority Allocation</span>
+        </div>
+        <div class="de-row">
+          <div class="de-threshold"><div class="de-dot" style="background:#5ECFB4;"></div><span class="de-label" style="color:#5ECFB4;">≥ 0.55 — PURSUE</span></div>
+          <div class="de-threshold"><div class="de-dot" style="background:var(--gold);"></div><span class="de-label" style="color:var(--gold);">0.40–0.54 — PARK</span></div>
+          <div class="de-threshold"><div class="de-dot" style="background:#E08080;"></div><span class="de-label" style="color:#E08080;">< 0.40 — DISREGARD</span></div>
+        </div>
+      </div>
+    </div>
+
   </div>
+</div>
 
-</div><!-- /flow -->
-</div><!-- /canvas -->
-
-<!-- LEGEND -->
 <div class="legend">
-  <div class="legend-title">Frequency</div>
-  <div class="legend-row"><div class="legend-dot" style="background:rgba(201,168,76,.5);"></div><div class="legend-text">Daily</div></div>
-  <div class="legend-row"><div class="legend-dot" style="background:#3B5E7A;"></div><div class="legend-text">Weekly</div></div>
-  <div class="legend-row"><div class="legend-dot" style="background:#1E5C3A;"></div><div class="legend-text">Bi-weekly</div></div>
-  <div class="legend-row"><div class="legend-dot" style="background:#5C1A1A;"></div><div class="legend-text">Monthly</div></div>
-  <div class="legend-row"><div class="legend-dot" style="background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.15);"></div><div class="legend-text">No meeting / Tool</div></div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(201,168,76,.6);"></div>Daily</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#C0392B;"></div>Weekly VUC Ops</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#24937C;"></div>Weekly VWC Ghana</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#2563A8;"></div>Idea System</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#8B4FBF;"></div>Bi-weekly gate</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#8C2828;"></div>Monthly strategic</div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.12);"></div>Async</div>
 </div>
 
 <script>
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now = new Date();
-  document.getElementById('topDate').textContent =
-    days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const n=new Date();
+  document.getElementById('topMonth').textContent=months[n.getMonth()].toUpperCase()+' '+n.getFullYear();
 </script>
 </body>
 </html>
