@@ -167,12 +167,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   <div class="portfolio-grid">
     <div class="pg">
       <div class="pg-hdr" style="background:#15803d">Executing</div>
-      <div class="pg-body" id="port-exec">
-        <div class="port-item"><input class="port-inp" value="VUC Consulting SOL"><select class="mini-sel"><option>Louis</option><option>Yasin</option><option selected>Lucas</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
-        <div class="port-item"><input class="port-inp" value="VWC Ghana"><select class="mini-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option selected>Emmanuel</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
-        <div class="port-item"><input class="port-inp" value="Australia Gold"><select class="mini-sel"><option selected>Louis</option><option>Yasin</option><option>Lucas</option></select><button class="port-del" onclick="this.closest('.port-item').remove()">&#x2715;</button></div>
-      </div>
-      <div class="add-port" onclick="addPort('port-exec')">+ Add</div>
+      <div class="pg-body" id="port-exec"></div>
+      <div class="add-port" onclick="addPortProject()">+ Add</div>
     </div>
     <div class="pg">
       <div class="pg-hdr" style="background:#1E40AF">Completed this month</div>
@@ -329,6 +325,7 @@ var VERTICALS = [{v:'p',l:'Products'},{v:'s',l:'Services'},{v:'f',l:'Future'},{v
 window.addEventListener('DOMContentLoaded', function() {
   var d = new Date();
   document.getElementById('wmonth').value = d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1);
+  renderPortfolio();
   renderQK();
   renderDE();
 });
@@ -355,35 +352,51 @@ function updTimer() {
 }
 
 // ===== PORTFOLIO =====
-function syncPortfolioToQK() {
-  // Read all projects from the Executing column in Portfolio tab
-  // and add any that are not already in deProjects (matched by name)
-  var execItems = document.querySelectorAll('#port-exec .port-inp');
-  execItems.forEach(function(inp) {
-    var name = inp.value.trim();
-    if (!name) return;
-    var ownerSel = inp.nextElementSibling;
-    var owner = ownerSel ? ownerSel.value : 'Lucas';
-    // Check if already in deProjects
-    var exists = deProjects.some(function(p) {
-      return p.name.trim().toLowerCase() === name.toLowerCase();
-    });
-    if (!exists) {
-      deProjects.push({
-        name: name,
-        vertical: 's',
-        owner: owner,
-        scores: [5,5,5,5,5,5,5,5,5],
-        cap: 5,
-        qk: [true,true,true,true,true,true]
-      });
-    }
+// ===== PORTFOLIO =====
+// Portfolio tab reads FROM deProjects — single source of truth
+function renderPortfolio() {
+  var body = document.getElementById('port-exec');
+  var html = '';
+  deProjects.forEach(function(p, pi) {
+    var ownerOpts = OWNERS.map(function(o) {
+      return '<option' + (o === p.owner ? ' selected' : '') + '>' + o + '</option>';
+    }).join('');
+    html += '<div class="port-item">'
+      + '<input class="port-inp" value="' + p.name + '" oninput="deProjects[' + pi + '].name=this.value;renderQK();renderDE()">'
+      + '<select class="mini-sel" onchange="deProjects[' + pi + '].owner=this.value">' + ownerOpts + '</select>'
+      + '<button class="port-del" onclick="deProjects.splice(' + pi + ',1);renderPortfolio();renderQK();renderDE()">&#x2715;</button>'
+      + '</div>';
   });
+  body.innerHTML = html;
+}
+
+function addPortProject() {
+  deProjects.push({name: '', vertical: 's', owner: 'Lucas', scores: [5,5,5,5,5,5,5,5,5], cap: 5, qk: [true,true,true,true,true,true]});
+  renderPortfolio();
+  renderQK();
+  renderDE();
+  // Focus the new input
+  var items = document.querySelectorAll('#port-exec .port-inp');
+  if (items.length) items[items.length - 1].focus();
+}
+
+function addPort(id) {
+  // Keep for port-done and port-dead (not linked to deProjects)
+  var c = document.getElementById(id);
+  var d = document.createElement('div');
+  d.className = 'port-item';
+  d.innerHTML = '<input class="port-inp" placeholder="Project name..."><select class="mini-sel"><option>Louis</option><option>Yasin</option><option>Lucas</option><option>Emmanuel</option></select><button class="port-del" onclick="this.closest(\'.port-item\').remove()">&#x2715;</button>';
+  c.appendChild(d);
+  d.querySelector('input').focus();
+}
+
+function syncPortfolioToQK() {
   renderQK();
   renderDE();
 }
 
 function addPort(id) {
+  // Keep for port-done and port-dead (not linked to deProjects)
   var c = document.getElementById(id);
   var d = document.createElement('div');
   d.className = 'port-item';
