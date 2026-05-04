@@ -186,7 +186,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
   </div>
   <div class="btn-row">
-    <button class="btn btn-g" onclick="sw('kill',document.querySelectorAll('.nav button')[1])">Continue to Quick Kill Filter &rarr;</button>
+    <button class="btn btn-g" onclick="syncPortfolioToQK();sw('kill',document.querySelectorAll('.nav button')[1])">Continue to Quick Kill Filter &rarr;</button>
   </div>
 </div>
 
@@ -355,6 +355,34 @@ function updTimer() {
 }
 
 // ===== PORTFOLIO =====
+function syncPortfolioToQK() {
+  // Read all projects from the Executing column in Portfolio tab
+  // and add any that are not already in deProjects (matched by name)
+  var execItems = document.querySelectorAll('#port-exec .port-inp');
+  execItems.forEach(function(inp) {
+    var name = inp.value.trim();
+    if (!name) return;
+    var ownerSel = inp.nextElementSibling;
+    var owner = ownerSel ? ownerSel.value : 'Lucas';
+    // Check if already in deProjects
+    var exists = deProjects.some(function(p) {
+      return p.name.trim().toLowerCase() === name.toLowerCase();
+    });
+    if (!exists) {
+      deProjects.push({
+        name: name,
+        vertical: 's',
+        owner: owner,
+        scores: [5,5,5,5,5,5,5,5,5],
+        cap: 5,
+        qk: [true,true,true,true,true,true]
+      });
+    }
+  });
+  renderQK();
+  renderDE();
+}
+
 function addPort(id) {
   var c = document.getElementById(id);
   var d = document.createElement('div');
