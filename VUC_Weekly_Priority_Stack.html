@@ -794,15 +794,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <span style="font-family:'DM Mono',monospace;font-size:10px;color:#B08D57;margin-left:auto" id="monthlyBannerSub">— objectives this month</span>
       <span style="font-size:11px;color:#C49A6C;transition:transform .2s" id="monthlyBannerToggle">▼</span>
     </div>
-    <div id="monthlyBannerBody" style="display:none;padding:12px 16px;background:#FFFEF7;border-top:1px solid #E8D5A8">
-      <div id="monthlyBannerList"></div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+    <div id="monthlyBannerBody" style="display:none;background:#FFFEF7;border-top:1px solid #E8D5A8">
+      <!-- Status legend -->
+      <div style="display:flex;gap:12px;padding:8px 16px;border-bottom:1px solid #F0E8D0;flex-wrap:wrap">
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:#999;letter-spacing:.5px">◯ NOT STARTED</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:#1E40AF;letter-spacing:.5px">◉ IN PROGRESS</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:#15803D;letter-spacing:.5px">✓ COMPLETED</span>
+      </div>
+      <div id="monthlyBannerList" style="padding:8px 0"></div>
+      <div style="padding:10px 16px;border-top:1px solid #F0E8D0;display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="openWeeklyBreakdown()" style="background:#C49A6C;color:#fff;border:none;padding:6px 14px;border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer">📋 Select for this week</button>
         <button onclick="importMonthlyJSON()" style="background:transparent;border:1px dashed #C49A6C;color:#92400E;padding:5px 12px;border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer">Import Monthly JSON</button>
         <button onclick="clearMonthlyObjs()" style="background:transparent;border:1px dashed #e0e0e0;color:#999;padding:5px 12px;border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer">Clear</button>
       </div>
     </div>
   </div>
-  <!-- Monthly JSON import textarea (hidden) -->
+
+  <!-- Monthly JSON import box (hidden) -->
   <div id="monthlyImportBox" style="display:none;margin-bottom:14px;background:#FFFEF7;border:1px solid #C49A6C;border-radius:8px;padding:14px">
     <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#92400E;margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase">Import Monthly Objectives JSON</div>
     <div style="font-size:11px;color:#6B5634;margin-bottom:8px">Paste the JSON exported from the Monthly Meeting → Tab 04 → Export Monthly JSON.</div>
@@ -810,6 +818,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     <div style="display:flex;gap:8px;margin-top:8px">
       <button onclick="confirmMonthlyImport()" style="background:#C49A6C;color:#fff;border:none;padding:6px 14px;border-radius:5px;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer">Load</button>
       <button onclick="cancelMonthlyImport()" style="background:transparent;border:1px solid #e0e0e0;color:#888;padding:6px 14px;border-radius:5px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Weekly Breakdown modal (overlay) -->
+  <div id="weeklyBreakdownOverlay" style="display:none;position:fixed;inset:0;background:rgba(13,27,42,.7);z-index:2000;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.4)">
+      <div style="background:linear-gradient(135deg,#0F0F1E,#1A1A2E);padding:16px 22px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff">Select for this week</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:#C49A6C;letter-spacing:1px;margin-top:2px">Monthly objectives → weekly commitments</div>
+        </div>
+        <button onclick="closeWeeklyBreakdown()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px">✕</button>
+      </div>
+      <div style="padding:14px 22px;background:#FFFEF7;border-bottom:1px solid #F0E8D0;font-size:12px;color:#6B5634;line-height:1.5">
+        Check the monthly objectives you will work on <b>this week</b>. They will be added as weekly objectives in Tab 2 with owner and vertical pre-filled. Unchecked objectives stay visible in the banner for future weeks.
+      </div>
+      <div id="breakdownList" style="padding:8px 0"></div>
+      <div style="padding:14px 22px;border-top:1px solid #F0E8D0;display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeWeeklyBreakdown()" style="background:transparent;border:1px solid #e0e0e0;color:#888;padding:8px 16px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer">Cancel</button>
+        <button onclick="addSelectedToWeekly()" style="background:#C49A6C;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer">Add selected to this week →</button>
+      </div>
     </div>
   </div>
 
@@ -1085,53 +1114,193 @@ function startFresh(){
   renderP();
 }
 
-// ===== MONTHLY OBJECTIVES BANNER =====
-var monthlyObjectives = [];
+// ===== MONTHLY OBJECTIVES BANNER + WEEKLY BREAKDOWN =====
+var monthlyObjectives = []; // each: id, vertical, title, owner, priority, status, weeksSelected
+var MO_STATUS_KEY = 'vuc_monthly_obj_status';
+var MO_DATA_KEY   = 'vuc_monthly_objectives';
 
+var MO_DEPT_COLORS = {p:'#1E40AF', s:'#15803D', f:'#5B21B6', c:'#92400E'};
+var MO_DEPT_LABELS = {p:'Products', s:'Services', f:'Future', c:'General'};
+
+// Load objectives from localStorage and merge with persisted statuses
 function loadMonthlyObjs(){
   try {
-    var raw = localStorage.getItem('vuc_monthly_objectives');
+    var raw = localStorage.getItem(MO_DATA_KEY);
     if(!raw) return;
     var data = JSON.parse(raw);
-    if(data.objectives && Array.isArray(data.objectives)){
-      monthlyObjectives = data.objectives;
-      renderMonthlyBanner();
-    }
-  } catch(e){}
+    if(!data.objectives || !Array.isArray(data.objectives)) return;
+
+    // Load persisted statuses
+    var statuses = {};
+    try {
+      var sr = localStorage.getItem(MO_STATUS_KEY);
+      if(sr) statuses = JSON.parse(sr);
+    } catch(e){}
+
+    monthlyObjectives = data.objectives.map(function(o){
+      var saved = statuses[o.id] || {};
+      return {
+        id:             o.id,
+        vertical:       o.vertical,
+        title:          o.title,
+        owner:          o.owner,
+        priority:       o.priority,
+        status:         saved.status || 'not_started',  // not_started | in_progress | completed
+        weeksSelected:  saved.weeksSelected || 0        // how many weeks it was chosen
+      };
+    });
+    renderMonthlyBanner();
+  } catch(e){ console.warn('Monthly load failed:', e); }
+}
+
+// Persist statuses separately (so re-importing monthly JSON doesn't wipe progress)
+function saveMonthlyStatuses(){
+  var statuses = {};
+  monthlyObjectives.forEach(function(o){
+    statuses[o.id] = { status: o.status, weeksSelected: o.weeksSelected };
+  });
+  try { localStorage.setItem(MO_STATUS_KEY, JSON.stringify(statuses)); } catch(e){}
 }
 
 function renderMonthlyBanner(){
   var banner = document.getElementById('monthlyBanner');
-  var list = document.getElementById('monthlyBannerList');
-  var sub = document.getElementById('monthlyBannerSub');
+  var list   = document.getElementById('monthlyBannerList');
+  var sub    = document.getElementById('monthlyBannerSub');
+
   if(!monthlyObjectives || monthlyObjectives.length === 0){
     banner.style.display = 'none';
     return;
   }
   banner.style.display = 'block';
-  sub.textContent = monthlyObjectives.length + ' objective' + (monthlyObjectives.length !== 1 ? 's' : '') + ' this month';
-  var deptColors = {p:'#1E40AF',s:'#15803D',f:'#5B21B6',c:'#92400E'};
-  var deptLabels = {p:'Products',s:'Services',f:'Future',c:'General'};
+
+  var done = monthlyObjectives.filter(function(o){ return o.status === 'completed'; }).length;
+  var inProg = monthlyObjectives.filter(function(o){ return o.status === 'in_progress'; }).length;
+  sub.textContent = done + ' completed · ' + inProg + ' in progress · ' + monthlyObjectives.length + ' total';
+
+  // Group by vertical
+  var verts = ['p','s','f','c'];
   var html = '';
-  monthlyObjectives.forEach(function(o){
-    var col = deptColors[o.vertical] || '#555';
-    var lbl = deptLabels[o.vertical] || 'VUC';
-    html += '<div style="display:flex;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid #F0E8D0">';
-    html += '<span style="font-family:\'DM Mono\',monospace;font-size:9px;font-weight:700;color:'+col+';min-width:60px;text-transform:uppercase;letter-spacing:.4px">'+lbl+'</span>';
-    html += '<span style="font-size:12px;color:#3A2E1A;line-height:1.4">'+escH(o.title)+'</span>';
-    html += '<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:#B08D57;margin-left:auto;white-space:nowrap">'+escH(o.owner||'')+'</span>';
+  verts.forEach(function(v){
+    var objs = monthlyObjectives.filter(function(o){ return o.vertical === v; });
+    if(!objs.length) return;
+    html += '<div style="padding:6px 16px 2px;background:#FFF8E8;border-bottom:1px solid #F0E8D0">';
+    html += '<span style="font-family:\'DM Mono\',monospace;font-size:9px;font-weight:700;color:'+(MO_DEPT_COLORS[v]||'#555')+';letter-spacing:.8px;text-transform:uppercase">'+(MO_DEPT_LABELS[v]||v)+'</span>';
     html += '</div>';
+    objs.forEach(function(o){
+      var icon, iconColor;
+      if(o.status === 'completed')  { icon = '✓'; iconColor = '#15803D'; }
+      else if(o.status === 'in_progress') { icon = '◉'; iconColor = '#1E40AF'; }
+      else { icon = '◯'; iconColor = '#ccc'; }
+
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:7px 16px;border-bottom:1px solid #F5EDD8;transition:background .1s">';
+      html += '<span style="font-size:13px;color:'+iconColor+';flex-shrink:0;cursor:pointer" onclick="cycleMoStatus(\''+o.id+'\')" title="Click to cycle status">'+icon+'</span>';
+      html += '<span style="font-size:12px;color:#3A2E1A;flex:1;line-height:1.4'+(o.status==='completed'?';text-decoration:line-through;opacity:.6;':';')+'">'+escH(o.title)+'</span>';
+      html += '<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:#B08D57;white-space:nowrap">'+escH(o.owner||'')+'</span>';
+      if(o.weeksSelected > 0) html += '<span style="font-family:\'DM Mono\',monospace;font-size:8px;color:#B08D57;background:#FEF3C7;padding:1px 5px;border-radius:3px;white-space:nowrap">×'+o.weeksSelected+'</span>';
+      html += '</div>';
+    });
   });
   list.innerHTML = html;
 }
 
+// Cycle: not_started → in_progress → completed → not_started
+function cycleMoStatus(id){
+  var o = monthlyObjectives.find(function(x){ return x.id === id; });
+  if(!o) return;
+  var cycle = {not_started:'in_progress', in_progress:'completed', completed:'not_started'};
+  o.status = cycle[o.status] || 'not_started';
+  saveMonthlyStatuses();
+  renderMonthlyBanner();
+}
+
 function toggleMonthlyBanner(){
   var body = document.getElementById('monthlyBannerBody');
-  var tog = document.getElementById('monthlyBannerToggle');
-  var open = body.style.display === 'block';
+  var tog  = document.getElementById('monthlyBannerToggle');
+  var open = body.style.display !== 'none' && body.style.display !== '';
   body.style.display = open ? 'none' : 'block';
   tog.style.transform = open ? '' : 'rotate(180deg)';
 }
+
+// ── WEEKLY BREAKDOWN MODAL ──
+function openWeeklyBreakdown(){
+  var verts = ['p','s','f','c'];
+  var html = '';
+  verts.forEach(function(v){
+    var objs = monthlyObjectives.filter(function(o){ return o.vertical === v && o.status !== 'completed'; });
+    if(!objs.length) return;
+    html += '<div style="padding:8px 22px 4px;background:#fafafa;border-bottom:1px solid #f0f0f0">';
+    html += '<span style="font-family:\'DM Mono\',monospace;font-size:9px;font-weight:700;color:'+(MO_DEPT_COLORS[v]||'#555')+';letter-spacing:.8px;text-transform:uppercase">'+(MO_DEPT_LABELS[v]||v)+'</span>';
+    html += '</div>';
+    objs.forEach(function(o){
+      var statusLabel = o.status === 'in_progress' ? ' <span style="font-family:\'DM Mono\',monospace;font-size:8px;color:#1E40AF;background:#DBEAFE;padding:1px 5px;border-radius:3px">IN PROGRESS</span>' : '';
+      html += '<label style="display:flex;align-items:center;gap:12px;padding:10px 22px;border-bottom:1px solid #f8f8f8;cursor:pointer;transition:background .1s">';
+      html += '<input type="checkbox" data-moid="'+o.id+'" style="width:16px;height:16px;accent-color:#C49A6C;flex-shrink:0">';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:13px;color:#0D1B2A;line-height:1.4">'+escH(o.title)+statusLabel+'</div>';
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#8494A8;margin-top:2px">'+escH(o.owner)+'</div>';
+      html += '</div>';
+      html += '</label>';
+    });
+  });
+
+  if(!html){
+    html = '<div style="padding:32px 22px;text-align:center;font-size:13px;color:#8494A8;font-style:italic">All monthly objectives are completed. Nothing to add.</div>';
+  }
+
+  document.getElementById('breakdownList').innerHTML = html;
+  var ov = document.getElementById('weeklyBreakdownOverlay');
+  ov.style.display = 'flex';
+}
+
+function closeWeeklyBreakdown(){
+  document.getElementById('weeklyBreakdownOverlay').style.display = 'none';
+}
+
+function addSelectedToWeekly(){
+  var checked = document.querySelectorAll('#breakdownList input[type="checkbox"]:checked');
+  if(!checked.length){ alert('Select at least one objective first.'); return; }
+
+  var added = 0;
+  checked.forEach(function(cb){
+    var oid = cb.getAttribute('data-moid');
+    var mo = monthlyObjectives.find(function(x){ return x.id === oid; });
+    if(!mo) return;
+
+    // Mark as in_progress and increment week counter
+    mo.status = 'in_progress';
+    mo.weeksSelected = (mo.weeksSelected || 0) + 1;
+
+    // Add as a weekly objective (VUC Objective in Tab 2)
+    _void++;
+    var owners = [mo.owner || 'Louis'];
+    vucObjectives.push({
+      id:       'vo' + _void,
+      title:    mo.title.trim(),
+      vertical: mo.vertical,
+      owners:   owners,
+      project:  'No project',
+      fromMonthly: mo.id,   // track which monthly obj this came from
+      open: false
+    });
+    added++;
+  });
+
+  saveMonthlyStatuses();
+  renderMonthlyBanner();
+  renderObj();
+  closeWeeklyBreakdown();
+
+  // Auto-open the banner so user can see updated statuses
+  document.getElementById('monthlyBannerBody').style.display = 'block';
+  document.getElementById('monthlyBannerToggle').style.transform = 'rotate(180deg)';
+
+  alert('✓ ' + added + ' monthly objective' + (added !== 1 ? 's' : '') + ' added to this week.');
+}
+
+// Allow clicking outside modal to close
+document.getElementById('weeklyBreakdownOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeWeeklyBreakdown();
+});
 
 function importMonthlyJSON(){
   document.getElementById('monthlyImportBox').style.display = 'block';
@@ -1148,25 +1317,39 @@ function confirmMonthlyImport(){
   if(!raw){ alert('Paste the Monthly Objectives JSON first.'); return; }
   try {
     var data = JSON.parse(raw);
-    if(data.type !== 'monthly_objectives') throw new Error('Expected type: monthly_objectives. Export it from the Monthly Meeting → Tab 04.');
-    localStorage.setItem('vuc_monthly_objectives', JSON.stringify(data));
-    monthlyObjectives = data.objectives || [];
-    renderMonthlyBanner();
+    if(data.type !== 'monthly_objectives') throw new Error('Expected type: monthly_objectives. Export it from Monthly Meeting → Tab 04.');
+    localStorage.setItem(MO_DATA_KEY, JSON.stringify(data));
+    // Clear old statuses when importing a new month
+    var existingStatuses = {};
+    try {
+      var sr = localStorage.getItem(MO_STATUS_KEY);
+      if(sr) existingStatuses = JSON.parse(sr);
+    } catch(e){}
+    // Only wipe statuses if it is a different month
+    var currentMonth = data.month || '';
+    var savedMonth = '';
+    try { savedMonth = JSON.parse(localStorage.getItem(MO_DATA_KEY + '_meta') || '{}').month || ''; } catch(e){}
+    if(currentMonth !== savedMonth){
+      localStorage.removeItem(MO_STATUS_KEY);
+    }
+    localStorage.setItem(MO_DATA_KEY + '_meta', JSON.stringify({month: currentMonth}));
+    loadMonthlyObjs();
     document.getElementById('monthlyImportBox').style.display = 'none';
     document.getElementById('monthlyJsonArea').value = '';
-    // Auto-open the banner
     document.getElementById('monthlyBannerBody').style.display = 'block';
     document.getElementById('monthlyBannerToggle').style.transform = 'rotate(180deg)';
-    alert('✓ ' + monthlyObjectives.length + ' monthly objectives loaded. The banner will appear every Monday as a reference.');
+    alert('✓ ' + monthlyObjectives.length + ' monthly objectives loaded for ' + (currentMonth||'this month') + '.\n\nOpen the banner and click "Select for this week" to add objectives to this week.');
   } catch(e){
     alert('Import failed: ' + e.message);
   }
 }
 
 function clearMonthlyObjs(){
-  if(!confirm('Clear monthly objectives from this view?')) return;
+  if(!confirm('Clear all monthly objectives and their progress?')) return;
   monthlyObjectives = [];
-  localStorage.removeItem('vuc_monthly_objectives');
+  localStorage.removeItem(MO_DATA_KEY);
+  localStorage.removeItem(MO_STATUS_KEY);
+  localStorage.removeItem(MO_DATA_KEY + '_meta');
   renderMonthlyBanner();
 }
 
