@@ -847,7 +847,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
       <span style="font-size:11px;color:#888;font-style:italic;align-self:center">Set this week's objectives by department. Completion is reviewed Friday.</span>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="obj-edit-pill" onclick="importObj()">Import JSON</button>
+      <button class="obj-edit-pill" onclick="importObj()">Import Weekly Objectives JSON</button>
+      <button class="obj-edit-pill" onclick="importMonthlyJSON()" style="background:#FFFEF7;color:#92400E;border-color:#C49A6C">📌 Import Monthly Objectives</button>
       <button class="obj-edit-pill" onclick="clearObjectives()" style="color:#991B1B">Clear all</button>
       <button class="obj-edit-pill" id="obj-edit-btn" onclick="toggleObjEdit()">&#9998; Edit (Monday only)</button>
     </div>
@@ -858,7 +859,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   <div class="obj-list" id="obj-list"></div>
   <div id="obj-add-slot"></div>
 
-  <textarea id="obj-json-area" placeholder="Paste JSON here..." style="width:100%;margin-top:10px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:60px;display:none;resize:vertical"></textarea>
+  <div id="obj-json-legend" style="display:none;margin-top:10px;background:#FFFEF7;border:1px solid #C49A6C;border-left:3px solid #C49A6C;border-radius:6px;padding:10px 12px;font-size:11px;color:#6B5634;line-height:1.6">
+    <b>Weekly Objectives JSON</b> — paste the <code style="background:#fff;padding:1px 4px;border:1px solid #e0e0e0;border-radius:3px;font-size:10px">vuc_priority_stack</code> JSON exported from last week's Priority Stack.<br>
+    To add objectives from the <b>Monthly Meeting</b>, use the gold banner above → "Select for this week".
+  </div>
+  <textarea id="obj-json-area" placeholder="Paste weekly_priority_stack JSON here..." style="width:100%;margin-top:6px;border:1px solid #e0e0e0;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;min-height:60px;display:none;resize:vertical"></textarea>
   <div id="obj-json-btns" style="display:none;margin-top:6px;gap:6px">
     <button class="btn btn-g" onclick="importObjJSON()">Import</button>
     <button class="btn btn-s" onclick="cancelObjImport()">Cancel</button>
@@ -2241,25 +2246,46 @@ function delKR(oid,kid){
 }
 
 function importObj(){
+  document.getElementById('obj-json-legend').style.display='block';
   document.getElementById('obj-json-area').style.display='block';
   document.getElementById('obj-json-btns').style.display='flex';
 }
 
 function cancelObjImport(){
+  document.getElementById('obj-json-legend').style.display='none';
   document.getElementById('obj-json-area').style.display='none';
   document.getElementById('obj-json-btns').style.display='none';
 }
 
 function importObjJSON(){
   var raw=document.getElementById('obj-json-area').value.trim();
+  if(!raw){alert('Paste the JSON first.');return;}
   try{
     var data=JSON.parse(raw);
-    if(data.objectives){
+    // Accept weekly_priority_stack format
+    if(data.type==='weekly_priority_stack' && data.objectives){
       vucObjectives=data.objectives;
+      vucObjectives.forEach(function(o){o.open=false;});
       cancelObjImport();
       renderObj();
-    } else {alert('JSON must contain an "objectives" array.');}
-  } catch(e){alert('Invalid JSON. Check the format.');}
+      showInfo('&#10003; Loaded '+vucObjectives.length+' weekly objectives from Priority Stack JSON.');
+    }
+    // Accept plain objectives array
+    else if(data.objectives && Array.isArray(data.objectives)){
+      vucObjectives=data.objectives;
+      vucObjectives.forEach(function(o){o.open=false;});
+      cancelObjImport();
+      renderObj();
+      showInfo('&#10003; Loaded '+vucObjectives.length+' objectives.');
+    }
+    // Reject monthly format with helpful message
+    else if(data.type==='monthly_objectives'){
+      alert('This is a Monthly Objectives JSON.\n\nTo use it, close this and use the gold banner above → "Select for this week". That lets you pick which monthly objectives to work on this week.');
+    }
+    else {
+      alert('JSON format not recognized. Expected a weekly_priority_stack or objectives array.');
+    }
+  } catch(e){alert('Invalid JSON: '+e.message);}
 }
 
 function escObj(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
