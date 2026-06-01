@@ -503,6 +503,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 .proj-arrow{font-size:14px;color:#ccc;transition:transform .2s;flex-shrink:0}
 .proj-arrow.open{transform:rotate(90deg)}
 .proj-body{display:none;border-top:1px solid #f0f0f0}
+.proj-monthly-commits{background:linear-gradient(135deg,#FFFEF7,#FFF8E8);border-bottom:2px solid #E8D5A8;padding:10px 16px}
+.proj-monthly-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:#92400E;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.monthly-commit-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #F5EDD8}
+.monthly-commit-row:last-child{border-bottom:none}
+.monthly-commit-text{flex:1;font-size:12px;color:#3A2E1A;line-height:1.4}
+.monthly-commit-owner{font-family:'DM Mono',monospace;font-size:9px;color:#B08D57;font-weight:700;white-space:nowrap}
 .proj-body.open{display:block}
 .owners{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#f0f0f0}
 .ow{background:#fff;padding:10px 14px}
@@ -701,8 +707,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
 </div>
 <nav class="nav">
   <button class="on" onclick="sw('review',this)">0. Previous Week</button>
-  <button onclick="sw('tasks',this)">1. Projects &amp; Tasks</button>
-  <button onclick="sw('obj',this)">2. VUC Objectives</button>
+  <button onclick="sw('obj',this)">1. VUC Objectives</button>
+  <button onclick="sw('tasks',this)">2. Projects &amp; Tasks</button>
   <button onclick="sw('eis',this)">3. Eisenhower Matrix</button>
   <button onclick="sw('sum',this)">4. Summary</button>
 </nav>
@@ -777,7 +783,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-g" onclick="sw('obj',document.querySelectorAll('.nav button')[2])">Continue to VUC Objectives &rarr;</button>
+    <button class="btn btn-g" onclick="sw('eis',document.querySelectorAll('.nav button')[3])">Continue to Eisenhower &rarr;</button>
     <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
   </div>
 </div>
@@ -870,8 +876,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-s" onclick="sw('tasks',document.querySelectorAll('.nav button')[1])">&larr; Back to tasks</button>
-    <button class="btn btn-g" onclick="buildMatrix()">Continue to Eisenhower Matrix &rarr;</button>
+    <button class="btn btn-g" onclick="sw('tasks',document.querySelectorAll('.nav button')[2])">Continue to Projects &amp; Tasks &rarr;</button>
+    <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
   </div>
 </div>
 
@@ -1238,13 +1244,16 @@ function openWeeklyBreakdown(){
     html += '</div>';
     objs.forEach(function(o){
       var statusLabel = o.status === 'in_progress' ? ' <span style="font-family:\'DM Mono\',monospace;font-size:8px;color:#1E40AF;background:#DBEAFE;padding:1px 5px;border-radius:3px">IN PROGRESS</span>' : '';
-      html += '<label style="display:flex;align-items:center;gap:12px;padding:10px 22px;border-bottom:1px solid #f8f8f8;cursor:pointer;transition:background .1s">';
-      html += '<input type="checkbox" data-moid="'+o.id+'" style="width:16px;height:16px;accent-color:#C49A6C;flex-shrink:0">';
+      var projOpts = '<option value="">Cross-project / VUC General</option>';
+      P.forEach(function(p){ projOpts += '<option value="'+p.id+'"'+(mo && mo.fromProject===p.id?' selected':'')+'>'+p.name+'</option>'; });
+      html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 22px;border-bottom:1px solid #f8f8f8">';
+      html += '<input type="checkbox" data-moid="'+o.id+'" style="width:16px;height:16px;accent-color:#C49A6C;flex-shrink:0;margin-top:3px">';
       html += '<div style="flex:1;min-width:0">';
-      html += '<div style="font-size:13px;color:#0D1B2A;line-height:1.4">'+escH(o.title)+statusLabel+'</div>';
-      html += '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:#8494A8;margin-top:2px">'+escH(o.owner)+'</div>';
-      html += '</div>';
-      html += '</label>';
+      html += '<div style="font-size:13px;color:#0D1B2A;line-height:1.4;margin-bottom:5px">'+escH(o.title)+statusLabel+'</div>';
+      html += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">';
+      html += '<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:#8494A8">'+escH(o.owner)+'</span>';
+      html += '<select data-proj-for="'+o.id+'" style="font-family:\'DM Mono\',monospace;font-size:10px;border:1px solid #dde2ea;border-radius:4px;padding:3px 8px;background:#fff;color:#0D1B2A;cursor:pointer">'+projOpts+'</select>';
+      html += '</div></div></div>';
     });
   });
 
@@ -1271,28 +1280,39 @@ function addSelectedToWeekly(){
     var mo = monthlyObjectives.find(function(x){ return x.id === oid; });
     if(!mo) return;
 
+    // Get selected project assignment
+    var projSel = document.querySelector('[data-proj-for="'+oid+'"]');
+    var assignedProject = projSel ? projSel.value : '';
+
     // Mark as in_progress and increment week counter
     mo.status = 'in_progress';
     mo.weeksSelected = (mo.weeksSelected || 0) + 1;
+    mo.fromProject = assignedProject || null;
 
-    // Add as a weekly objective (VUC Objective in Tab 2)
-    _void++;
-    var owners = [mo.owner || 'Louis'];
-    vucObjectives.push({
-      id:       'vo' + _void,
-      title:    mo.title.trim(),
-      vertical: mo.vertical,
-      owners:   owners,
-      project:  'No project',
-      fromMonthly: mo.id,   // track which monthly obj this came from
-      open: false
-    });
-    added++;
+    if(assignedProject){
+      // Goes into the project's Monthly Commitments section (Tab 2)
+      // Already tracked via monthlyObjectives — renderP reads fromProject
+      added++;
+    } else {
+      // Cross-project / VUC General → add as weekly objective in Tab 1
+      _void++;
+      vucObjectives.push({
+        id:          'vo' + _void,
+        title:       mo.title.trim(),
+        vertical:    mo.vertical,
+        owners:      [mo.owner || 'Louis'],
+        project:     'No project',
+        fromMonthly: mo.id,
+        open:        false
+      });
+      added++;
+    }
   });
 
   saveMonthlyStatuses();
   renderMonthlyBanner();
   renderObj();
+  renderP(); // re-render projects to show monthly commits
   closeWeeklyBreakdown();
 
   // Auto-open the banner so user can see updated statuses
@@ -1486,7 +1506,26 @@ function renderP(){
     h+='<input class="proj-name-inp" value="'+p.name+'" onclick="event.stopPropagation()" onchange="upN(\''+p.id+'\',this.value)">';
     h+='<span class="proj-score" style="'+sb+'">'+p.status+' &middot; '+p.score+'</span>';
     h+='<span class="proj-arrow" id="arr-'+p.id+'">&#9656;</span>';
-    h+='</div><div class="proj-body" id="body-'+p.id+'"><div class="owners">';
+    h+='</div><div class="proj-body" id="body-'+p.id+'">';
+    // Monthly commitments from banner for this project
+    var projCommits = (typeof monthlyObjectives !== 'undefined') ? monthlyObjectives.filter(function(mo){
+      return mo.fromProject === p.id && mo.status !== 'completed';
+    }) : [];
+    if(projCommits.length > 0){
+      h+='<div class="proj-monthly-commits">';
+      h+='<div class="proj-monthly-label">📌 Monthly Commitments</div>';
+      projCommits.forEach(function(mo){
+        var stIcon = mo.status==='in_progress' ? '◉' : '◯';
+        var stColor = mo.status==='in_progress' ? '#1E40AF' : '#ccc';
+        h+='<div class="monthly-commit-row">';
+        h+='<span style="color:'+stColor+';font-size:13px;flex-shrink:0;cursor:pointer" onclick="cycleMoStatus(\''+mo.id+'\')">'+stIcon+'</span>';
+        h+='<span class="monthly-commit-text">'+escObj(mo.title)+'</span>';
+        h+='<span class="monthly-commit-owner">'+escObj(mo.owner||'')+'</span>';
+        h+='</div>';
+      });
+      h+='</div>';
+    }
+    h+='<div class="owners">';
     PPL.forEach(function(pe){
       h+='<div class="ow"><div class="ow-hdr"><div class="ow-av '+pe.cls+'">'+pe.init+'</div><span class="ow-nm">'+pe.name+'</span></div>';
       h+='<div id="tl-'+p.id+'-'+pe.key+'">';
