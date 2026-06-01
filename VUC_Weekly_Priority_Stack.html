@@ -701,6 +701,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   </div>
   <div class="hdr-r">
     <button onclick="exportJSON()" style="background:#C49A6C;color:#0F0F1E;border:none;padding:7px 14px;border-radius:6px;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;cursor:pointer">⬇ Export JSON</button>
+    <button onclick="resetWeeklyStorage()" style="background:transparent;color:#ef4444;border:1px solid #ef4444;padding:7px 14px;border-radius:6px;font-family:monospace;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;cursor:pointer" title="Clear all saved data for this week">🗑 Reset Week</button>
     <span id="weekly-save-indicator">Auto-save on</span>
     <input class="dinp" type="date" id="wdate">
   </div>
@@ -725,7 +726,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
     </div>
     <div id="urgentContent"></div>
     <div class="urgent-banner-actions">
-      <button class="urgent-btn primary" onclick="document.getElementById('tab-tasks').scrollIntoView();sw('tasks',document.querySelectorAll('.nav button')[1])">Move to this week's tasks</button>
+      <button class="urgent-btn primary" onclick="sw('tasks',document.querySelectorAll('.nav button')[2])">Move to this week&#39;s tasks</button>
     </div>
   </div>
 
@@ -1021,12 +1022,14 @@ function loadFridayWrapup(data){
   if(data.carryover&&data.carryover.tasks&&Array.isArray(data.carryover.tasks)){
     data.carryover.tasks.forEach(function(t){
       if(t.text&&t.text.trim()){
-        carryover.push({
+        var cpi = t.pi||t.project||null;
+        var cpk = (t.pk||t.person||t.owner||'louis').toLowerCase();
+        if(cpi) carryover.push({
           text:t.text,
-          pi:t.pi||t.project||'p1',
-          pk:t.pk||t.person||t.owner||'louis',
-          pn:t.pi||t.project||'p1',
-          pc:t.pk||t.person||t.owner||'louis',
+          pi:cpi,
+          pk:cpk,
+          pn:cpi,
+          pc:cpk,
           fromStatus:'missed'
         });
       }
@@ -1037,12 +1040,14 @@ function loadFridayWrapup(data){
     data.projectTasks.details.forEach(function(t){
       var alreadyIn=carryover.some(function(c){return c.text===t.text;});
       if(!alreadyIn&&(t.status==='missed'||t.status==='partial'||t.status==='review')&&t.text&&t.text.trim()){
-        carryover.push({
+        var cpi2 = t.project||null;
+        var cpk2 = (t.owner||'louis').toLowerCase();
+        if(cpi2) carryover.push({
           text:t.text,
-          pi:t.project||'p1',
-          pk:t.owner||'louis',
-          pn:t.project||'p1',
-          pc:t.owner||'louis',
+          pi:cpi2,
+          pk:cpk2,
+          pn:cpi2,
+          pc:cpk2,
           fromStatus:t.status
         });
       }
@@ -1111,6 +1116,23 @@ function loadFridayWrapup(data){
     var box=document.getElementById('friday-context-box');
     if(box){box.innerHTML=ctx;box.style.display='block';}
   }
+}
+
+function resetWeeklyStorage(){
+  if(!confirm('Reset this week? This clears ALL saved tasks, objectives, and carryovers from localStorage.\n\nYou will start fresh. Export JSON first if you want a backup.')) return;
+  // Clear all vuc_ keys except monthly objectives (keep the monthly context)
+  var toRemove = Object.keys(localStorage).filter(function(k){
+    return k.startsWith('vuc_') && k !== 'vuc_monthly_objectives' && k !== 'vuc_monthly_obj_status' && k !== 'vuc_monthly_objectives_meta';
+  });
+  toRemove.forEach(function(k){ localStorage.removeItem(k); });
+  // Reset state
+  carryover = [];
+  vucObjectives = [];
+  previousWeek = null;
+  reviewConfirmed = false;
+  window._pendingRestore = null;
+  // Reload page cleanly
+  window.location.reload();
 }
 
 function escH(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
