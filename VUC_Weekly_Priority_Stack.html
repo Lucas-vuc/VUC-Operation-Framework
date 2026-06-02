@@ -1333,6 +1333,8 @@ function addSelectedToWeekly(){
   renderMonthlyBanner();
   renderObj();
   renderP(); // re-render projects to show monthly commits
+  // CRITICAL: persist the new objectives immediately so they survive reload/auto-save
+  if(typeof saveWeeklyState === 'function') saveWeeklyState();
   closeWeeklyBreakdown();
 
   // Auto-open the banner so user can see updated statuses
@@ -1639,15 +1641,28 @@ function trHTML(pi,pk){
 function trCarryover(pi,pk,text,fromStatus){
   var tid='t'+(++tc);
   var label=fromStatus==='partial'?'CARRY (partial)':'CARRY (missed)';
+  var safeText=String(text).replace(/'/g,"\\'").replace(/"/g,'&quot;');
   return '<div data-t="'+tid+'" data-p="'+pi+'" data-k="'+pk+'" data-carry="1" id="wrap-'+tid+'">'+
     '<div class="task-row" id="r-'+tid+'">'+
     '<span class="carryover-badge">'+label+'</span>'+
-    '<input class="task-inp carryover" value="'+text+'" id="i-'+tid+'">'+
+    '<input class="task-inp carryover" value="'+String(text).replace(/"/g,'&quot;')+'" id="i-'+tid+'">'+
     '<button class="task-expand" title="Add description" onclick="togDesc(\''+tid+'\')" id="exp-'+tid+'">&#9656;</button>'+
-    '<button class="task-del" onclick="document.getElementById(\'wrap-'+tid+'\').remove()">&#x2715;</button>'+
+    '<button class="task-del" onclick="removeCarryoverTask(\''+tid+'\',\''+pi+'\',\''+pk+'\',\''+safeText+'\')">&#x2715;</button>'+
     '</div>'+
     '<textarea class="task-desc" placeholder="Description..." id="d-'+tid+'" rows="2"></textarea>'+
     '</div>';
+}
+
+function removeCarryoverTask(tid, pi, pk, text){
+  // Remove from DOM
+  var el = document.getElementById('wrap-'+tid);
+  if(el) el.remove();
+  // Remove from carryover[] array so it does not come back on re-render
+  carryover = carryover.filter(function(c){
+    return !(c.pi === pi && c.pk === pk && c.text === text);
+  });
+  // Persist the change
+  if(typeof debouncedWeeklySave === 'function') debouncedWeeklySave();
 }
 
 function addT(pi,pk){
@@ -1702,36 +1717,54 @@ function buildMatrix(){
 }
 
 function collectVucObjectives(){
-  // Add VUC weekly objectives as inbox tasks for the Eisenhower matrix
-  if(!vucObjectives || !vucObjectives.length) return;
-  var deptInfo = {p:{name:'Products',color:'#1E40AF'},s:{name:'Services',color:'#15803D'},f:{name:'Future',color:'#5B21B6'}};
-  vucObjectives.forEach(function(o){
-    if(!o.title || !o.title.trim()) return;
-    var owner = (o.owners && o.owners[0]) || 'Louis';
-    var pk = owner.toLowerCase();
-    if(pk === 'all three') pk = 'louis';  // default mapping for shared
-    var per = PPL.find(function(x){return x.key === pk;});
-    var dept = deptInfo[o.vertical] || {name:'VUC', color:'#888'};
-    var tid = 'vobj-' + o.id;
-    if(allT.find(function(x){return x.tid === tid;})) return;
-    allT.push({
-      tid: tid,
-      text: o.title,
-      desc: '',
-      pi: 'vobj',
-      pn: 'VUC ' + dept.name,
-      pc: dept.color,
-      pk: pk,
-      pname: per ? per.name : owner,
-      pinit: per ? per.init : owner.charAt(0),
-      q: 'inbox',
-      carry: false,
-      reason: null,
-      isVucObjective: true,
-      project: o.project || ''
+  var deptInfo = {p:{name:'Products',color:'#1E40AF'},s:{name:'Services',color:'#15803D'},f:{name:'Future',color:'#5B21B6'},c:{name:'General',color:'#92400E'}};
+
+  // 1. VUC weekly objectives (Tab 1, cross-project)
+  if(vucObjectives && vucObjectives.length){
+    vucObjectives.forEach(function(o){
+      if(!o.title || !o.title.trim()) return;
+      var owner = (o.owners && o.owners[0]) || 'Louis';
+      var pk = owner.toLowerCase();
+      if(pk === 'all three') pk = 'louis';
+      var per = PPL.find(function(x){return x.key === pk;});
+      var dept = deptInfo[o.vertical] || {name:'VUC', color:'#888'};
+      var tid = 'vobj-' + o.id;
+      if(allT.find(function(x){return x.tid === tid;})) return;
+      allT.push({
+        tid: tid, text: o.title, desc: '',
+        pi: 'vobj', pn: 'VUC ' + dept.name, pc: dept.color,
+        pk: pk, pname: per ? per.name : owner, pinit: per ? per.init : owner.charAt(0),
+        q: 'inbox', carry: false, reason: null,
+        isVucObjective: true, project: o.project || ''
+      });
+      Q.inbox.push(tid);
     });
-    Q.inbox.push(tid);
-  });
+  }
+
+  // 2. Monthly commitments assigned to projects (Tab 2 gold sections)
+  if(typeof monthlyObjectives !== 'undefined' && monthlyObjectives.length){
+    monthlyObjectives.forEach(function(mo){
+      if(!mo.fromProject || mo.status === 'completed') return;
+      if(!mo.title || !mo.title.trim()) return;
+      var owner = mo.owner || 'Louis';
+      var pk = owner.toLowerCase();
+      if(pk === 'all three') pk = 'louis';
+      var per = PPL.find(function(x){return x.key === pk;});
+      var proj = P.find(function(x){return x.id === mo.fromProject;});
+      var tid = 'mobj-' + mo.id;
+      if(allT.find(function(x){return x.tid === tid;})) return;
+      allT.push({
+        tid: tid, text: mo.title, desc: '',
+        pi: mo.fromProject,
+        pn: proj ? proj.name : 'Project',
+        pc: proj ? proj.color : '#92400E',
+        pk: pk, pname: per ? per.name : owner, pinit: per ? per.init : owner.charAt(0),
+        q: 'inbox', carry: false, reason: null,
+        isMonthlyCommit: true, project: mo.fromProject
+      });
+      Q.inbox.push(tid);
+    });
+  }
 }
 
 function chipH(t){
