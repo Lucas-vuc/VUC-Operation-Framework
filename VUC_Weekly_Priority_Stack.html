@@ -784,7 +784,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;ba
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-g" onclick="sw('eis',document.querySelectorAll('.nav button')[3])">Continue to Eisenhower &rarr;</button>
+    <button class="btn btn-g" onclick="buildMatrix()">Continue to Eisenhower &rarr;</button>
     <button class="btn btn-s" onclick="window.print()">Print / PDF</button>
   </div>
 </div>
@@ -1710,6 +1710,14 @@ function collectT(){
 }
 
 function buildMatrix(){
+  // If tasks are already sorted into quadrants, don't silently wipe them.
+  var hasSorted = (Q.q1.length + Q.q2.length + Q.q3.length + Q.q4.length) > 0;
+  if(hasSorted){
+    if(!confirm('Rebuild the matrix? This moves all tasks back to Unsorted and you will need to re-sort them.')){
+      sw('eis',document.querySelectorAll('.nav button')[3]);
+      return;
+    }
+  }
   collectT();
   collectVucObjectives();
   rInbox();rQ();updateCounts();
@@ -2044,6 +2052,16 @@ function sw(tab,btn){
   if(tab==='obj'){
     // Always re-render when entering the objectives tab
     renderObj();
+  }
+  if(tab==='eis'){
+    // Rebuild the matrix only if nothing has been collected/sorted yet,
+    // so we don't wipe out tasks the user already dragged into quadrants.
+    var alreadyBuilt = allT && allT.length > 0;
+    if(!alreadyBuilt){
+      collectT();
+      collectVucObjectives();
+      rInbox();rQ();updateCounts();
+    }
   }
   window.scrollTo(0,0);
 }
