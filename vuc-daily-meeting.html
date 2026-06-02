@@ -1331,7 +1331,9 @@
   @media print {
     body { background: white; }
     .topbar { position: relative; background: var(--navy); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .btn-timer, .btn-close, .add-btn { display: none; }
+    .btn-timer, .btn-close, .add-btn, .btn-export, #exportJsonBtn, .btn-friday, .meeting-footer button, .import-btn, .eis-task-check, .add-task-btn, .task-del, .task-expand { display: none !important; }
+    .meeting-footer { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 
 
@@ -1819,115 +1821,6 @@
   </div>
 
   <!-- ── SECTION 3: FRIDAY REVIEW (toggleable) ── -->
-  <div class="friday-section" id="fridaySection">
-    <div class="section-head">
-      <span class="section-num">03</span>
-      <span class="section-title">Weekly Review</span>
-      <span class="section-mins">12 MIN · 4 BLOCKS</span>
-    </div>
-    <div class="section-rule"></div>
-
-    <div class="friday-banner">
-      <div class="friday-banner-icon">📊</div>
-      <div class="friday-banner-text">
-        <div class="friday-banner-title">Friday review of the week</div>
-        <div class="friday-banner-sub">Mark which weekly objectives were achieved, and check which Eisenhower Q1/Q2 tasks from Mon–Thu were completed. Use this to prepare next Monday&apos;s Priority Stack.</div>
-      </div>
-    </div>
-
-    <!-- Week stats -->
-    <div class="friday-stats-grid" id="fridayStats">
-      <div class="friday-stat"><div class="friday-stat-num" id="fStatObj">0</div><div class="friday-stat-label">VUC Objectives</div></div>
-      <div class="friday-stat"><div class="friday-stat-num" id="fStatObjDone">0</div><div class="friday-stat-label">Achieved</div></div>
-      <div class="friday-stat highlight"><div class="friday-stat-num" id="fStatObjPct">0%</div><div class="friday-stat-label">Objectives completed</div></div>
-      <div class="friday-stat"><div class="friday-stat-num" id="fStatTasks">0</div><div class="friday-stat-label">Q1+Q2 tasks</div></div>
-      <div class="friday-stat"><div class="friday-stat-num" id="fStatTasksDone">0</div><div class="friday-stat-label">Completed</div></div>
-      <div class="friday-stat highlight"><div class="friday-stat-num" id="fStatTasksPct">0%</div><div class="friday-stat-label">Tasks completed</div></div>
-    </div>
-
-    <!-- Block: % by department -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>🏢</span> Completion by Department</div>
-        <div class="review-block-stats" id="fDeptStats">—</div>
-      </div>
-      <div class="review-block-body" id="fDeptList">
-        <div class="friday-empty">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Block 1: VUC Objectives review -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>🎯</span> VUC Weekly Objectives</div>
-        <div class="review-block-stats" id="fObjStats">— / —</div>
-      </div>
-      <div class="review-block-body" id="fObjList">
-        <div class="friday-empty">Click "📊 Friday Review" above to load this week&apos;s objectives.</div>
-      </div>
-    </div>
-
-    <!-- Block 2: Q1/Q2 tasks from each daily this week -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>⚡</span> Daily Q1 / Q2 Tasks This Week</div>
-        <div class="review-block-stats" id="fTaskStats">— / —</div>
-      </div>
-      <div class="review-block-body" id="fTaskList">
-        <div class="friday-empty">No tasks logged yet this week.</div>
-      </div>
-    </div>
-
-    <!-- Block 3: By Founder -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>👥</span> Distribution by Founder</div>
-        <div class="review-block-stats" id="fFounderStats">—</div>
-      </div>
-      <div class="review-block-body" id="fFounderList">
-        <div class="friday-empty">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Block 4: Eisenhower Drift -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>⚖️</span> Eisenhower Drift</div>
-        <div class="review-block-stats" id="fDriftLabel">—</div>
-      </div>
-      <div class="review-block-body" id="fDriftBody">
-        <div class="friday-empty">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Block 5: Learnings & Carryovers -->
-    <div class="review-block">
-      <div class="review-block-hdr">
-        <div class="review-block-title"><span>📝</span> Learnings &amp; Carryovers</div>
-        <div class="review-block-stats">Free text — saved automatically</div>
-      </div>
-      <div class="review-block-body" style="padding:14px 20px">
-        <div class="learning-field">
-          <label class="learning-label">What did we learn this week?</label>
-          <textarea class="learning-text" id="learn-learnings" placeholder="Insights, patterns, what worked, what didn't..."></textarea>
-        </div>
-        <div class="learning-field">
-          <label class="learning-label">What carries to next Monday?</label>
-          <textarea class="learning-text" id="learn-carryovers" placeholder="Unfinished items, follow-ups, decisions to make next week..."></textarea>
-        </div>
-        <div class="learning-field">
-          <label class="learning-label">What blocked execution?</label>
-          <textarea class="learning-text" id="learn-blockers" placeholder="External dependencies, internal bottlenecks, missing info..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- Export -->
-    <div class="friday-export-row">
-      <button class="btn-friday-export" onclick="exportFridayWrapup()">📦 Export Friday Wrap-up</button>
-      <span class="friday-export-hint">Copies a JSON summary to clipboard. Paste it in the next Monday Priority Stack to load carryovers automatically.</span>
-    </div>
-  </div>
 
   <!-- ── FOOTER ── -->
   <div class="meeting-footer">
@@ -1936,7 +1829,7 @@
       <div class="footer-text" style="margin-top:3px; color:rgba(132,148,168,.5);">Blockers not resolved here → create Jira ticket immediately after.</div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
-      <button class="btn-friday" id="fridayToggle" onclick="toggleFridayReview()">📊 Friday Review</button>
+      <button class="btn-export" id="exportJsonBtn" onclick="exportDailyJSON()">📦 Export JSON</button>
       <button class="btn-export" id="exportBtn" onclick="exportPDF()">⬇ Export PDF</button>
       <button class="btn-close" onclick="closeMeeting()">Close Meeting</button>
     </div>
@@ -2124,94 +2017,63 @@
   }
 
   function exportPDF(){
-    const btn = document.getElementById('exportBtn');
-    btn.classList.add('loading');
-    btn.textContent = '⏳ Generating…';
+    // Use the browser's native print → Save as PDF. Reliable, no external library.
+    window.print();
+  }
 
+  function exportDailyJSON(){
+    const state = collectDailyState();
+    // Add a date label for the record
     const now2 = new Date();
-    const dateStr = `${now2.getFullYear()}-${pad(now2.getMonth()+1)}-${pad(now2.getDate())}`;
+    const dateStr = now2.getFullYear() + '-' + pad(now2.getMonth()+1) + '-' + pad(now2.getDate());
     const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now2.getDay()];
-    const filename = `VUC_Daily_${dateStr}.pdf`;
+    state.dateLabel = dayName + ' ' + dateStr;
+    state.type = 'vuc_daily';
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;color:#0D1B2A;padding:0;">
+    // Count tasks for the confirmation message
+    let totalTasks = 0, doneTasks = 0;
+    ['louis','yasin','lucas'].forEach(p => {
+      if(state.persons[p] && state.persons[p].eisenhower){
+        ['q1','q2','q3','q4'].forEach(q => {
+          const arr = state.persons[p].eisenhower[q] || [];
+          totalTasks += arr.length;
+          doneTasks += arr.filter(t => t.done).length;
+        });
+      }
+    });
 
-        <!-- HEADER -->
-        <div style="background:#0D1B2A;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-          <div>
-            <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;">VUC</span>
-            <span style="font-size:12px;color:#C9A84C;margin-left:8px;letter-spacing:2px;">DAILY MEETING</span>
-          </div>
-          <span style="font-size:11px;color:#8494A8;">${dayName}, ${dateStr}</span>
-        </div>
+    const json = JSON.stringify(state, null, 2);
+    const msg = '✓ Daily record copied to clipboard.\n\n' +
+                dayName + ' ' + dateStr + '\n' +
+                totalTasks + ' tasks (' + doneTasks + ' done)\n' +
+                state.crossDept.length + ' cross-department items\n\n' +
+                'Save this JSON as the record for the day, or import it elsewhere.';
 
-        <!-- SECTION 1 -->
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #C9A84C;">
-          <span style="font-size:11px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);padding:3px 8px;border-radius:3px;color:#C9A84C;letter-spacing:2px;margin-right:10px;">01</span>
-          <span style="font-size:13px;font-weight:700;letter-spacing:1px;color:#0D1B2A;text-transform:uppercase;">Today's Priorities</span>
-        </div>
-        <div style="margin-bottom:24px;">
-          ${personPDFBlock('Louis','Co-Founder · Strategy & Investors','#1A3A5C','blockers-louis')}
-          ${personPDFBlock('Yasin','Co-Founder · CTO & Consulting','#1A5C3A','blockers-yasin')}
-          ${personPDFBlock('Lucas','Organization & Development Manager','#8A5C1A','blockers-lucas')}
-        </div>
-
-        <!-- SECTION 2 -->
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2E4057;page-break-before:auto;">
-          <span style="font-size:11px;background:rgba(46,64,87,.15);border:1px solid rgba(46,64,87,.4);padding:3px 8px;border-radius:3px;color:#2E4057;letter-spacing:2px;margin-right:10px;">02</span>
-          <span style="font-size:13px;font-weight:700;letter-spacing:1px;color:#0D1B2A;text-transform:uppercase;">Cross-Department Tasks</span>
-        </div>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:32px;">
-          <thead>
-            <tr style="background:#0D1B2A;">
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">TASK</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">DESCRIPTION</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">FROM → TO</th>
-              <th style="padding:8px 10px;font-size:10px;letter-spacing:2px;color:#C9A84C;text-align:left;font-weight:500;">STATUS</th>
-            </tr>
-          </thead>
-          <tbody>${getCrossRows()}</tbody>
-        </table>
-
-        <!-- FOOTER NOTE -->
-        <div style="border-top:1px solid #DDE2EA;padding-top:10px;text-align:center;">
-          <span style="font-size:10px;color:#8494A8;letter-spacing:1px;">VUC — CONFIDENTIAL · Daily Meeting Record · ${dateStr}</span>
-        </div>
-      </div>`;
-
-    // Render into a wrapper that's visible to html2canvas
-    // html2canvas can't capture opacity:0 or off-screen fixed elements reliably
-    // Strategy: append below page content, capture, then remove
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'width:794px;background:#fff;margin:0 auto;';
-    wrapper.innerHTML = html;
-
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:9998;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0;';
-    overlay.appendChild(wrapper);
-    document.body.appendChild(overlay);
-
-    // Small delay to ensure render
-    setTimeout(() => {
-      const opt = {
-        margin:      [10, 10, 10, 10],
-        filename:    filename,
-        image:       { type: 'jpeg', quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
-        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:   { mode: 'avoid-all' }
-      };
-
-      html2pdf().set(opt).from(wrapper).save().then(() => {
-        document.body.removeChild(overlay);
-        btn.classList.remove('loading');
-        btn.textContent = '⬇ Export PDF';
-      }).catch(() => {
-        document.body.removeChild(overlay);
-        btn.classList.remove('loading');
-        btn.textContent = '⬇ Export PDF';
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(json).then(function(){
+        alert(msg);
+      }).catch(function(){
+        dailyJSONFallback(json, msg);
       });
-    }, 300);
+    } else {
+      dailyJSONFallback(json, msg);
+    }
+  }
+
+  function dailyJSONFallback(json, msg){
+    const ta = document.createElement('textarea');
+    ta.value = json;
+    ta.style.cssText = 'position:fixed;top:10%;left:5%;width:90%;height:70%;z-index:99999;font-family:monospace;font-size:11px;padding:12px;border:2px solid #C9A84C;border-radius:8px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      alert(msg);
+      document.body.removeChild(ta);
+    } catch(e){
+      // Leave the textarea visible so user can copy manually
+      ta.insertAdjacentHTML('afterend', '<button onclick="this.previousSibling.remove();this.remove()" style="position:fixed;top:4%;right:5%;z-index:99999;padding:8px 16px;background:#C9A84C;border:none;border-radius:6px;cursor:pointer;font-weight:700">Close</button>');
+    }
   }
 
   // ── CLOSE ─────────────────────────────────────────────
@@ -2870,6 +2732,8 @@
   }
 
   function buildFridayReview(){
+    // Friday Review is now a separate file — guard against missing section
+    if(!document.getElementById('fridaySection')) return;
     // Build Block 1: VUC objectives from priority_stack localStorage
     const psRaw = localStorage.getItem('vuc_priority_stack');
     let objectives = [];
