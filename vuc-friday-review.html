@@ -867,6 +867,10 @@ body {
   </div>
   <div class="topbar-meta">
     <span class="topbar-date" id="topbarDate">—</span>
+    <label style="display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.8px;text-transform:uppercase">
+      Week of
+      <input type="date" id="weekPicker" onchange="changeWeek()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:5px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;outline:none">
+    </label>
     <button class="btn-action" onclick="openImport('weekly')">Import Priority Stack</button>
     <button class="btn-action" onclick="openImport('daily')">Import Daily</button>
     <button class="btn-action primary" onclick="window.print()">Print / PDF</button>
@@ -1093,6 +1097,7 @@ var projTaskStatuses = {}; // Done/Partial/Missed for project tasks
 var dailyTaskDone = {};    // manual done-marks for daily Q1/Q2 tasks
 var importMode = null;
 var taskFilter = 'q12';
+var selectedWeekDate = null; // null = current week; YYYY-MM-DD = review a past week
 
 function pad(n){ return String(n).padStart(2,'0'); }
 
@@ -1108,7 +1113,8 @@ function getFridayKey(){
 }
 
 function getThisWeekDailyKeys(){
-  var today = new Date();
+  // Use the selected week if set, otherwise today
+  var today = selectedWeekDate ? new Date(selectedWeekDate + 'T12:00:00') : new Date();
   var todayDow = today.getDay();
   var thisMonday = new Date(today.getTime());
   thisMonday.setDate(thisMonday.getDate() + (todayDow === 0 ? -6 : 1 - todayDow));
@@ -1124,6 +1130,13 @@ function getThisWeekDailyKeys(){
     });
   }
   return days;
+}
+
+function changeWeek(){
+  var picker = document.getElementById('weekPicker');
+  selectedWeekDate = picker.value || null;
+  loadFromStorage();
+  render();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1855,6 +1868,14 @@ function esc(s){
 // ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
+// Set the week picker to today by default (shows which week is being reviewed)
+(function initWeekPicker(){
+  var picker = document.getElementById('weekPicker');
+  if(picker){
+    var t = new Date();
+    picker.value = t.getFullYear() + '-' + pad(t.getMonth()+1) + '-' + pad(t.getDate());
+  }
+})();
 loadFromStorage();
 render();
 </script>
