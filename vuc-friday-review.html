@@ -1090,6 +1090,7 @@ var projectTasks = [];     // Tasks from Tab 1 of Priority Stack
 var allTasks = [];         // Q1/Q2 from dailies
 var objStatuses = {};
 var projTaskStatuses = {}; // Done/Partial/Missed for project tasks
+var dailyTaskDone = {};    // manual done-marks for daily Q1/Q2 tasks
 var importMode = null;
 var taskFilter = 'q12';
 
@@ -1233,6 +1234,7 @@ function restoreFridayState(){
       var data = JSON.parse(raw);
       if(data.objectiveStatuses) objStatuses = data.objectiveStatuses;
       if(data.projTaskStatuses) projTaskStatuses = data.projTaskStatuses;
+      if(data.dailyTaskDone) dailyTaskDone = data.dailyTaskDone;
       if(data.learnings){
         if(data.learnings.learnings) document.getElementById('learnLearnings').value = data.learnings.learnings;
         if(data.learnings.carryovers) document.getElementById('learnCarryovers').value = data.learnings.carryovers;
@@ -1250,6 +1252,7 @@ function saveFridayState(){
       date: new Date().toISOString(),
       objectiveStatuses: objStatuses,
       projTaskStatuses: projTaskStatuses,
+      dailyTaskDone: dailyTaskDone,
       learnings: {
         learnings: document.getElementById('learnLearnings').value,
         carryovers: document.getElementById('learnCarryovers').value,
@@ -1366,7 +1369,10 @@ function renderExecStats(){
   document.getElementById('statObjPct').textContent = commitPct + '%';
 
   var q12 = allTasks.filter(function(t){ return t.quad === 'q1' || t.quad === 'q2'; });
-  var q12Done = q12.filter(function(t){ return t.done; }).length;
+  var q12Done = q12.filter(function(t){
+    var k = t.day + '|' + t.person + '|' + t.quad + '|' + t.text;
+    return t.done || dailyTaskDone[k] === true;
+  }).length;
   var taskPct = q12.length ? Math.round(q12Done / q12.length * 100) : 0;
   document.getElementById('statTaskTotal').textContent = q12.length;
   document.getElementById('statTaskDone').textContent = q12Done + ' done';
@@ -1474,8 +1480,11 @@ function renderTasks(){
   var html = '';
   filtered.forEach(function(t){
     var pname = t.person.charAt(0).toUpperCase() + t.person.slice(1);
-    html += '<div class="task-row' + (t.done ? ' done' : '') + '">';
-    html += '<div class="task-check' + (t.done ? ' done' : '') + '">' + (t.done ? '✓' : '') + '</div>';
+    // Build a stable key for this task so its done-state persists
+    var taskKey = t.day + '|' + t.person + '|' + t.quad + '|' + t.text;
+    var isDone = t.done || dailyTaskDone[taskKey] === true;
+    html += '<div class="task-row' + (isDone ? ' done' : '') + '">';
+    html += '<div class="task-check' + (isDone ? ' done' : '') + '" style="cursor:pointer" onclick="toggleDailyTask(this)" data-taskkey="' + esc(taskKey) + '">' + (isDone ? '✓' : '') + '</div>';
     html += '<div class="task-day">' + t.day + '</div>';
     html += '<div class="task-person ' + t.person + '">' + pname + '</div>';
     html += '<div class="task-quad">' + t.quad.toUpperCase() + '</div>';
@@ -1484,9 +1493,28 @@ function renderTasks(){
   });
   list.innerHTML = html;
 
+  // Count done using both the task's own state and the manual overrides
   var allQ12 = allTasks.filter(function(t){ return t.quad === 'q1' || t.quad === 'q2'; });
-  var doneQ12 = allQ12.filter(function(t){ return t.done; }).length;
+  var doneQ12 = allQ12.filter(function(t){
+    var k = t.day + '|' + t.person + '|' + t.quad + '|' + t.text;
+    return t.done || dailyTaskDone[k] === true;
+  }).length;
   label.textContent = doneQ12 + ' / ' + allQ12.length;
+}
+
+function toggleDailyTask(el){
+  var key = el.getAttribute('data-taskkey');
+  if(!key) return;
+  if(dailyTaskDone[key]){
+    delete dailyTaskDone[key];
+  } else {
+    dailyTaskDone[key] = true;
+  }
+  saveFridayState();
+  // Re-render tasks + stats that depend on done state
+  renderTasks();
+  renderExecStats();
+  renderFounders();
 }
 
 function setFilter(f, btn){
@@ -1502,8 +1530,13 @@ function renderFounders(){
   var elNames = {louis:'Louis', yasin:'Yasin', lucas:'Lucas'};
   var q12Tasks = allTasks.filter(function(t){ return t.quad === 'q1' || t.quad === 'q2'; });
   var totalAll = q12Tasks.length;
-  // Check if any task has done=true — if not, show load distribution instead
-  var hasDoneState = allTasks.some(function(t){ return t.done === true; });
+  // Done state exists if any task is natively done OR manually marked
+  var hasDoneState = allTasks.some(function(t){ return t.done === true; }) || Object.keys(dailyTaskDone).length > 0;
+
+  function taskIsDone(t){
+    var k = t.day + '|' + t.person + '|' + t.quad + '|' + t.text;
+    return t.done || dailyTaskDone[k] === true;
+  }
 
   founders.forEach(function(f){
     var tasks = q12Tasks.filter(function(t){ return t.person === f; });
@@ -1522,7 +1555,7 @@ function renderFounders(){
 
     if(hasDoneState){
       // Show completion %
-      var done = tasks.filter(function(t){ return t.done; }).length;
+      var done = tasks.filter(taskIsDone).length;
       var pct = Math.round(done / total * 100);
       pctEl.textContent = pct + '%';
       barEl.style.width = pct + '%';
