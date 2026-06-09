@@ -2684,16 +2684,31 @@ function buildUrgentBanner(){
       var ds = JSON.parse(raw);
       if(!ds.persons) return;
       Object.keys(ds.persons).forEach(function(p){
-        var q1 = (ds.persons[p].eisenhower && ds.persons[p].eisenhower.q1) || [];
-        q1.forEach(function(t){
-          if(!t.done && t.text){
-            pendingDailyTasks.push({
-              person: p,
-              day: dk.label,
-              text: t.text
+        var ei = ds.persons[p].eisenhower;
+        if(!ei) return;
+
+        // Format A: string-based (doFirst = q1, newline-separated)
+        var strMap = { doFirst:'q1', schedule:'q2' };
+        Object.keys(strMap).forEach(function(field){
+          if(typeof ei[field] === 'string' && ei[field].trim()){
+            ei[field].split('\n').forEach(function(line){
+              var text = line.replace(/^[\u21a9\s]+/, '').trim();
+              // A carryover-prefixed line (↩) or any Q1 line not done counts as pending
+              if(text){
+                pendingDailyTasks.push({ person: p, day: dk.label, text: text });
+              }
             });
           }
         });
+
+        // Format B: array-based q1 with {text, done}
+        if(Array.isArray(ei.q1)){
+          ei.q1.forEach(function(t){
+            if(!t.done && t.text){
+              pendingDailyTasks.push({ person: p, day: dk.label, text: t.text });
+            }
+          });
+        }
       });
     } catch(e){}
   });
@@ -2737,9 +2752,22 @@ function buildUrgentBanner(){
   }
 
   if(pendingDailyTasks.length){
-    html += '<div class="urgent-section">';
-    html += '<div class="urgent-section-title">Daily "Do First" tasks left undone last week (' + pendingDailyTasks.length + ')</div>';
+    // Dedupe by person+text (a recurring daily task shows once, with its latest day)
+    var seen = {};
+    var dedupedDaily = [];
     pendingDailyTasks.forEach(function(t){
+      var key = t.person + '|' + t.text.toLowerCase().trim();
+      if(seen[key] !== undefined){
+        // Update day to the most recent occurrence
+        dedupedDaily[seen[key]].day = t.day;
+      } else {
+        seen[key] = dedupedDaily.length;
+        dedupedDaily.push({person:t.person, day:t.day, text:t.text});
+      }
+    });
+    html += '<div class="urgent-section">';
+    html += '<div class="urgent-section-title">Daily "Do First" tasks left undone last week (' + dedupedDaily.length + ')</div>';
+    dedupedDaily.forEach(function(t){
       var personName = t.person.charAt(0).toUpperCase() + t.person.slice(1);
       html += '<div class="urgent-item">';
       html += '<span class="urgent-item-tag ' + t.person + '">' + personName + '</span>';
