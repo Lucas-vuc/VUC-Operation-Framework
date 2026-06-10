@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC — Workshop 1: Strategic Alignment & Operating Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1B2A; --navy2:#15293D; --gold:#C9A84C; --gold2:#C49A6C;
+  --paper:#F7F5F0; --ink:#1A1A1A; --muted:#8494A8; --line:#E2E0D8;
+  --crit:#7A2020; --crit-bg:#FBEDED; --med:#1A5C3A;
+  --sans:'DM Sans',system-ui,sans-serif; --head:'Syne',sans-serif; --mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5}
+
+.topbar{background:var(--navy);color:#fff;position:sticky;top:0;z-index:100}
+.topbar-inner{max-width:1080px;margin:0 auto;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.brand-logo{font-family:var(--head);font-weight:800;font-size:20px;letter-spacing:2px}
+.brand-logo span{color:var(--gold)}
+.brand-sub{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-top:2px}
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;padding:8px 14px;border-radius:6px;cursor:pointer;border:none;transition:all .15s}
+.btn-gold{background:var(--gold);color:var(--navy);font-weight:700} .btn-gold:hover{background:#d8b85c}
+.btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2)} .btn-ghost:hover{background:rgba(255,255,255,.15)}
+.btn-danger{background:transparent;color:#ef9a9a;border:1px solid rgba(239,154,154,.4)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:32px 28px 80px}
+
+.ws-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ws-num{font-family:var(--head);font-size:13px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.ws-priority{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:4px;background:var(--crit-bg);color:var(--crit)}
+.ws-dur{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.ws-title{font-family:var(--head);font-size:30px;font-weight:800;color:var(--navy);line-height:1.12;letter-spacing:-.4px;margin-bottom:12px}
+.ws-purpose{font-size:14px;color:#444;max-width:800px;line-height:1.65;margin-bottom:14px}
+
+.central-q{background:linear-gradient(135deg,#FBFAF6,#F4EFE2);border:1px solid var(--gold2);border-left:4px solid var(--gold);border-radius:8px;padding:14px 18px;margin:14px 0}
+.central-q-label{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);margin-bottom:5px}
+.central-q-text{font-family:var(--head);font-size:16px;font-weight:600;color:var(--navy);line-height:1.45}
+
+.ws-meta{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ws-meta-field{display:flex;flex-direction:column;gap:4px}
+.ws-meta-field label{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.ws-meta-field input{font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:6px;padding:7px 10px;background:#fff;outline:none;min-width:200px}
+.ws-meta-field input:focus{border-color:var(--gold)}
+
+.outputs-strip{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:24px}
+.outputs-label{font-family:var(--mono);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold2);margin-bottom:8px}
+.outputs-list{display:flex;flex-wrap:wrap;gap:6px}
+.output-chip{font-size:11px;color:#555;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:4px 12px}
+
+.block{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:16px;overflow:hidden}
+.block-head{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(135deg,#FBFAF6,#F4F1E8);border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.block-idx{font-family:var(--head);font-size:15px;font-weight:800;color:var(--gold2);min-width:24px}
+.block-name{font-family:var(--head);font-size:16px;font-weight:700;color:var(--navy);flex:1}
+.block-toggle{font-size:12px;color:var(--gold);transition:transform .2s}
+.block.open .block-toggle{transform:rotate(180deg)}
+.block-body{display:none;padding:18px}
+.block.open .block-body{display:block}
+
+.block-keyq{font-family:var(--head);font-size:14px;font-weight:600;color:var(--navy);font-style:italic;margin-bottom:12px;padding-left:12px;border-left:3px solid var(--gold)}
+.block-guide{font-size:12.5px;color:#666;line-height:1.6;background:var(--paper);border-radius:8px;padding:11px 14px;margin-bottom:14px}
+
+.qref{margin-bottom:16px}
+.qref-label{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.qref-item{display:flex;gap:8px;font-size:12.5px;color:#555;line-height:1.6;margin-bottom:3px}
+.qref-item::before{content:'?';color:var(--gold2);font-family:var(--mono);font-weight:700;flex-shrink:0}
+
+/* FIELDS (textareas for identity etc.) */
+.field{margin-bottom:14px}
+.field-label{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--med);margin-bottom:6px}
+.field textarea{width:100%;font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:10px;outline:none;resize:vertical;min-height:54px;background:#fff;line-height:1.5}
+.field textarea:focus{border-color:var(--gold)}
+
+/* TABLES */
+.tbl-wrap{margin-bottom:16px}
+.tbl-title{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold2);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.tbl-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-family:var(--mono);font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1.5px solid var(--navy);white-space:nowrap}
+.tbl td{padding:3px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td input,.tbl td textarea,.tbl td select{width:100%;font-family:var(--sans);font-size:12.5px;border:1px solid transparent;border-radius:5px;padding:6px 7px;outline:none;background:transparent;resize:none}
+.tbl td input:focus,.tbl td textarea:focus,.tbl td select:focus{border-color:var(--gold);background:#fff}
+.tbl td input:hover,.tbl td select:hover{background:#FBFAF6}
+.tbl td select{font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--navy)}
+.tbl td.delcol{width:28px;text-align:center;padding-top:8px}
+.tbl-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:15px;line-height:1}
+.tbl-del:hover{color:var(--crit)}
+.tbl-add{font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--gold2);background:none;border:1px dashed var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;margin-top:8px}
+.tbl-add:hover{border-color:var(--gold);color:var(--gold)}
+
+/* CLOSING */
+.closing-sep{font-family:var(--head);font-size:20px;font-weight:800;color:var(--navy);margin:36px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--gold)}
+
+/* NEXT INPUTS */
+.next-box{background:var(--navy);border-radius:10px;padding:20px 22px;margin-top:24px;color:#fff}
+.next-box-title{font-family:var(--head);font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px}
+.next-box-sub{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:14px}
+.next-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.next-item:last-child{border-bottom:none}
+.next-to{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--gold);letter-spacing:.5px;margin-bottom:3px}
+.next-items{font-size:12.5px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:6px}
+.next-box textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;font-family:var(--sans);font-size:12.5px;padding:7px 10px;outline:none;resize:vertical;min-height:40px}
+.next-box textarea:focus{border-color:var(--gold)}
+
+.ws-summary{display:flex;gap:24px;margin-top:24px;padding:18px 22px;background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:10px;flex-wrap:wrap}
+.ws-summary-stat{display:flex;flex-direction:column;gap:2px}
+.ws-summary-num{font-family:var(--head);font-size:26px;font-weight:800;color:var(--gold)}
+.ws-summary-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.5)}
+
+.foot{max-width:1080px;margin:0 auto;padding:24px 28px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);flex-wrap:wrap;gap:10px}
+
+@media print{
+  .topbar-actions,.tbl-add,.tbl-del,.foot button,.delcol{display:none!important}
+  .block-body{display:block!important}
+  .topbar{position:relative} body{background:#fff}
+  .block,.tbl-wrap{break-inside:avoid}
+  .tbl td input,.tbl td textarea,.tbl td select{border:none}
+}
+@media (max-width:720px){
+  .ws-title{font-size:22px}
+  .tbl{font-size:11px} .tbl th{font-size:8px}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl thead{display:none}
+  .tbl tr{border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:10px}
+  .tbl td{border:none;padding:3px 0}
+  .tbl td::before{content:attr(data-col);font-family:var(--mono);font-size:8px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+  .tbl td.delcol{text-align:right}
+  .tbl td.delcol::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <div><div class="brand-logo">V<span>U</span>C</div><div class="brand-sub">Strategic Operating System · Workshop 1</div></div>
+  <div class="topbar-actions">
+    <button class="btn btn-gold" onclick="exportJSON()">⬇ Export JSON</button>
+    <button class="btn btn-ghost" onclick="window.print()">⬇ Export PDF</button>
+    <button class="btn btn-ghost" onclick="importJSON()">⬆ Import JSON</button>
+    <button class="btn btn-danger" onclick="resetAll()">Reset</button>
+  </div>
+</div></div>
+
+<div class="wrap" id="wrap"></div>
+
+<div class="foot"><span>VUC · Dubai, DWTC</span><span id="saveIndicator">Auto-save on</span></div>
+
+<div id="importOverlay" style="display:none;position:fixed;inset:0;background:rgba(13,27,42,.7);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:12px;max-width:560px;width:100%;padding:24px">
+    <div style="font-family:var(--head);font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px">Import Workshop 1 JSON</div>
+    <div style="font-size:13px;color:#666;margin-bottom:14px">Paste a previously exported JSON to restore everything.</div>
+    <textarea id="importArea" style="width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:monospace;font-size:11px;outline:none;resize:vertical" placeholder="Paste JSON..."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" style="color:#666;border-color:var(--line)" onclick="closeImport()">Cancel</button>
+      <button class="btn btn-gold" onclick="confirmImport()">Load</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var W = {"n": 1, "title": "Strategic Alignment & Operating Model", "priority": "Critical", "duration": "Half-day 3.5\u20134h \u00b7 Full-day 6\u20137h", "central_question": "What is VUC becoming, what are the strategic priorities for the next quarter, half-year and year, and what operating model is required to execute them?", "purpose": "Align VUC's leadership around what VUC is becoming, which business lines and projects to prioritize, and what operating model is required to execute effectively over the next 3, 6 and 12 months.", "outputs": ["VUC Strategic Definition", "VUC Business Line Architecture", "Quarterly / Half-Year / Yearly Objectives", "Strategic Priority List", "Initial Operating Model Principles", "Projects requiring portfolio review", "Decisions, owners and deadlines", "Inputs required for the next workshops"], "blocks": [{"name": "VUC Strategic Identity", "key_q": "What is VUC, in one clear internal definition?", "guide": "Recommended working definition: VUC is a strategic advisory and venture execution platform focused on energy, infrastructure, mining, technology and high-impact sector opportunities. Possible framings: Strategic Advisory Firm \u00b7 Venture Development Platform \u00b7 Execution & Advisory Platform \u00b7 Sector Platform Builder \u00b7 Hybrid Strategic Platform.", "questions": ["Is this definition accurate? Too broad? Too narrow?", "What should be removed / added?"], "fields": [{"id": "identity_internal", "label": "Internal definition", "type": "textarea", "ph": "How VUC describes itself internally\u2026"}, {"id": "identity_external", "label": "External positioning", "type": "textarea", "ph": "How VUC describes itself to the market\u2026"}, {"id": "identity_not", "label": "What VUC is NOT", "type": "textarea", "ph": "Explicit exclusions\u2026"}], "tables": [{"id": "b1_log", "title": "Block 1 Decision Log", "cols": ["Decision", "Owner", "Deadline", "Notes"], "seed": ["Confirm internal VUC definition", "Confirm external VUC positioning language", "Define what VUC is not"]}]}, {"name": "Business Line Architecture", "key_q": "Which business lines are active now, which are future, and who owns each?", "guide": "Proposed lines: Advisory & Consulting \u00b7 Project Execution \u00b7 Sector Platforms \u00b7 Venture Development \u00b7 Founder Office / Strategic Opportunities \u00b7 IT, AI & Internal Systems.", "questions": ["Advisory & Consulting \u2014 which services to monetize immediately? Who owns it?", "Project Execution \u2014 what level should VUC provide? Where does responsibility end?", "Sector Platforms \u2014 which are active vs strategic-not-yet-active? Which to pause?", "Venture Development \u2014 when require equity vs cash compensation?", "Founder Office \u2014 what qualifies? When does it move into the formal portfolio?", "IT, AI & Internal Systems \u2014 build vs buy? Who owns infrastructure?"], "fields": [], "tables": [{"id": "b2_log", "title": "Block 2 Decision Log", "cols": ["Business Line", "Confirmed?", "Owner", "Priority", "Notes"], "seed": ["Advisory & Consulting", "Project Execution", "Sector Platforms", "Venture Development", "Founder Office / Strategic Opportunities", "IT, AI & Internal Systems"], "seedcol": 0}]}, {"name": "Strategic Priorities by Timeframe", "key_q": "What are the top priorities for the quarter, half-year and year?", "guide": "Quarterly focus: execution discipline, structure, immediate business clarity. Half-year focus: commercial traction, operating systems, team structure. Yearly focus: platform building, revenue stability, reduced founder dependency.", "questions": ["Top 3 priorities for the next quarter / 6 months / 12 months?", "Which projects consume too much time relative to value?", "Which are under-resourced but strategically important?"], "fields": [], "tables": [{"id": "b3_q", "title": "Quarterly Objectives", "cols": ["Objective", "Business Line", "Owner", "Deadline", "Success Metric", "Notes"]}, {"id": "b3_h", "title": "Half-Year Objectives", "cols": ["Objective", "Business Line", "Owner", "Deadline", "Success Metric", "Notes"]}, {"id": "b3_y", "title": "Yearly Objectives", "cols": ["Objective", "Business Line", "Owner", "Deadline", "Success Metric", "Notes"]}]}, {"name": "What VUC Should Not Do", "key_q": "What should VUC avoid, reject, pause or stop doing?", "guide": "Key principle: VUC should not commit strategic resources to opportunities that lack a clear owner, commercial structure, decision timeline or strategic relevance.", "questions": ["Which opportunities should VUC reject? Which projects are distractions?", "Which work should not be done without a signed mandate?", "Which projects consume founder attention without enough upside?"], "fields": [], "tables": [{"id": "b4_stop", "title": "Stop / Pause / Reject", "cols": ["Item", "Category", "Reason", "Decision", "Owner", "Follow-Up"]}]}, {"name": "Operating Model Principles", "key_q": "What minimum operating system does VUC need to execute effectively without becoming bureaucratic?", "guide": "Suggested rule: any decision creating cost, commitment, reputational/legal exposure, client expectation or resource allocation must be documented.", "questions": ["What should Louis own directly? What should Yasin own directly?", "Which decisions require both founders / one founder / delegated?", "What should O&D own vs facilitate-but-not-decide?", "Which meetings are necessary? Who owns each? What must each produce?"], "fields": [], "tables": [{"id": "b5_om", "title": "Operating Model Decisions", "cols": ["Area", "Decision Required", "Decision Made", "Owner", "Deadline", "Notes"], "seed": ["Founder roles", "O&D role", "Project owner role", "Meeting cadence", "Documentation rules"], "seedcol": 0}]}], "closing": [{"id": "master_log", "title": "Master Decision Log", "cols": ["Decision", "Category", "Owner", "Deadline", "Status", "Notes"]}, {"id": "open_q", "title": "Open Questions Log", "cols": ["Open Question", "Why It Matters", "Owner", "Required Input", "Deadline"]}, {"id": "actions", "title": "Actions & Follow-Up", "cols": ["Action", "Owner", "Deadline", "Related Decision", "Status"]}], "next_inputs": [{"to": "W3 \u2014 Project Portfolio & Pipeline", "items": "Active projects, future opportunities, priority criteria, projects to accelerate/pause"}, {"to": "W2 \u2014 Org Development & HR", "items": "Required roles, missing capabilities, priority hires, relocation requirements"}, {"to": "W6 \u2014 Governance & Decision Rights", "items": "Founder-level vs delegated decisions, approval thresholds, reporting needs"}, {"to": "W4 \u2014 Consulting Practice", "items": "Confirmed service lines, target client types, delivery model questions"}, {"to": "W8 \u2014 Commercial Terms", "items": "Revenue model decisions, retainer/success-fee/equity rules, unpaid work policy"}]};
+var OWNERS = ['', 'Louis', 'Yasin', 'Lucas', 'Both founders', 'All three', 'Project owner', 'TBD'];
+var STORAGE_KEY = 'vuc_workshop_1';
+// Columns that should render as owner dropdowns / select menus
+var SELECT_COLS = {
+  'Owner':OWNERS,
+  'Priority':['','High','Medium','Low'],
+  'Confirmed?':['','Yes','No','Partial'],
+  'Status':['','Open','In Progress','Confirmed','Done'],
+  'Category':['','Strategy','Business Line','Objective','Operating Model','Commercial','Other'],
+  'Decision':null // free text (overridden where Decision is a column in master log? keep text)
+};
+// For Stop/Pause/Reject the "Category" options differ
+var CATEGORY_OVERRIDE = {'b4_stop':['','Stop','Pause','Reject']};
+
+var state = { meta:{}, fields:{}, tables:{}, nextInputs:{} };
+
+function load(){
+  try{ var raw=localStorage.getItem(STORAGE_KEY); if(raw){ state=JSON.parse(raw);
+    if(!state.meta)state.meta={}; if(!state.fields)state.fields={}; if(!state.tables)state.tables={}; if(!state.nextInputs)state.nextInputs={}; } }
+  catch(e){ state={meta:{},fields:{},tables:{},nextInputs:{}}; }
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  var ind=document.getElementById('saveIndicator'); if(ind){ind.textContent='Saved';setTimeout(function(){ind.textContent='Auto-save on';},800);}
+}
+function esc(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
+
+// Get rows for a table; seed if first time
+function getRows(tbl){
+  if(!state.tables[tbl.id]){
+    var rows=[];
+    if(tbl.seed){
+      tbl.seed.forEach(function(seedVal){
+        var row={}; var sc = tbl.seedcol||0;
+        tbl.cols.forEach(function(c,ci){ row[c] = (ci===sc)? seedVal : ''; });
+        rows.push(row);
+      });
+    } else {
+      // start with 3 empty rows
+      for(var i=0;i<3;i++){ var r={}; tbl.cols.forEach(function(c){r[c]='';}); rows.push(r); }
+    }
+    state.tables[tbl.id]=rows;
+  }
+  return state.tables[tbl.id];
+}
+
+function selOptionsFor(tblId, col){
+  if(col==='Category' && CATEGORY_OVERRIDE[tblId]) return CATEGORY_OVERRIDE[tblId];
+  if(SELECT_COLS[col]) return SELECT_COLS[col];
+  return null;
+}
+
+function render(){
+  var h='';
+  // Header
+  h += '<div class="ws-eyebrow"><span class="ws-num">WORKSHOP '+W.n+'</span><span class="ws-priority">'+esc(W.priority)+'</span><span class="ws-dur">'+esc(W.duration)+'</span></div>';
+  h += '<div class="ws-title">'+esc(W.title)+'</div>';
+  h += '<div class="ws-purpose">'+esc(W.purpose)+'</div>';
+  h += '<div class="central-q"><div class="central-q-label">Central Question</div><div class="central-q-text">'+esc(W.central_question)+'</div></div>';
+
+  // Meta
+  var m=state.meta||{};
+  h += '<div class="ws-meta">';
+  h += '<div class="ws-meta-field"><label>Date</label><input type="date" id="meta-date" value="'+esc(m.date||'')+'" onchange="saveMeta()"></div>';
+  h += '<div class="ws-meta-field" style="flex:1"><label>Participants</label><input id="meta-part" value="'+esc(m.participants||'')+'" placeholder="Louis, Yasin, Lucas..." onchange="saveMeta()"></div>';
+  h += '<div class="ws-meta-field"><label>Format</label><input id="meta-fmt" value="'+esc(m.format||'')+'" placeholder="Half-day / Full-day" onchange="saveMeta()"></div>';
+  h += '</div>';
+
+  // Outputs
+  h += '<div class="outputs-strip"><div class="outputs-label">Expected outputs of this workshop</div><div class="outputs-list">';
+  W.outputs.forEach(function(o){ h += '<span class="output-chip">'+esc(o)+'</span>'; });
+  h += '</div></div>';
+
+  // Blocks
+  W.blocks.forEach(function(b,bi){
+    var open = bi===0;
+    h += '<div class="block'+(open?' open':'')+'" id="block-'+bi+'">';
+    h += '<div class="block-head" onclick="toggleBlock('+bi+')"><span class="block-idx">'+(bi+1)+'</span><span class="block-name">'+esc(b.name)+'</span><span class="block-toggle">▼</span></div>';
+    h += '<div class="block-body">';
+    h += '<div class="block-keyq">'+esc(b.key_q)+'</div>';
+    if(b.guide) h += '<div class="block-guide">'+esc(b.guide)+'</div>';
+    // Reference questions
+    if(b.questions && b.questions.length){
+      h += '<div class="qref"><div class="qref-label">Discussion questions — reference</div>';
+      b.questions.forEach(function(q){ h += '<div class="qref-item">'+esc(q)+'</div>'; });
+      h += '</div>';
+    }
+    // Fields (textareas)
+    (b.fields||[]).forEach(function(f){
+      var val = (state.fields[f.id]||'');
+      h += '<div class="field"><div class="field-label">'+esc(f.label)+'</div><textarea id="fld-'+f.id+'" placeholder="'+esc(f.ph||'')+'" oninput="saveField(\''+f.id+'\',this.value)">'+esc(val)+'</textarea></div>';
+    });
+    // Tables
+    (b.tables||[]).forEach(function(t){ h += renderTable(t); });
+    h += '</div></div>';
+  });
+
+  // Closing sections
+  h += '<div class="closing-sep">Workshop Close — Master Logs</div>';
+  W.closing.forEach(function(t){ h += renderTable(t); });
+
+  // Next inputs
+  h += '<div class="next-box"><div class="next-box-title">Inputs required for the next workshops</div><div class="next-box-sub">What this session transfers forward. Note the specifics agreed.</div>';
+  W.next_inputs.forEach(function(ni,idx){
+    var val=(state.nextInputs['ni'+idx]||'');
+    h += '<div class="next-item"><div class="next-to">'+esc(ni.to)+'</div><div class="next-items">'+esc(ni.items)+'</div>';
+    h += '<textarea placeholder="Notes / specifics agreed…" oninput="saveNextInput('+idx+',this.value)">'+esc(val)+'</textarea></div>';
+  });
+  h += '</div>';
+
+  // Summary
+  h += renderSummary();
+
+  document.getElementById('wrap').innerHTML = h;
+}
+
+function renderTable(t){
+  var rows = getRows(t);
+  var h = '<div class="tbl-wrap"><div class="tbl-title">'+esc(t.title)+'</div>';
+  h += '<table class="tbl" id="tbl-'+t.id+'"><thead><tr>';
+  t.cols.forEach(function(c){ h += '<th>'+esc(c)+'</th>'; });
+  h += '<th></th></tr></thead><tbody>';
+  rows.forEach(function(row,ri){ h += renderRow(t, ri, row); });
+  h += '</tbody></table>';
+  h += '<button class="tbl-add" onclick="addRow(\''+t.id+'\')">+ add row</button></div>';
+  return h;
+}
+
+function renderRow(t, ri, row){
+  var h = '<tr>';
+  t.cols.forEach(function(c){
+    var v = row[c]||'';
+    var opts = selOptionsFor(t.id, c);
+    h += '<td data-col="'+esc(c)+'">';
+    if(opts){
+      h += '<select onchange="setCell(\''+t.id+'\','+ri+',\''+esc(c)+'\',this.value)">';
+      opts.forEach(function(o){ h += '<option value="'+esc(o)+'"'+(v===o?' selected':'')+'>'+(o||'—')+'</option>'; });
+      h += '</select>';
+    } else {
+      h += '<input value="'+esc(v)+'" oninput="setCell(\''+t.id+'\','+ri+',\''+esc(c)+'\',this.value)">';
+    }
+    h += '</td>';
+  });
+  h += '<td class="delcol"><button class="tbl-del" onclick="delRow(\''+t.id+'\','+ri+')">×</button></td>';
+  h += '</tr>';
+  return h;
+}
+
+function findTable(id){
+  var found=null;
+  W.blocks.forEach(function(b){ (b.tables||[]).forEach(function(t){ if(t.id===id)found=t; }); });
+  W.closing.forEach(function(t){ if(t.id===id)found=t; });
+  return found;
+}
+
+function addRow(id){
+  var t=findTable(id); var rows=getRows(t);
+  var r={}; t.cols.forEach(function(c){r[c]='';}); rows.push(r); save();
+  // re-render just the table body
+  var tbl=document.getElementById('tbl-'+id);
+  var tbody=tbl.querySelector('tbody');
+  tbody.insertAdjacentHTML('beforeend', renderRow(t, rows.length-1, r));
+  var trs=tbody.querySelectorAll('tr'); var last=trs[trs.length-1];
+  if(last){ var inp=last.querySelector('input,select'); if(inp)inp.focus(); }
+}
+function setCell(id, ri, col, val){
+  var rows=state.tables[id]; if(rows&&rows[ri]){ rows[ri][col]=val; save(); updateSummary(); }
+}
+function delRow(id, ri){
+  var rows=state.tables[id]; if(rows){ rows.splice(ri,1); save(); render(); }
+}
+
+function toggleBlock(bi){ document.getElementById('block-'+bi).classList.toggle('open'); }
+function saveMeta(){ if(!state.meta)state.meta={};
+  var d=document.getElementById('meta-date'),p=document.getElementById('meta-part'),f=document.getElementById('meta-fmt');
+  if(d)state.meta.date=d.value; if(p)state.meta.participants=p.value; if(f)state.meta.format=f.value; save(); }
+function saveField(id,val){ state.fields[id]=val; save(); }
+function saveNextInput(idx,val){ state.nextInputs['ni'+idx]=val; save(); }
+
+function countFilled(){
+  var dec=0, oq=0, act=0;
+  // decisions = rows in any *_log + master_log + b2/b5 decision tables that have content
+  Object.keys(state.tables||{}).forEach(function(id){
+    var rows=state.tables[id]||[];
+    rows.forEach(function(r){
+      var hasContent = Object.keys(r).some(function(k){ return r[k]&&String(r[k]).trim(); });
+      if(!hasContent) return;
+      if(id==='open_q') oq++;
+      else if(id==='actions') act++;
+      else dec++;
+    });
+  });
+  return {dec:dec, oq:oq, act:act};
+}
+function renderSummary(){
+  var c=countFilled();
+  return '<div class="ws-summary">'+
+    '<div class="ws-summary-stat"><span class="ws-summary-num" id="sum-dec">'+c.dec+'</span><span class="ws-summary-lbl">Decisions / rows</span></div>'+
+    '<div class="ws-summary-stat"><span class="ws-summary-num" id="sum-act">'+c.act+'</span><span class="ws-summary-lbl">Action items</span></div>'+
+    '<div class="ws-summary-stat"><span class="ws-summary-num" id="sum-oq">'+c.oq+'</span><span class="ws-summary-lbl">Open questions</span></div></div>';
+}
+function updateSummary(){
+  var c=countFilled();
+  var d=document.getElementById('sum-dec'); if(d)d.textContent=c.dec;
+  var a=document.getElementById('sum-act'); if(a)a.textContent=c.act;
+  var o=document.getElementById('sum-oq'); if(o)o.textContent=c.oq;
+}
+
+function exportJSON(){
+  var out={ type:'vuc_workshop', workshop:1, title:W.title, exported:new Date().toISOString(),
+    meta:state.meta||{}, fields:state.fields||{}, tables:state.tables||{}, nextInputs:state.nextInputs||{} };
+  var json=JSON.stringify(out,null,2);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(json).then(function(){alert('✓ Workshop 1 exported to clipboard.');}).catch(function(){fb(json);}); }
+  else fb(json);
+}
+function fb(json){
+  var ta=document.createElement('textarea'); ta.value=json;
+  ta.style.cssText='position:fixed;top:8%;left:5%;width:90%;height:75%;z-index:99999;font-family:monospace;font-size:11px;padding:12px';
+  document.body.appendChild(ta); ta.select();
+  try{document.execCommand('copy');alert('✓ Copied.');document.body.removeChild(ta);}
+  catch(e){ta.insertAdjacentHTML('afterend','<button onclick="this.previousSibling.remove();this.remove()" style="position:fixed;top:3%;right:5%;z-index:99999;padding:8px 16px;background:#C9A84C;border:none;border-radius:6px;cursor:pointer;font-weight:700">Close</button>');}
+}
+function importJSON(){ document.getElementById('importOverlay').style.display='flex'; setTimeout(function(){document.getElementById('importArea').focus();},50); }
+function closeImport(){ document.getElementById('importOverlay').style.display='none'; }
+function confirmImport(){
+  var raw=document.getElementById('importArea').value.trim(); if(!raw){alert('Paste the JSON first.');return;}
+  try{ var data=JSON.parse(raw); if(data.type!=='vuc_workshop')throw new Error('Not a vuc_workshop export.');
+    state={meta:data.meta||{},fields:data.fields||{},tables:data.tables||{},nextInputs:data.nextInputs||{}};
+    save(); closeImport(); document.getElementById('importArea').value=''; render(); alert('✓ Workshop 1 loaded.');
+  }catch(e){ alert('Import failed: '+e.message); }
+}
+function resetAll(){ if(!confirm('Reset Workshop 1? This clears all captured content.'))return; state={meta:{},fields:{},tables:{},nextInputs:{}}; save(); render(); }
+
+load(); render();
+</script>
+</body>
+</html>
