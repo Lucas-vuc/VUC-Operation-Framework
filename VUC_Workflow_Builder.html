@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUC Workflow Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0D1B2A; --navy2:#13243a; --navy3:#1b3050; --gold:#C9A84C; --gold2:#e0c574;
+    --paper:#f4f2ea; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+    --txt:#eef1f6; --txt2:#9fb0c4; --txt3:#6f8298;
+    --cat-a:#C9A84C; --cat-b:#15803D; --cat-c:#1E40AF; --cat-d:#5B21B6; --cat-e:#92400E; --cat-f:#0d7d6e; --cat-g:#b03a6e;
+    --ok:#3fae6e; --warn:#d8a23a; --bad:#c8553d;
+    --r:8px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--navy);color:var(--txt);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+  .mono{font-family:'DM Mono',monospace;}
+  .disp{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;}
+
+  /* layout */
+  .app{display:grid;grid-template-columns:288px 1fr;grid-template-rows:auto 1fr;height:100vh;}
+  header.topbar{grid-column:1/3;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;background:var(--navy);border-bottom:1px solid var(--line);}
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .brand .logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.06em;color:var(--gold);line-height:1;}
+  .brand .sub{font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.16em;}
+  .topbar .meta{font-size:12px;color:var(--txt3);text-transform:uppercase;letter-spacing:.12em;}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn{background:transparent;border:1px solid var(--line2);color:var(--txt);padding:8px 13px;border-radius:var(--r);font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:.15s;}
+  .btn:hover{border-color:var(--gold);color:var(--gold2);}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:600;}
+  .btn.gold:hover{background:var(--gold2);color:var(--navy);}
+  .btn.sm{padding:5px 9px;font-size:11.5px;}
+  .btn.danger:hover{border-color:var(--bad);color:#e88a76;}
+
+  /* sidebar */
+  aside{background:var(--navy2);border-right:1px solid var(--line);overflow-y:auto;padding:16px 12px 40px;}
+  .side-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 12px;}
+  .side-head h2{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--txt2);font-weight:600;}
+  .phase-group{margin-bottom:18px;}
+  .phase-label{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.08em;color:var(--gold);padding:6px 8px;border-bottom:1px solid var(--line);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+  .phase-label span.count{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3);letter-spacing:0;}
+  .wf-item{display:flex;align-items:flex-start;gap:9px;padding:9px 9px;border-radius:var(--r);cursor:pointer;transition:.12s;border:1px solid transparent;}
+  .wf-item:hover{background:var(--navy3);}
+  .wf-item.active{background:var(--navy3);border-color:var(--gold);}
+  .wf-item .dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none;}
+  .wf-item .wf-name{font-size:13px;font-weight:500;line-height:1.35;}
+  .wf-item .wf-sub{font-size:10.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+
+  /* main split */
+  main{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
+  .editor,.viz{overflow-y:auto;padding:22px 24px 60px;}
+  .editor{border-right:1px solid var(--line);}
+  .viz{background:var(--navy2);}
+
+  .wf-title-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:4px;}
+  .wf-title-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--txt);font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.03em;padding:2px 0 6px;}
+  .wf-title-input:focus{outline:none;border-color:var(--gold);}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 22px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:5px 9px;border-radius:20px;border:1px solid var(--line2);color:var(--txt2);}
+  .pill select{background:transparent;border:none;color:var(--txt);font-size:11px;text-transform:uppercase;letter-spacing:.06em;}
+  .pill select:focus{outline:none;}
+  .pill option{background:var(--navy2);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--gold2);font-weight:600;margin-bottom:5px;}
+  .field input[type=text],.field textarea,.field select{width:100%;background:var(--navy2);border:1px solid var(--line2);color:var(--txt);border-radius:var(--r);padding:9px 11px;font-size:13.5px;}
+  .field textarea{resize:vertical;min-height:48px;line-height:1.5;}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold);}
+  .field .hint{font-size:11px;color:var(--txt3);margin-top:4px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .section-h{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.06em;color:var(--gold);margin:26px 0 12px;padding-bottom:5px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+
+  /* steps editor */
+  .step{background:var(--navy2);border:1px solid var(--line2);border-radius:var(--r);padding:10px 11px;margin-bottom:9px;border-left-width:3px;}
+  .step.t-start{border-left-color:var(--ok);}
+  .step.t-process{border-left-color:var(--cat-c);}
+  .step.t-decision{border-left-color:var(--gold);}
+  .step.t-end{border-left-color:var(--bad);}
+  .step-top{display:flex;gap:8px;align-items:center;}
+  .step-idx{font-family:'DM Mono',monospace;font-size:12px;color:var(--txt3);width:22px;flex:none;text-align:center;}
+  .step-type{background:var(--navy3);border:1px solid var(--line2);color:var(--txt);border-radius:6px;padding:5px 6px;font-size:11px;flex:none;}
+  .step-type option{background:var(--navy2);}
+  .step-label{flex:1;background:var(--navy3);border:1px solid var(--line2);color:var(--txt);border-radius:6px;padding:6px 9px;font-size:13px;}
+  .step-label:focus,.step-type:focus{outline:none;border-color:var(--gold);}
+  .step-ctrl{display:flex;gap:3px;flex:none;}
+  .iconbtn{background:transparent;border:1px solid var(--line);color:var(--txt2);border-radius:6px;width:26px;height:30px;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .iconbtn:hover{border-color:var(--gold);color:var(--gold2);}
+  .iconbtn.x:hover{border-color:var(--bad);color:#e88a76;}
+  .outcomes{margin:9px 0 2px 30px;padding-left:11px;border-left:1px dashed var(--line2);}
+  .outcomes .oc-head{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--txt3);margin-bottom:6px;}
+  .outcome{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+  .outcome input[type=text]{flex:1;background:var(--navy3);border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:5px 8px;font-size:12.5px;}
+  .outcome input:focus{outline:none;border-color:var(--gold);}
+  .outcome label.term{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2);white-space:nowrap;text-transform:none;letter-spacing:0;font-weight:400;margin:0;}
+  .outcome .term-label{width:130px;}
+  .flowedge{margin:9px 0 2px 30px;padding-left:11px;border-left:1px dashed var(--line2);}
+  .flowedge .oc-head{margin-bottom:6px;}
+  .flow-input{width:100%;background:var(--navy3);border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:6px 9px;font-size:12.5px;}
+  .flow-input:focus{outline:none;border-color:var(--gold);}
+  .add-step-row{display:flex;gap:8px;margin-top:6px;}
+
+  /* viz */
+  .viz-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .viz-head h3{margin:0;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.06em;color:var(--gold);}
+  .diagram-wrap{background:var(--paper);border-radius:var(--r);padding:18px;min-height:200px;display:flex;align-items:center;justify-content:center;overflow:auto;}
+  .diagram-wrap svg{max-width:100%;height:auto;}
+  .err{color:#e88a76;font-size:12.5px;font-family:'DM Mono',monospace;white-space:pre-wrap;}
+  .code-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0 8px;}
+  .code-head .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--txt2);font-weight:600;}
+  pre.code{background:var(--navy);border:1px solid var(--line2);border-radius:var(--r);padding:13px;font-family:'DM Mono',monospace;font-size:12px;color:var(--txt2);overflow:auto;white-space:pre;line-height:1.5;margin:0;max-height:300px;}
+  .meta-readout{margin-top:22px;font-size:12px;color:var(--txt2);}
+  .meta-readout div{padding:5px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;}
+  .meta-readout div span:first-child{color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;}
+  .meta-readout div span:last-child{text-align:right;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);padding:10px 18px;border-radius:var(--r);font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:50;}
+  .toast.show{opacity:1;}
+  .empty{color:var(--txt3);text-align:center;padding:60px 20px;font-size:14px;}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(5,12,22,.7);display:none;align-items:center;justify-content:center;z-index:40;padding:24px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--navy2);border:1px solid var(--line2);border-radius:12px;max-width:560px;width:100%;padding:22px;max-height:84vh;overflow:auto;}
+  .modal h3{margin:0 0 12px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;color:var(--gold);}
+  .modal textarea{width:100%;min-height:200px;background:var(--navy);border:1px solid var(--line2);color:var(--txt);border-radius:var(--r);padding:11px;font-family:'DM Mono',monospace;font-size:12px;}
+  .modal .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
+
+  @media (max-width:1100px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;}
+    aside{max-height:230px;}
+    main{grid-template-columns:1fr;}
+    .editor{border-right:none;border-bottom:1px solid var(--line);}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">VUC</span>
+      <span class="sub">Workflow Builder</span>
+    </div>
+    <div class="toolbar">
+      <button class="btn sm" id="btnNew">+ New workflow</button>
+      <button class="btn sm" id="btnDup">Duplicate</button>
+      <button class="btn sm danger" id="btnDel">Delete</button>
+      <button class="btn sm" id="btnImport">Import JSON</button>
+      <button class="btn sm gold" id="btnExport">Export JSON</button>
+      <button class="btn sm" id="btnExportMd">Export handbook (.md)</button>
+    </div>
+  </header>
+
+  <aside>
+    <div class="side-head"><h2>Workflow library</h2></div>
+    <div id="library"></div>
+  </aside>
+
+  <main>
+    <section class="editor" id="editor">
+      <div class="empty" id="emptyState">Select a workflow from the library, or create a new one.</div>
+      <div id="form" style="display:none;">
+        <div class="wf-title-row">
+          <input type="text" class="wf-title-input" id="f_name" placeholder="Workflow name">
+        </div>
+        <div class="pills">
+          <span class="pill"><span>Category</span>
+            <select id="f_category">
+              <option value="A">A · Strategic &amp; Governance</option>
+              <option value="B">B · Consulting &amp; Client Delivery</option>
+              <option value="C">C · Project &amp; Portfolio</option>
+              <option value="D">D · HR, Resources &amp; Relocation</option>
+              <option value="E">E · Finance, Expenses &amp; Travel</option>
+              <option value="F">F · IT, AI &amp; Systems</option>
+              <option value="G">G · Brand, Marketing &amp; Comms</option>
+            </select>
+          </span>
+          <span class="pill"><span>Phase</span>
+            <select id="f_phase"><option value="1">Phase 1</option><option value="2">Phase 2</option><option value="3">Phase 3</option></select>
+          </span>
+          <span class="pill"><span>Priority</span>
+            <select id="f_priority"><option>High</option><option>Medium</option><option>Low</option></select>
+          </span>
+          <span class="pill"><span>Automation</span>
+            <select id="f_automation"><option>High</option><option>Medium</option><option>Low</option></select>
+          </span>
+        </div>
+
+        <div class="field"><label>Purpose</label><textarea id="f_purpose" placeholder="Why this workflow exists"></textarea></div>
+        <div class="grid2">
+          <div class="field"><label>Trigger</label><input type="text" id="f_trigger" placeholder="What starts it"></div>
+          <div class="field"><label>Owner</label><input type="text" id="f_owner" placeholder="Role / function"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Participants</label><input type="text" id="f_participants" placeholder="Who is involved"></div>
+          <div class="field"><label>Tools / systems</label><input type="text" id="f_tools" placeholder="Jira, Microsoft Teams"></div>
+        </div>
+        <div class="field"><label>Required inputs</label><textarea id="f_inputs" placeholder="Information or documents needed to start"></textarea></div>
+
+        <div class="section-h">Step-by-step process</div>
+        <div id="steps"></div>
+        <div class="add-step-row">
+          <button class="btn sm" id="btnAddStep">+ Step</button>
+          <button class="btn sm" id="btnAddDecision">+ Decision</button>
+          <button class="btn sm" id="btnAddEnd">+ End / terminal</button>
+        </div>
+
+        <div class="section-h">Controls &amp; outputs</div>
+        <div class="field"><label>Decision points (notes)</label><textarea id="f_decisionNotes" placeholder="Narrative notes on the decisions above"></textarea></div>
+        <div class="field"><label>Approval requirements</label><textarea id="f_approvals" placeholder="What must be approved, and the threshold"></textarea></div>
+        <div class="field"><label>Required documents</label><textarea id="f_documents" placeholder="Charter, intake form, report template, etc."></textarea></div>
+        <div class="field"><label>Outputs</label><textarea id="f_outputs" placeholder="What the workflow produces"></textarea></div>
+        <div class="grid2">
+          <div class="field"><label>SLA / deadline</label><input type="text" id="f_sla" placeholder="e.g. 48h, by BD5"></div>
+          <div class="field"><label>Automation potential (notes)</label><input type="text" id="f_automationNotes" placeholder="Form, CRM, Jira, dashboard, n8n…"></div>
+        </div>
+        <div class="field"><label>Risks</label><textarea id="f_risks" placeholder="What can go wrong"></textarea></div>
+      </div>
+    </section>
+
+    <section class="viz">
+      <div class="viz-head">
+        <h3>Live flowchart</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="btn sm" id="btnExportSvg">SVG</button>
+          <button class="btn sm" id="btnExportPng">PNG</button>
+          <button class="btn sm" id="btnExportMermaid">Export Mermaid</button>
+        </div>
+      </div>
+      <div class="diagram-wrap"><div id="diagram"></div></div>
+      <div class="code-head"><span class="lbl">Mermaid code</span><button class="btn sm" id="btnCopyMermaid">Copy</button></div>
+      <pre class="code" id="mermaidCode"></pre>
+      <div class="meta-readout" id="metaReadout"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Import JSON</h3>
+    <textarea id="modalText" placeholder="Paste minified JSON here"></textarea>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">Cancel</button>
+      <button class="btn gold" id="modalConfirm">Import</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+  startOnLoad:false, theme:'base', securityLevel:'loose', flowchart:{useMaxWidth:true,htmlLabels:false},
+  fontFamily:'"DM Sans", sans-serif',
+  themeVariables:{
+    primaryColor:'#eef0ea', primaryBorderColor:'#0D1B2A', primaryTextColor:'#0D1B2A',
+    lineColor:'#6f8298', secondaryColor:'#e7e2cf', tertiaryColor:'#f4f2ea',
+    fontSize:'13px'
+  }
+});
+
+const STORE_KEY = 'vuc_workflow_builder_v1';
+const CAT_COLOR = {A:'--cat-a',B:'--cat-b',C:'--cat-c',D:'--cat-d',E:'--cat-e',F:'--cat-f',G:'--cat-g'};
+const CAT_NAME = {A:'Strategic & Governance',B:'Consulting & Client Delivery',C:'Project & Portfolio',D:'HR, Resources & Relocation',E:'Finance, Expenses & Travel',F:'IT, AI & Systems',G:'Brand, Marketing & Comms'};
+
+let uid = () => 'w'+Math.random().toString(36).slice(2,9);
+let state = { workflows: [], activeId: null };
+
+/* ---------- seed library (from VUC AI instruction files 1 & 2) ---------- */
+function S(label){return {type:'process',label};}
+function START(label){return {type:'start',label};}
+function END(label){return {type:'end',label};}
+function DEC(label,outcomes){return {type:'decision',label,outcomes};}
+function oc(label,terminal,end){return {label,terminal:!!terminal,end:end||''};}
+
+function seed(){
+  return [
+    {id:uid(),name:'New Opportunity Intake (Opportunity \u2192 Project)',category:'A',phase:'1',priority:'High',automation:'Medium',
+      purpose:'Turn informal opportunities into qualified, tracked projects or clearly rejected items.',
+      trigger:'A new opportunity is received from any source.',owner:'',participants:'Founders / business-line owners',
+      tools:'Jira, Microsoft Teams',inputs:'Opportunity source, basic description, business line.',
+      steps:[START('Opportunity received'),S('Complete intake form'),S('Categorize by business line'),S('Strategic fit assessment'),S('Commercial model assessment'),S('Resource requirement assessment'),S('Risk assessment'),S('Founder / owner review'),
+        DEC('Decision',[oc('Pursue'),oc('Explore',true,'Explore later'),oc('Hold',true,'Hold'),oc('Reject',true,'Rejected')]),
+        S('Create Project Charter'),S('Assign owner'),S('Create project folder'),S('Add to project tracker'),S('Add to weekly reporting cadence'),END('Define next milestone')],
+      decisionNotes:'Pursue continues to charter; Explore, Hold and Reject are recorded outcomes.',approvals:'Founder / owner sign-off at review stage.',documents:'Opportunity intake form, project folder.',outputs:'A qualified project (or a logged rejected/parked opportunity).',sla:'',risks:'Opportunities lost if not logged; unclear ownership.'},
+
+    {id:uid(),name:'Project Approval / Project Charter',category:'C',phase:'1',priority:'High',automation:'Medium',
+      purpose:'Define the point at which a qualified opportunity becomes a formal, resourced project.',
+      trigger:'A qualified opportunity needs resources, cost, client commitment or external action.',owner:'',participants:'Owner, sponsor',
+      tools:'Jira, Microsoft Teams',inputs:'Qualified opportunity, resource and cost estimate.',
+      steps:[START('Qualified opportunity'),S('Resource / cost / commitment identified'),S('Project Charter drafted'),S('Required fields completed'),S('Approval review'),
+        DEC('Decision',[oc('Approved'),oc('Needs revision',true,'Back to draft'),oc('Rejected / parked',true,'Parked')]),
+        S('Project becomes active'),S('Add to portfolio review'),END('Start reporting cycle')],
+      decisionNotes:'Charter fields: name, business line, owner, sponsor, objective, commercial model, resources, risks, next milestone.',approvals:'Charter approval before project becomes active.',documents:'Project Charter.',outputs:'Active project on the portfolio and reporting cadence.',sla:'',risks:'Projects starting without resources or clear ownership.'},
+
+    {id:uid(),name:'Decision Rights & Approval',category:'A',phase:'1',priority:'High',automation:'Low',
+      purpose:'Define who can decide what, so decisions do not default to founders.',
+      trigger:'A decision above a defined threshold is required.',owner:'',participants:'Decision owners, founders',
+      tools:'Jira, Microsoft Teams',inputs:'Decision type, value/risk level.',
+      steps:[START('Decision required'),DEC('Within owner authority?',[oc('Yes'),oc('No, escalate',true,'Escalate to founders')]),S('Owner decides and logs decision'),END('Decision recorded in decision log')],
+      decisionNotes:'Define thresholds by decision type and value/risk.',approvals:'Per delegation matrix.',documents:'Delegation matrix, decision log.',outputs:'Recorded decision with clear authority.',sla:'48h on escalations.',risks:'Founder bottleneck; undocumented decisions.'},
+
+    {id:uid(),name:'Weekly Reporting',category:'A',phase:'1',priority:'High',automation:'High',
+      purpose:'Structure weekly updates, decisions and action tracking across the portfolio.',
+      trigger:'The weekly cycle starts.',owner:'',participants:'Project owners, O&D, executives',
+      tools:'Jira, Microsoft Teams',inputs:'Per-project progress, blockers, risks, financial impact, next actions.',
+      steps:[START('Weekly cycle starts'),S('Each owner submits update'),S('Update: progress, blockers, risks, financials, next actions'),S('O&D consolidates updates'),S('Executive review'),S('Decisions captured in decision log'),S('Actions assigned'),S('Deadlines updated'),S('Follow-up tasks created'),END('Dashboard / tracker updated')],
+      decisionNotes:'',approvals:'Executive review of consolidated report.',documents:'Weekly update template, decision log.',outputs:'Consolidated weekly report, updated tracker.',sla:'Weekly.',risks:'Status drift; blockers surfacing late.'},
+
+    {id:uid(),name:'Lead Qualification',category:'B',phase:'2',priority:'Medium',automation:'Medium',
+      purpose:'Filter inbound and outbound leads to those worth pursuing.',trigger:'A new lead is identified.',owner:'',participants:'Consulting team',tools:'Jira, Microsoft Teams',inputs:'Lead source, need, budget signals.',
+      steps:[START('Lead identified'),S('Capture lead details'),DEC('Qualified?',[oc('Yes'),oc('No',true,'Disqualify / nurture')]),END('Move to proposal development')],
+      decisionNotes:'',approvals:'',documents:'Lead record.',outputs:'Qualified lead.',sla:'',risks:'Time spent on poor-fit leads.'},
+
+    {id:uid(),name:'Proposal Development',category:'B',phase:'2',priority:'Medium',automation:'Medium',
+      purpose:'Produce consistent, costed client proposals.',trigger:'A qualified lead requests a proposal.',owner:'',participants:'Consulting team',tools:'Jira, Microsoft Teams',inputs:'Client need, scope, pricing inputs.',
+      steps:[START('Qualified lead'),S('Define scope'),S('Estimate effort and cost'),S('Draft proposal'),DEC('Commercial terms approved?',[oc('Yes'),oc('No',true,'Revise terms')]),END('Send proposal')],
+      decisionNotes:'',approvals:'Commercial terms approval.',documents:'Proposal template.',outputs:'Issued proposal.',sla:'',risks:'Underpricing; scope creep.'},
+
+    {id:uid(),name:'Client Onboarding',category:'B',phase:'2',priority:'Medium',automation:'Medium',
+      purpose:'Start engagements cleanly once a client agrees.',trigger:'A proposal is accepted.',owner:'',participants:'Consulting team, client',tools:'Jira, Microsoft Teams',inputs:'Signed proposal, client contacts.',
+      steps:[START('Proposal accepted'),S('Confirm scope and terms'),S('Set up project folder and access'),S('Kickoff with client'),END('Delivery cadence agreed')],
+      decisionNotes:'',approvals:'',documents:'Engagement record.',outputs:'Onboarded client engagement.',sla:'',risks:'Unclear scope at start.'},
+
+    {id:uid(),name:'Client Delivery & Reporting',category:'B',phase:'2',priority:'Medium',automation:'Medium',
+      purpose:'Deliver engagements and report progress to the client.',trigger:'An engagement is active.',owner:'',participants:'Consulting team, client',tools:'Jira, Microsoft Teams',inputs:'Engagement plan, milestones.',
+      steps:[START('Engagement active'),S('Execute milestone'),S('Report progress to client'),DEC('Engagement complete?',[oc('No',true,'Next milestone'),oc('Yes')]),END('Close-out and capture IP')],
+      decisionNotes:'',approvals:'Client sign-off on milestones.',documents:'Delivery report.',outputs:'Delivered milestones, captured IP.',sla:'',risks:'Scope creep; weak IP capture.'},
+
+    {id:uid(),name:'Project Portfolio Review',category:'C',phase:'3',priority:'Medium',automation:'Low',
+      purpose:'Make portfolio-level decisions across all active projects.',trigger:'Monthly portfolio review cycle.',owner:'',participants:'Management',tools:'Jira, Microsoft Teams',inputs:'Consolidated project status, financials.',
+      steps:[START('Review cycle starts'),S('Review all active projects'),S('Assess fit, progress and resources'),DEC('Continue / re-prioritize / stop',[oc('Continue'),oc('Re-prioritize',true,'Reallocate'),oc('Stop',true,'Park / kill')]),END('Portfolio decisions recorded')],
+      decisionNotes:'',approvals:'Management decisions.',documents:'Portfolio view, decision log.',outputs:'Portfolio decisions.',sla:'Monthly.',risks:'Spreading resources too thin.'},
+
+    {id:uid(),name:'Hiring Request',category:'D',phase:'1',priority:'High',automation:'Low',
+      purpose:'Manage hiring requests, approvals, interviews, onboarding and relocation triggers.',
+      trigger:'A resource gap is identified.',owner:'',participants:'Hiring owner, founders, HR',tools:'Jira, Microsoft Teams',inputs:'Role need, budget, justification.',
+      steps:[START('Resource gap identified'),S('Hiring request submitted'),S('Role justification prepared'),S('Budget / compensation reviewed'),
+        DEC('Founder approval',[oc('Approved'),oc('Not approved',true,'Request closed')]),
+        S('Role description finalized'),S('Search starts'),S('Candidate shortlist'),S('Interviews'),
+        DEC('Hiring decision',[oc('Hire'),oc('No hire',true,'Re-open or close search')]),
+        S('Offer'),S('Onboarding checklist'),S('Tools and access setup'),S('Reporting line confirmed'),S('First 30-day objectives defined'),
+        DEC('Relocation required?',[oc('Yes',true,'Trigger Dubai relocation workflow'),oc('No')]),END('Hire complete')],
+      decisionNotes:'Founder approval, hiring decision and relocation trigger are the control points.',approvals:'Founder approval before search.',documents:'Hiring request, role description, onboarding checklist.',outputs:'Onboarded hire (relocation triggered if needed).',sla:'',risks:'Hiring without budget approval; weak onboarding.'},
+
+    {id:uid(),name:'Employee / Contractor Onboarding',category:'D',phase:'1',priority:'High',automation:'Medium',
+      purpose:'Onboard new collaborators consistently.',trigger:'An offer is accepted.',owner:'',participants:'HR, hiring owner',tools:'Jira, Microsoft Teams',inputs:'Signed offer, role details.',
+      steps:[START('Offer accepted'),S('Onboarding checklist created'),S('Tools and access setup'),S('Reporting line confirmed'),END('First 30-day objectives defined')],
+      decisionNotes:'',approvals:'',documents:'Onboarding checklist.',outputs:'Productive new collaborator.',sla:'',risks:'Inconsistent onboarding each time.'},
+
+    {id:uid(),name:'Dubai Relocation & Travel Compliance',category:'D',phase:'2',priority:'Medium',automation:'Low',
+      purpose:'Coordinate relocation while keeping compliance items as verification checkpoints.',trigger:'A hire or move requires relocation.',owner:'',participants:'HR, relocating person',tools:'Jira, Microsoft Teams',inputs:'Role, destination, timeline.',
+      steps:[START('Relocation required'),S('Define relocation scope and timeline'),S('Compliance checkpoint (qualified review required)'),S('Logistics and booking'),END('Relocation complete')],
+      decisionNotes:'Visa, permits and legal items are verification checkpoints, validated by qualified advisors.',approvals:'',documents:'Relocation plan.',outputs:'Completed relocation.',sla:'',risks:'Compliance gaps if not validated by qualified advisors.'},
+
+    {id:uid(),name:'Business Travel Approval & Expense',category:'E',phase:'1',priority:'High',automation:'Medium',
+      purpose:'Control business travel, compliance checkpoints, expenses and cost recovery.',
+      trigger:'A business travel need is identified.',owner:'',participants:'Traveller, approver, finance',tools:'Jira, Microsoft Teams',inputs:'Purpose, destination, dates, budget.',
+      steps:[START('Travel need identified'),S('Purpose and justification documented'),S('Destination, dates, attendees defined'),S('Estimated budget prepared'),S('Cost classification'),S('Travel risk & compliance checkpoint (qualified review)'),
+        DEC('Approval decision',[oc('Approved'),oc('Rejected',true,'Travel not approved')]),
+        S('Booking and travel execution'),S('Receipts collected'),S('Post-trip report submitted'),S('Expense reconciliation'),S('Reimbursement / billing / cost recovery decision'),END('Archive documents')],
+      decisionNotes:'Cost classes: internal, client-billable, project cost, recoverable after milestone, mixed.',approvals:'Approval before booking.',documents:'Travel request, receipts, post-trip report.',outputs:'Approved, reconciled travel with cost recovery.',sla:'',risks:'Uncontrolled spend; compliance gaps (require qualified review).'},
+
+    {id:uid(),name:'Expense Reimbursement',category:'E',phase:'2',priority:'Medium',automation:'High',
+      purpose:'Process and recover non-travel expenses.',trigger:'An expense is incurred.',owner:'',participants:'Claimant, finance',tools:'Jira, Microsoft Teams',inputs:'Receipts, cost classification.',
+      steps:[START('Expense incurred'),S('Submit expense with receipts'),S('Classify cost'),DEC('Approved?',[oc('Yes'),oc('No',true,'Returned to claimant')]),END('Reimburse / bill / recover')],
+      decisionNotes:'',approvals:'Expense approval.',documents:'Expense claim, receipts.',outputs:'Reconciled expense.',sla:'',risks:'Unrecovered billable costs.'},
+
+    {id:uid(),name:'Tool / Software Request',category:'F',phase:'3',priority:'Low',automation:'Medium',
+      purpose:'Control tool and software adoption.',trigger:'A new tool or licence is requested.',owner:'',participants:'Requester, IT/systems owner',tools:'Jira, Microsoft Teams',inputs:'Tool, use case, cost.',
+      steps:[START('Tool request submitted'),S('Assess need, cost and overlap'),DEC('Approve?',[oc('Yes'),oc('No',true,'Request closed')]),S('Provision and assign access'),END('Tool in use')],
+      decisionNotes:'',approvals:'Tool approval.',documents:'Tool request.',outputs:'Provisioned tool.',sla:'',risks:'Tool sprawl; duplicate spend.'},
+
+    {id:uid(),name:'Document & Knowledge Management',category:'F',phase:'1',priority:'High',automation:'High',
+      purpose:'Create consistent folders, access control, versioning and archives.',
+      trigger:'A new project, client or opportunity is created.',owner:'',participants:'All teams',tools:'Microsoft Teams / SharePoint, Jira',inputs:'Project / client / opportunity record.',
+      steps:[START('New project / client / opportunity created'),S('Folder structure created'),S('Naming convention applied'),S('Access permissions assigned'),S('Templates selected'),S('Working documents created'),S('Version control maintained'),S('Final documents archived'),S('Key decisions linked'),END('Knowledge base updated')],
+      decisionNotes:'',approvals:'',documents:'Folder template, naming convention.',outputs:'Organized, versioned, archived knowledge.',sla:'',risks:'Lost documents; inconsistent structure.'},
+
+    {id:uid(),name:'AI Workflow / Automation Request',category:'F',phase:'3',priority:'Medium',automation:'High',
+      purpose:'Prioritize repeatable workflows for future automation.',
+      trigger:'A repeated manual process is identified.',owner:'',participants:'Requester, technical owner',tools:'Jira, Microsoft Teams, n8n',inputs:'Process description, frequency, effort, risk, data sensitivity.',
+      steps:[START('Repeated manual process identified'),S('Automation request submitted'),S('Process clarity checked'),S('Frequency assessed'),S('Manual effort assessed'),S('Error / risk assessed'),S('Data sensitivity assessed'),S('Tool availability assessed'),
+        DEC('Decision',[oc('Automate now'),oc('Document first',true,'Document process first'),oc('Postpone',true,'Postpone'),oc('Reject',true,'Reject')]),
+        S('Add to automation backlog'),S('Assign technical owner'),S('Build, test and deploy'),END('Monitor performance')],
+      decisionNotes:'Automate only clear, repeatable, lower-sensitivity processes.',approvals:'Automation approval.',documents:'Automation request, backlog.',outputs:'Deployed, monitored automation.',sla:'',risks:'Automating unclear processes.'},
+
+    {id:uid(),name:'Public Communication Approval',category:'G',phase:'3',priority:'Medium',automation:'Low',
+      purpose:'Control external communication and protect the brand.',trigger:'External communication is proposed.',owner:'',participants:'Author, approver',tools:'Microsoft Teams',inputs:'Draft content, audience, channel.',
+      steps:[START('Communication proposed'),S('Draft content'),DEC('Approved for release?',[oc('Yes'),oc('No',true,'Revise or hold')]),END('Publish / send')],
+      decisionNotes:'',approvals:'Communication approval before release.',documents:'Draft, approval record.',outputs:'Approved public communication.',sla:'',risks:'Off-brand or premature disclosure.'},
+
+    {id:uid(),name:'Case Study / Capability Document Development',category:'G',phase:'3',priority:'Low',automation:'Low',
+      purpose:'Turn delivered work into reusable capability and case-study material.',trigger:'An engagement or milestone is completed.',owner:'',participants:'Delivery team, brand',tools:'Microsoft Teams',inputs:'Delivered work, client permission.',
+      steps:[START('Engagement / milestone completed'),S('Confirm permission to use'),S('Draft case study / capability doc'),DEC('Approved?',[oc('Yes'),oc('No',true,'Revise')]),END('Add to capability library')],
+      decisionNotes:'',approvals:'Approval before external use.',documents:'Case study template.',outputs:'Reusable capability material.',sla:'',risks:'Using client material without permission.'}
+  ];
+}
+
+/* ---------- persistence ---------- */
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ state = JSON.parse(raw); if(!state.workflows||!state.workflows.length){ state={workflows:seed(),activeId:null}; } }
+    else { state = {workflows:seed(), activeId:null}; }
+  }catch(e){ state = {workflows:seed(), activeId:null}; }
+  if(!state.activeId && state.workflows.length) state.activeId = state.workflows[0].id;
+}
+
+function active(){ return state.workflows.find(w=>w.id===state.activeId); }
+
+/* ---------- rendering: sidebar ---------- */
+const cssVar = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function renderLibrary(){
+  const lib = document.getElementById('library');
+  lib.innerHTML='';
+  ['1','2','3'].forEach(ph=>{
+    const items = state.workflows.filter(w=>String(w.phase)===ph);
+    const grp = document.createElement('div'); grp.className='phase-group';
+    const lbl = document.createElement('div'); lbl.className='phase-label';
+    lbl.innerHTML = `Phase ${ph} <span class="count">${items.length}</span>`;
+    grp.appendChild(lbl);
+    items.forEach(w=>{
+      const it = document.createElement('div');
+      it.className='wf-item'+(w.id===state.activeId?' active':'');
+      it.dataset.id=w.id;
+      it.innerHTML = `<span class="dot" style="background:var(${CAT_COLOR[w.category]||'--cat-a'})"></span>
+        <span><span class="wf-name">${escapeHtml(w.name)}</span>
+        <span class="wf-sub">${w.category} · ${w.priority||''}</span></span>`;
+      it.addEventListener('click',()=>{ state.activeId=w.id; save(); renderAll(); });
+      grp.appendChild(it);
+    });
+    // workflows with no phase
+    lib.appendChild(grp);
+  });
+  const noPhase = state.workflows.filter(w=>!['1','2','3'].includes(String(w.phase)));
+  if(noPhase.length){
+    const grp=document.createElement('div'); grp.className='phase-group';
+    grp.innerHTML='<div class="phase-label">Unfiled</div>';
+    noPhase.forEach(w=>{
+      const it=document.createElement('div'); it.className='wf-item'+(w.id===state.activeId?' active':''); it.dataset.id=w.id;
+      it.innerHTML=`<span class="dot" style="background:var(${CAT_COLOR[w.category]||'--cat-a'})"></span><span><span class="wf-name">${escapeHtml(w.name)}</span></span>`;
+      it.addEventListener('click',()=>{state.activeId=w.id;save();renderAll();});
+      grp.appendChild(it);
+    });
+    lib.appendChild(grp);
+  }
+}
+
+/* ---------- rendering: form ---------- */
+function renderForm(){
+  const w = active();
+  const form = document.getElementById('form');
+  const empty = document.getElementById('emptyState');
+  if(!w){ form.style.display='none'; empty.style.display='block'; return; }
+  form.style.display='block'; empty.style.display='none';
+  setVal('f_name',w.name); setVal('f_category',w.category); setVal('f_phase',String(w.phase));
+  setVal('f_priority',w.priority); setVal('f_automation',w.automation);
+  setVal('f_purpose',w.purpose); setVal('f_trigger',w.trigger); setVal('f_owner',w.owner);
+  setVal('f_participants',w.participants); setVal('f_tools',w.tools); setVal('f_inputs',w.inputs);
+  setVal('f_decisionNotes',w.decisionNotes); setVal('f_approvals',w.approvals); setVal('f_documents',w.documents);
+  setVal('f_outputs',w.outputs); setVal('f_sla',w.sla); setVal('f_automationNotes',w.automationNotes);
+  setVal('f_risks',w.risks);
+  renderSteps();
+}
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value = v==null?'':v; }
+
+function renderSteps(){
+  const w = active(); const box=document.getElementById('steps'); box.innerHTML='';
+  (w.steps||[]).forEach((s,i)=>{
+    const el=document.createElement('div'); el.className='step t-'+(s.type||'process');
+    const top=document.createElement('div'); top.className='step-top';
+    top.innerHTML = `<span class="step-idx">${i+1}</span>`;
+    const typeSel=document.createElement('select'); typeSel.className='step-type';
+    [['start','Start'],['process','Step'],['decision','Decision'],['end','End']].forEach(([v,t])=>{
+      const o=document.createElement('option'); o.value=v; o.textContent=t; if(v===s.type)o.selected=true; typeSel.appendChild(o);
+    });
+    typeSel.addEventListener('change',()=>{ s.type=typeSel.value; if(s.type==='decision'&&!s.outcomes) s.outcomes=[oc('Yes'),oc('No',true,'End')]; commit(); });
+    const lbl=document.createElement('input'); lbl.type='text'; lbl.className='step-label'; lbl.value=s.label||'';
+    lbl.addEventListener('input',()=>{ s.label=lbl.value; commitLite(); });
+    const ctrl=document.createElement('div'); ctrl.className='step-ctrl';
+    ctrl.appendChild(iconBtn('\u2191',()=>moveStep(i,-1)));
+    ctrl.appendChild(iconBtn('\u2193',()=>moveStep(i,1)));
+    ctrl.appendChild(iconBtn('\u2715',()=>{ w.steps.splice(i,1); commit(); },true));
+    top.appendChild(typeSel); top.appendChild(lbl); top.appendChild(ctrl);
+    el.appendChild(top);
+    if(s.type==='decision'){
+      el.appendChild(renderOutcomes(s));
+    } else if(s.type!=='end' && i+1<w.steps.length){
+      el.appendChild(renderFlow(s));
+    }
+    box.appendChild(el);
+  });
+}
+function iconBtn(txt,fn,danger){ const b=document.createElement('button'); b.className='iconbtn'+(danger?' x':''); b.textContent=txt; b.addEventListener('click',fn); return b; }
+function moveStep(i,d){ const w=active(); const j=i+d; if(j<0||j>=w.steps.length) return; const t=w.steps[i]; w.steps[i]=w.steps[j]; w.steps[j]=t; commit(); }
+
+function renderOutcomes(s){
+  const wrap=document.createElement('div'); wrap.className='outcomes';
+  const head=document.createElement('div'); head.className='oc-head'; head.textContent='Outcomes'; wrap.appendChild(head);
+  (s.outcomes||[]).forEach((o,oi)=>{
+    const row=document.createElement('div'); row.className='outcome';
+    const lab=document.createElement('input'); lab.type='text'; lab.placeholder='Outcome label'; lab.value=o.label||'';
+    lab.addEventListener('input',()=>{o.label=lab.value;commitLite();});
+    const termWrap=document.createElement('label'); termWrap.className='term';
+    const chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!o.terminal;
+    chk.addEventListener('change',()=>{o.terminal=chk.checked; commit();});
+    termWrap.appendChild(chk); termWrap.appendChild(document.createTextNode('ends'));
+    row.appendChild(lab); row.appendChild(termWrap);
+    if(o.terminal){
+      const endLab=document.createElement('input'); endLab.type='text'; endLab.className='term-label'; endLab.placeholder='End label'; endLab.value=o.end||'';
+      endLab.addEventListener('input',()=>{o.end=endLab.value;commitLite();});
+      row.appendChild(endLab);
+    }
+    const del=iconBtn('\u2715',()=>{s.outcomes.splice(oi,1);commit();},true); del.style.height='28px'; del.style.width='24px';
+    row.appendChild(del);
+    wrap.appendChild(row);
+  });
+  const add=document.createElement('button'); add.className='btn sm'; add.textContent='+ Outcome'; add.style.marginTop='2px';
+  add.addEventListener('click',()=>{ s.outcomes=s.outcomes||[]; s.outcomes.push(oc('Outcome')); commit(); });
+  wrap.appendChild(add);
+  return wrap;
+}
+function renderFlow(s){
+  const wrap=document.createElement('div'); wrap.className='flowedge';
+  const head=document.createElement('div'); head.className='oc-head'; head.textContent='Arrow to next \u2014 what it carries';
+  const inp=document.createElement('input'); inp.type='text'; inp.className='flow-input'; inp.placeholder='e.g. approved request, draft, dataset';
+  inp.value=s.flow||'';
+  inp.addEventListener('input',()=>{ s.flow=inp.value; commitLite(); });
+  wrap.appendChild(head); wrap.appendChild(inp);
+  return wrap;
+}
+
+/* ---------- mermaid generation ---------- */
+const CAT_HEX={A:'#C9A84C',B:'#15803D',C:'#1E40AF',D:'#5B21B6',E:'#92400E',F:'#0d7d6e',G:'#b03a6e'};
+function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function txtOn(h){const[r,g,b]=hexRgb(h);return (0.299*r+0.587*g+0.114*b)>150?'#0D1B2A':'#ffffff';}
+function darken(h){const[r,g,b]=hexRgb(h);const c=x=>('0'+Math.round(x*0.7).toString(16)).slice(-2);return '#'+c(r)+c(g)+c(b);}
+function nodeText(t){ return String(t||'').replace(/"/g,"'").replace(/\n/g,' ').trim() || 'Untitled'; }
+function edgeText(t){ return String(t||'').replace(/[|"`]/g,' ').replace(/\s+/g,' ').trim() || ' '; }
+function buildMermaid(w){
+  const steps=w.steps||[];
+  if(!steps.length) return 'flowchart TD\n  n0(["No steps yet"])';
+  const L=['flowchart TD']; const mainIds=[]; const termIds=[];
+  steps.forEach((s,i)=>{
+    const id='n'+i; const t=nodeText(s.label); mainIds.push(id);
+    if(s.type==='start'||s.type==='end') L.push(`  ${id}(["${t}"])`);
+    else if(s.type==='decision') L.push(`  ${id}{"${t}"}`);
+    else L.push(`  ${id}["${t}"]`);
+  });
+  steps.forEach((s,i)=>{
+    const id='n'+i; const next = i+1<steps.length ? 'n'+(i+1) : null;
+    if(s.type==='decision'){
+      (s.outcomes||[]).forEach((o,oi)=>{
+        if(o.terminal){
+          const tid=`${id}t${oi}`; termIds.push(tid);
+          L.push(`  ${tid}(["${nodeText(o.end||'End')}"])`);
+          L.push(`  ${id} -->|${edgeText(o.label)}| ${tid}`);
+        } else if(next){
+          L.push(`  ${id} -->|${edgeText(o.label)}| ${next}`);
+        }
+      });
+    } else if(s.type!=='end'){
+      if(next){
+        if(s.flow&&String(s.flow).trim()) L.push(`  ${id} -->|${edgeText(s.flow)}| ${next}`);
+        else L.push(`  ${id} --> ${next}`);
+      }
+    }
+  });
+  const fill=CAT_HEX[w.category]||CAT_HEX.A;
+  L.push(`  classDef cat fill:${fill},stroke:${darken(fill)},color:${txtOn(fill)},stroke-width:1px;`);
+  L.push(`  classDef term fill:#e7e2cf,stroke:#9aa7b5,color:#0D1B2A,stroke-width:1px;`);
+  if(mainIds.length) L.push(`  class ${mainIds.join(',')} cat;`);
+  if(termIds.length) L.push(`  class ${termIds.join(',')} term;`);
+  return L.join('\n');
+}
+
+let renderSeq=0;
+async function renderDiagram(){
+  const w=active(); if(!w) return;
+  const code=buildMermaid(w);
+  document.getElementById('mermaidCode').textContent=code;
+  const target=document.getElementById('diagram');
+  const id='mmd'+(++renderSeq);
+  try{
+    const {svg}=await mermaid.render(id,code);
+    target.innerHTML=svg;
+  }catch(e){
+    target.innerHTML='<div class="err">Diagram error \u2014 check step labels.\n'+escapeHtml(String(e&&e.message||e))+'</div>';
+  }
+  renderMeta(w,code);
+}
+function renderMeta(w,code){
+  const decisions=(w.steps||[]).filter(s=>s.type==='decision').length;
+  const m=document.getElementById('metaReadout');
+  m.innerHTML='';
+  const rows=[['Category',w.category+' \u00b7 '+(CAT_NAME[w.category]||'')],['Phase','Phase '+w.phase],['Priority',w.priority||'\u2014'],['Automation potential',w.automation||'\u2014'],['Steps',(w.steps||[]).length],['Decision points',decisions],['SLA / deadline',w.sla||'\u2014']];
+  rows.forEach(([k,v])=>{ const d=document.createElement('div'); d.innerHTML=`<span>${escapeHtml(k)}</span><span>${escapeHtml(String(v))}</span>`; m.appendChild(d); });
+}
+
+/* ---------- commit cycle ---------- */
+let liteTimer=null;
+function commit(){ save(); renderLibrary(); renderForm(); renderDiagram(); }
+function commitLite(){ // for typing: debounce heavy renders
+  save();
+  clearTimeout(liteTimer);
+  liteTimer=setTimeout(()=>{ renderDiagramOnly(); },350);
+}
+function renderDiagramOnly(){ renderLibrary(); renderDiagram(); }
+
+function renderAll(){ renderLibrary(); renderForm(); renderDiagram(); }
+
+/* ---------- field bindings ---------- */
+function bindField(id,key,heavy){
+  const el=document.getElementById(id); if(!el) return;
+  el.addEventListener('input',()=>{ const w=active(); if(!w)return; w[key]=el.value; if(heavy){commit();} else {commitLite();} });
+  el.addEventListener('change',()=>{ const w=active(); if(!w)return; w[key]=el.value; commit(); });
+}
+
+/* ---------- helpers ---------- */
+function escapeHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function download(filename,text,type){ const b=new Blob([text],{type:type||'text/plain'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=filename; a.click(); URL.revokeObjectURL(u); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1700); }
+
+/* ---------- export ---------- */
+function exportJSON(){ const data=JSON.stringify(state); download('vuc_workflows_'+stamp()+'.json',data,'application/json'); toast('JSON exported'); }
+function exportMermaid(){ const w=active(); if(!w)return; download('workflow_'+slug(w.name)+'.mmd',buildMermaid(w),'text/plain'); toast('Mermaid exported'); }
+function getDiagramSvg(){ return document.getElementById('diagram').querySelector('svg'); }
+function serializeSvg(svg){
+  const clone=svg.cloneNode(true);
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  clone.setAttribute('xmlns:xlink','http://www.w3.org/1999/xlink');
+  const vb=svg.viewBox&&svg.viewBox.baseVal;
+  const r=svg.getBoundingClientRect();
+  const w=(vb&&vb.width)?vb.width:(r.width||800);
+  const h=(vb&&vb.height)?vb.height:(r.height||600);
+  clone.setAttribute('width',w); clone.setAttribute('height',h);
+  const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bg.setAttribute('x',vb?vb.x:0); bg.setAttribute('y',vb?vb.y:0);
+  bg.setAttribute('width',w); bg.setAttribute('height',h); bg.setAttribute('fill','#f4f2ea');
+  clone.insertBefore(bg,clone.firstChild);
+  return {xml:new XMLSerializer().serializeToString(clone),w,h};
+}
+function exportSVG(){
+  const svg=getDiagramSvg(); if(!svg){toast('No diagram');return;}
+  const {xml}=serializeSvg(svg); const w=active();
+  download('workflow_'+slug(w.name)+'.svg','<?xml version="1.0" encoding="UTF-8"?>\n'+xml,'image/svg+xml'); toast('SVG exported');
+}
+function exportPNG(){
+  const svg=getDiagramSvg(); if(!svg){toast('No diagram');return;}
+  const {xml,w,h}=serializeSvg(svg); const scale=2;
+  const img=new Image();
+  img.onload=function(){
+    const c=document.createElement('canvas');
+    c.width=Math.max(1,Math.round(w*scale)); c.height=Math.max(1,Math.round(h*scale));
+    const ctx=c.getContext('2d'); ctx.fillStyle='#f4f2ea'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(function(b){ const u=URL.createObjectURL(b); const a=document.createElement('a'); const wf=active(); a.href=u; a.download='workflow_'+slug(wf.name)+'.png'; a.click(); URL.revokeObjectURL(u); toast('PNG exported'); },'image/png');
+  };
+  img.onerror=function(){ toast('PNG export failed'); };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);
+}
+function exportMarkdown(){
+  let md='# VUC Operating System \u2014 Workflow Handbook\n\n';
+  ['1','2','3'].forEach(ph=>{
+    const items=state.workflows.filter(w=>String(w.phase)===ph);
+    if(!items.length)return;
+    md+='## Phase '+ph+'\n\n';
+    items.forEach(w=>{ md+=wfToMd(w)+'\n'; });
+  });
+  download('VUC_Workflow_Handbook_'+stamp()+'.md',md,'text/markdown'); toast('Handbook exported');
+}
+function wfToMd(w){
+  const f=(k,v)=> (v&&String(v).trim())? `- **${k}:** ${v}\n` : `- **${k}:** \u2014\n`;
+  let s='### '+w.name+'\n\n';
+  s+=f('Category',w.category+' '+(CAT_NAME[w.category]||''));
+  s+=f('Phase','Phase '+w.phase); s+=f('Priority',w.priority); s+=f('Automation potential',w.automation);
+  s+=f('Purpose',w.purpose); s+=f('Trigger',w.trigger); s+=f('Owner',w.owner); s+=f('Participants',w.participants);
+  s+=f('Required inputs',w.inputs); s+=f('Tools / systems',w.tools);
+  s+='- **Step-by-step process:**\n';
+  (w.steps||[]).forEach((st,i)=>{
+    let line=`  ${i+1}. ${st.label||''}`;
+    if(st.type==='decision'){ line+=' [decision: '+(st.outcomes||[]).map(o=>o.label+(o.terminal?' \u2192 '+(o.end||'end'):'')).join(' / ')+']'; }
+    else if(st.flow&&String(st.flow).trim()){ line+=' \u2192 carries: '+st.flow; }
+    s+=line+'\n';
+  });
+  s+=f('Decision points (notes)',w.decisionNotes); s+=f('Approval requirements',w.approvals);
+  s+=f('Required documents',w.documents); s+=f('Outputs',w.outputs); s+=f('SLA / deadline',w.sla);
+  s+=f('Risks',w.risks); s+=f('Automation notes',w.automationNotes);
+  s+='\n```mermaid\n'+buildMermaid(w)+'\n```\n';
+  return s;
+}
+function stamp(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function slug(s){ return String(s||'wf').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,40); }
+
+/* ---------- toolbar actions ---------- */
+function newWorkflow(){
+  const w={id:uid(),name:'New workflow',category:'A',phase:'1',priority:'Medium',automation:'Medium',
+    purpose:'',trigger:'',owner:'',participants:'',tools:'Jira, Microsoft Teams',inputs:'',
+    steps:[START('Start'),S('Step'),END('End')],decisionNotes:'',approvals:'',documents:'',outputs:'',sla:'',automationNotes:'',risks:''};
+  state.workflows.unshift(w); state.activeId=w.id; commit(); toast('Workflow created');
+}
+function duplicateWorkflow(){ const w=active(); if(!w)return; const c=JSON.parse(JSON.stringify(w)); c.id=uid(); c.name=w.name+' (copy)'; const i=state.workflows.findIndex(x=>x.id===w.id); state.workflows.splice(i+1,0,c); state.activeId=c.id; commit(); toast('Duplicated'); }
+function deleteWorkflow(){ const w=active(); if(!w)return; if(!confirm('Delete \u201c'+w.name+'\u201d?'))return; state.workflows=state.workflows.filter(x=>x.id!==w.id); state.activeId=state.workflows.length?state.workflows[0].id:null; commit(); toast('Deleted'); }
+
+/* ---------- modal (import) ---------- */
+function openImport(){
+  document.getElementById('modalText').value='';
+  document.getElementById('modalBg').classList.add('show');
+  document.getElementById('modalText').focus();
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+function doImport(){
+  const txt=document.getElementById('modalText').value.trim(); if(!txt){closeModal();return;}
+  try{
+    const data=JSON.parse(txt);
+    if(Array.isArray(data)){ state.workflows=data; }
+    else if(data.workflows){ state=data; }
+    else if(data.id&&data.steps){ state.workflows.unshift(data); }
+    else throw new Error('Unrecognized format');
+    if(!state.activeId&&state.workflows.length) state.activeId=state.workflows[0].id;
+    save(); renderAll(); closeModal(); toast('Imported');
+  }catch(e){ alert('Import failed: '+(e&&e.message||e)+'\nPaste minified single-line JSON.'); }
+}
+
+/* ---------- wire up ---------- */
+function init(){
+  load();
+  bindField('f_name','name',true); bindField('f_category','category',true); bindField('f_phase','phase',true);
+  bindField('f_priority','priority',true); bindField('f_automation','automation',true);
+  bindField('f_purpose','purpose'); bindField('f_trigger','trigger'); bindField('f_owner','owner');
+  bindField('f_participants','participants'); bindField('f_tools','tools'); bindField('f_inputs','inputs');
+  bindField('f_decisionNotes','decisionNotes'); bindField('f_approvals','approvals'); bindField('f_documents','documents');
+  bindField('f_outputs','outputs'); bindField('f_sla','sla'); bindField('f_automationNotes','automationNotes'); bindField('f_risks','risks');
+
+  document.getElementById('btnAddStep').addEventListener('click',()=>{ active().steps.push(S('New step')); commit(); });
+  document.getElementById('btnAddDecision').addEventListener('click',()=>{ active().steps.push(DEC('Decision',[oc('Yes'),oc('No',true,'End')])); commit(); });
+  document.getElementById('btnAddEnd').addEventListener('click',()=>{ active().steps.push(END('End')); commit(); });
+
+  document.getElementById('btnNew').addEventListener('click',newWorkflow);
+  document.getElementById('btnDup').addEventListener('click',duplicateWorkflow);
+  document.getElementById('btnDel').addEventListener('click',deleteWorkflow);
+  document.getElementById('btnExport').addEventListener('click',exportJSON);
+  document.getElementById('btnExportMd').addEventListener('click',exportMarkdown);
+  document.getElementById('btnExportMermaid').addEventListener('click',exportMermaid);
+  document.getElementById('btnExportSvg').addEventListener('click',exportSVG);
+  document.getElementById('btnExportPng').addEventListener('click',exportPNG);
+  document.getElementById('btnImport').addEventListener('click',openImport);
+  document.getElementById('modalCancel').addEventListener('click',closeModal);
+  document.getElementById('modalConfirm').addEventListener('click',doImport);
+  document.getElementById('btnCopyMermaid').addEventListener('click',()=>{ const t=document.getElementById('mermaidCode').textContent; navigator.clipboard.writeText(t).then(()=>toast('Copied')); });
+
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>
