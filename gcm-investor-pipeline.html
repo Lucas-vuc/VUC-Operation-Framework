@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCM Investor Pipeline Map</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface-2: #faf9f5;
+    --text: #2c2c2a;
+    --text-2: #5f5e5a;
+    --text-3: #888780;
+    --border: #e3e1d8;
+    --border-2: #cfcdc2;
+    --hot: #1D9E75;
+    --warm: #EF9F27;
+    --paused: #888780;
+    --closed: #E24B4A;
+    --accent: #534AB7;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #252522;
+      --surface-2: #2c2c29;
+      --text: #e8e6dd;
+      --text-2: #b4b2a9;
+      --text-3: #888780;
+      --border: #3a3a36;
+      --border-2: #4a4a45;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    padding: 24px 16px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  header { margin-bottom: 8px; }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .sub { color: var(--text-2); font-size: 14px; margin-top: 4px; }
+  .toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin: 20px 0; padding: 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); position: sticky; top: 12px; z-index: 50;
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--text-2); margin-right: auto; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  button {
+    font-family: inherit; font-size: 13px; padding: 8px 14px;
+    border-radius: 8px; border: 1px solid var(--border-2);
+    background: var(--surface-2); color: var(--text); cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { opacity: 0.9; color: #fff; }
+  .save-status { font-size: 12px; color: var(--text-3); min-width: 64px; }
+  .section { margin-top: 28px; }
+  .section-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 16px; font-weight: 600; color: var(--text);
+    background: transparent; border: none; outline: none; font-family: inherit;
+    padding: 2px 4px; border-radius: 6px; min-width: 200px;
+  }
+  .section-title:focus { background: var(--surface-2); }
+  .add-card-btn { font-size: 12px; padding: 5px 10px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 15px; background: var(--surface); box-shadow: var(--shadow);
+    position: relative; transition: border-color 0.15s;
+  }
+  .card:hover { border-color: var(--border-2); }
+  .card-top { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 5px; }
+  .status-dot {
+    width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+    cursor: pointer; border: 2px solid transparent;
+  }
+  .status-dot:hover { border-color: var(--border-2); }
+  .card-name {
+    font-weight: 600; font-size: 14.5px; color: var(--text); flex: 1;
+    outline: none; border-radius: 5px; padding: 1px 3px;
+  }
+  .card-name:focus { background: var(--surface-2); }
+  .del-btn {
+    background: transparent; border: none; color: var(--text-3); cursor: pointer;
+    font-size: 16px; line-height: 1; padding: 2px 5px; border-radius: 5px; flex-shrink: 0;
+  }
+  .del-btn:hover { color: var(--closed); background: rgba(226,75,74,0.1); }
+  .card-contact {
+    font-size: 12px; color: var(--text-3); margin: 0 0 9px 20px;
+    outline: none; border-radius: 5px; padding: 1px 3px;
+  }
+  .card-contact:focus { background: var(--surface-2); }
+  .card-desc {
+    font-size: 12.5px; line-height: 1.55; color: var(--text-2);
+    outline: none; border-radius: 7px; padding: 7px; margin: -3px; cursor: text;
+  }
+  .card-desc:focus { background: var(--surface-2); }
+  .status-menu {
+    position: absolute; background: var(--surface); border: 1px solid var(--border-2);
+    border-radius: 9px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); padding: 5px;
+    z-index: 100; display: none;
+  }
+  .status-menu.open { display: block; }
+  .status-menu button {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    border: none; background: transparent; text-align: left; padding: 7px 10px;
+  }
+  .status-menu button:hover { background: var(--surface-2); color: var(--text); }
+  .add-section-btn { margin-top: 26px; width: 100%; padding: 12px; border-style: dashed; }
+  .hint { font-size: 12px; color: var(--text-3); margin-top: 6px; font-style: italic; }
+  footer { margin-top: 40px; font-size: 12px; color: var(--text-3); text-align: center; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Golden Camel Mining — Investor &amp; Partner Pipeline</h1>
+    <div class="sub">Live campaign map. Click any text to edit. Click a status dot to change status. Changes save to your browser automatically.</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="legend">
+      <span><span class="dot" style="background:var(--hot)"></span>Active / hot</span>
+      <span><span class="dot" style="background:var(--warm)"></span>Warm / follow-up due</span>
+      <span><span class="dot" style="background:var(--paused)"></span>Paused</span>
+      <span><span class="dot" style="background:var(--closed)"></span>Closed / declined</span>
+    </div>
+    <span class="save-status" id="saveStatus"></span>
+    <button onclick="exportJSON()">⬇ Export</button>
+    <button onclick="document.getElementById('importFile').click()">⬆ Import</button>
+    <input type="file" id="importFile" accept="application/json" onchange="importJSON(event)">
+    <button onclick="window.print()">🖨 Print / PDF</button>
+    <button class="primary" onclick="saveData(true)">Save</button>
+  </div>
+
+  <div id="board"></div>
+
+  <button class="add-section-btn" onclick="addSection()">+ Add a new branch / category</button>
+
+  <footer>
+    Data is stored locally in your browser. Use Export to back up or share a copy. Last updated: <span id="lastUpdate">—</span>
+  </footer>
+</div>
+
+<div class="status-menu" id="statusMenu">
+  <button onclick="setStatus('hot')"><span class="dot" style="background:var(--hot)"></span>Active / hot</button>
+  <button onclick="setStatus('warm')"><span class="dot" style="background:var(--warm)"></span>Warm / follow-up</button>
+  <button onclick="setStatus('paused')"><span class="dot" style="background:var(--paused)"></span>Paused</button>
+  <button onclick="setStatus('closed')"><span class="dot" style="background:var(--closed)"></span>Closed / declined</button>
+</div>
+
+<script>
+const STORAGE_KEY = "gcm-pipeline-v2";
+const COLORS = { hot:"#1D9E75", warm:"#EF9F27", paused:"#888780", closed:"#E24B4A" };
+
+const DEFAULT_DATA = [
+  { section:"Offtake & strategic buyers", items:[
+    { name:"Campine NV", contact:"Wim De Vos (CEO) · Hans Vercammen", status:"hot", desc:"Meeting held 8 Jun — went well, they asked for time to think. Largest non-Chinese ATO producer in Europe. Key anchor for the KfW trigger. Next: structured follow-up with concrete offtake proposal (SbIngots draft ready). Possible dual role: buyer + Step 3 refiner." },
+    { name:"Scandinavian Steel", contact:"Oscar Scheja", status:"hot", desc:"Said YES to Option B (direct offtake & distribution) on 11 Jun. Their network moves Sb metal Regulus 99.65% to USA/Mexico (D.A. Hinojosa, C.Steinweg). Next: call with Dean + Louis to align product specs, volume, geography (reframe away from exclusive-European). Pending: GCFZ refining capacity confirmation." },
+    { name:"AMG Antimony (France)", contact:"Raymond Devaux (President)", status:"closed", desc:"Formal rejection 11 Jun: offtake structure does not align with procurement policy. Door left open — re-engage once GCM has commenced production of metal meeting their specs (99.65% ingots, 25-33 kg). Revisit 2027-2028." },
+    { name:"Traxys", contact:"Valérie Vandenabeele · Patrick Weller", status:"paused", desc:"Active pause since 3 Jun — 'different messages creating confusion, taking time to consider'. Structural mismatch: they trade Sb concentrate; GCM produces doré/ATO. Soft follow-up only if narrative clarifies. Low priority." },
+    { name:"Trafigura", contact:"Robbie O'Hanlon", status:"closed", desc:"Early-campaign contact. NDA executed, technical review completed, declined. Keep door open for re-engagement once production is demonstrated — global trader, could return at Stage 2-3 scale." },
+    { name:"Heraeus Precious Metals", contact:"precious.metals@heraeus.com · Steffen Metzger (CEO)", status:"warm", desc:"Outreach sent 22 May, no response. FOLLOW-UP DUE. New angle: they refine precious metals — potential Step 3A doré-separation partner, not just a buyer. Reframe and resend." },
+    { name:"Ecobat / Berzelius Metall", contact:"Mandy Keßler", status:"warm", desc:"Outreach sent 22 May, no response. FOLLOW-UP DUE. German polymetallic recycler (Stolberg) — potential EU tolling partner for Step 3B (ATO to metal) and a strong fit for the KfW/CRMA narrative." }
+  ]},
+  { section:"Institutional finance", items:[
+    { name:"KfW IPEX-Bank", contact:"Kai Hartmanshenn", status:"hot", desc:"Target: EUR 50M (50% of offtake security value). Waiting on the first signed offtake as trigger. UFK programme fits critical raw materials supply to the EU. Precedent in place: GCM biogas facility = 70% EU export finance + 30% Australian. Activate immediately after Campine or ScanSteel signs." },
+    { name:"Australian Government (30%)", contact:"Via Dean — EFA / Strategic Reserve", status:"hot", desc:"Dean formalizing 30% co-funding commitment if 70% is secured. Backed by the Export Finance Strategic Reserve Bill 2026 — antimony is a priority commodity. Game changer for the KfW pitch. Track Dean's progress weekly." },
+    { name:"German Raw Materials Fund", contact:"Via KfW ecosystem", status:"warm", desc:"EUR 1B fund, equity instrument. Precedent: Arafura Rare Earths EUR 50M with an offtake trigger. Activates naturally once KfW UFK engages. No direct outreach yet — sequence after the first offtake signature." },
+    { name:"InfraVia Critical Metals Fund", contact:"Sylvain Eckert", status:"warm", desc:"NDA signed by Dean; countersignature with lawyer Léa Perini (Ontra.ai). FOLLOW-UP DUE: confirm NDA execution complete and move to data-room access. French infrastructure fund — fits the CRMA narrative." },
+    { name:"Macquarie Capital", contact:"Callum McElhinney (via Russell Keating)", status:"warm", desc:"Global Head Critical Minerals & Energy referral. PENDING: Louis decision on engagement vs VUC intermediary conflict. Could run an institutional process if the direct campaign stalls. Decide before end of June." },
+    { name:"USAC (US capital)", contact:"Known to GCM since 2023", status:"warm", desc:"US-only capital — direct GCM entry blocked by Chinese exposure (HZAT). Entry path: GCFZ UAE entity (new setup in progress with Amgad/IFZA). Activate once GCFZ structure is formalized and HZAT is reduced to Stage 1 vendor financing." }
+  ]},
+  { section:"Private investors & capital markets", items:[
+    { name:"First Berlin Equity Research", contact:"Simon Scholes, CFA", status:"hot", desc:"VERY ACTIVE: investment teaser draft circulated 11 Jun, Dean updating Word version, Louis call scheduled. Teaser = tool to approach German/European private and institutional investors. Martin Billhardt copied (likely investor network). Support Simon with updated production/funding data." },
+    { name:"Martin Billhardt", contact:"Via First Berlin thread", status:"warm", desc:"Copied on the investment-teaser thread by Simon Scholes. Likely German private investor / board-level contact from the First Berlin network. Clarify role and interest with Simon on the next call." },
+    { name:"Private investor pool (teaser)", contact:"Via First Berlin distribution", status:"warm", desc:"The finalized teaser unlocks a structured approach to German-speaking private wealth and family offices. USD 10M cornerstone entry point at USD 500k/share reference. Pipeline opens once the teaser is final." }
+  ]},
+  { section:"Political & institutional enablers", items:[
+    { name:"EU / EEAS — CRMA bridge", contact:"Estelle Kadouch · Margaux Williams", status:"warm", desc:"Margaux following up with Brussels on CRMA questions; was kept informed of the Campine meeting. Next milestone: CRMA Strategic Project application (ideally joint with Campine). Keep informed; don't over-share until tangible value returns." },
+    { name:"i2a (Antimony Association)", contact:"Gert Meylemans · Hans Vercammen (Chairman)", status:"warm", desc:"'Book club' per Louis — no funding capability, but a legitimization tool. Membership EUR 3k on hold until funding. Dean as speaker at Antimony Days, 24-25 Nov, Brussels. Use for credibility and network access only." }
+  ]}
+];
+
+let data = [];
+let activeDotEl = null;
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { data = JSON.parse(raw); return; }
+  } catch(e) {}
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveData(showToast) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY + "-ts", new Date().toISOString());
+    updateTimestamp();
+    if (showToast) flashStatus("Saved ✓");
+  } catch(e) { flashStatus("Save failed"); }
+}
+
+function flashStatus(msg) {
+  const el = document.getElementById("saveStatus");
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ""; }, 2200);
+}
+
+function updateTimestamp() {
+  const ts = localStorage.getItem(STORAGE_KEY + "-ts");
+  if (ts) {
+    const d = new Date(ts);
+    document.getElementById("lastUpdate").textContent = d.toLocaleString();
+  }
+}
+
+function render() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  data.forEach((sec, si) => {
+    const section = document.createElement("div");
+    section.className = "section";
+
+    const head = document.createElement("div");
+    head.className = "section-head";
+    const title = document.createElement("input");
+    title.className = "section-title";
+    title.value = sec.section;
+    title.oninput = () => { data[si].section = title.value; saveData(); };
+    head.appendChild(title);
+
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-card-btn";
+    addBtn.textContent = "+ Add contact";
+    addBtn.onclick = () => addCard(si);
+    head.appendChild(addBtn);
+
+    const delSecBtn = document.createElement("button");
+    delSecBtn.className = "add-card-btn";
+    delSecBtn.textContent = "✕ Delete branch";
+    delSecBtn.onclick = () => {
+      if (confirm("Delete the entire '" + sec.section + "' branch and all its cards?")) {
+        data.splice(si, 1); saveData(); render();
+      }
+    };
+    head.appendChild(delSecBtn);
+    section.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    sec.items.forEach((item, ii) => grid.appendChild(makeCard(item, si, ii)));
+    section.appendChild(grid);
+    board.appendChild(section);
+  });
+}
+
+function makeCard(item, si, ii) {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const top = document.createElement("div");
+  top.className = "card-top";
+
+  const dot = document.createElement("div");
+  dot.className = "status-dot";
+  dot.style.background = COLORS[item.status] || COLORS.warm;
+  dot.title = "Click to change status";
+  dot.onclick = (e) => openStatusMenu(e, si, ii);
+  top.appendChild(dot);
+
+  const name = document.createElement("div");
+  name.className = "card-name";
+  name.contentEditable = "true";
+  name.spellcheck = false;
+  name.textContent = item.name;
+  name.oninput = () => { data[si].items[ii].name = name.textContent; saveData(); };
+  top.appendChild(name);
+
+  const del = document.createElement("button");
+  del.className = "del-btn";
+  del.innerHTML = "×";
+  del.title = "Delete this card";
+  del.onclick = () => {
+    if (confirm("Delete '" + item.name + "'?")) {
+      data[si].items.splice(ii, 1); saveData(); render();
+    }
+  };
+  top.appendChild(del);
+  card.appendChild(top);
+
+  const contact = document.createElement("div");
+  contact.className = "card-contact";
+  contact.contentEditable = "true";
+  contact.spellcheck = false;
+  contact.textContent = item.contact;
+  contact.oninput = () => { data[si].items[ii].contact = contact.textContent; saveData(); };
+  card.appendChild(contact);
+
+  const desc = document.createElement("div");
+  desc.className = "card-desc";
+  desc.contentEditable = "true";
+  desc.spellcheck = false;
+  desc.textContent = item.desc;
+  desc.oninput = () => { data[si].items[ii].desc = desc.textContent; saveData(); };
+  card.appendChild(desc);
+
+  return card;
+}
+
+function openStatusMenu(e, si, ii) {
+  e.stopPropagation();
+  const menu = document.getElementById("statusMenu");
+  activeDotEl = { si, ii };
+  menu.style.left = e.pageX + "px";
+  menu.style.top = e.pageY + "px";
+  menu.classList.add("open");
+}
+
+function setStatus(status) {
+  if (activeDotEl) {
+    data[activeDotEl.si].items[activeDotEl.ii].status = status;
+    saveData(); render();
+  }
+  document.getElementById("statusMenu").classList.remove("open");
+}
+
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("statusMenu");
+  if (!menu.contains(e.target) && !e.target.classList.contains("status-dot")) {
+    menu.classList.remove("open");
+  }
+});
+
+function addCard(si) {
+  data[si].items.push({ name:"New contact", contact:"Name · role", status:"warm", desc:"Click to add notes…" });
+  saveData(); render();
+}
+
+function addSection() {
+  data.push({ section:"New branch", items:[] });
+  saveData(); render();
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "gcm-pipeline-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (Array.isArray(imported)) {
+        data = imported; saveData(true); render();
+      } else { alert("Invalid file format."); }
+    } catch(err) { alert("Could not read file: " + err.message); }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+loadData();
+render();
+updateTimestamp();
+</script>
+</body>
+</html>
