@@ -2298,7 +2298,15 @@ function toggleObjEdit(){
 
 function setObjF(id,field,val){
   var o=vucObjectives.find(function(x){return x.id===id;});
-  if(o)o[field]=val;
+  if(!o) return;
+  o[field]=val;
+  // Persist immediately so nothing is lost on reload or auto-save
+  if(typeof saveWeeklyState === 'function') saveWeeklyState();
+  // Only fields that change WHICH SECTION the objective belongs to need a re-render.
+  // Title/owner/project are edited in place — re-rendering would steal focus mid-typing.
+  if(field === 'vertical'){
+    renderObj();
+  }
 }
 
 function setKRf(oid,kid,field,val){
@@ -2327,6 +2335,7 @@ function addObj(deptKey){
     if(editBtn){editBtn.innerHTML='&#10003; Save &amp; lock';editBtn.classList.add('editing');}
   }
   renderObj();
+  if(typeof saveWeeklyState === 'function') saveWeeklyState();
   // Focus on the newly added objective's title input
   setTimeout(function(){
     var newCard = document.getElementById('wobj-vo'+_void);
@@ -2341,6 +2350,7 @@ function delObj(id){
   if(!confirm('Remove this objective?'))return;
   vucObjectives=vucObjectives.filter(function(o){return o.id!==id;});
   renderObj();
+  if(typeof saveWeeklyState === 'function') saveWeeklyState();
 }
 
 function addKR(oid){
