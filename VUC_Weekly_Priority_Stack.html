@@ -2296,16 +2296,34 @@ function toggleObjEdit(){
   renderObj();
 }
 
+function syncObjectivesFromDOM(){
+  // Pull current values from any rendered objective inputs into the array,
+  // so a re-render never drops text/selections that weren't yet committed.
+  vucObjectives.forEach(function(o){
+    var card = document.getElementById('wobj-'+o.id);
+    if(!card) return;
+    var titleInp = card.querySelector('.wobj-title-inp');
+    if(titleInp) o.title = titleInp.value;
+    var sels = card.querySelectorAll('.wobj-sel');
+    // order in DOM: [0]=owner, [1]=project, [2]=vertical
+    if(sels[0]) o.owners = [sels[0].value];
+    if(sels[1]) o.project = sels[1].value;
+    if(sels[2]) o.vertical = sels[2].value;
+  });
+}
+
 function setObjF(id,field,val){
   var o=vucObjectives.find(function(x){return x.id===id;});
   if(!o) return;
   o[field]=val;
   // Persist immediately so nothing is lost on reload or auto-save
   if(typeof saveWeeklyState === 'function') saveWeeklyState();
-  // Only fields that change WHICH SECTION the objective belongs to need a re-render.
-  // Title/owner/project are edited in place — re-rendering would steal focus mid-typing.
+  // Only the vertical changes WHICH SECTION the objective sits in.
+  // Sync all DOM values into the array first (so other half-typed fields aren't lost),
+  // then defer the re-render so the current change-event finishes cleanly.
   if(field === 'vertical'){
-    renderObj();
+    syncObjectivesFromDOM();
+    setTimeout(function(){ renderObj(); if(typeof saveWeeklyState==='function') saveWeeklyState(); }, 0);
   }
 }
 
